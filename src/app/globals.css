@@ -19,17 +19,21 @@ body {
   :root {
     --background: #F9FFFC;
 
-    --primary: #3e6783;
-    --primary-foreground: #3e6783;
+    --primary: #24354b
 
-    --secondary: #D2E0D9;
-    --secondary-foreground: #D2E0D9;
+    ;
+    --primary-foreground: #24354b
+
+    ;
+
+    --secondary: #e7f0ec;
+    --secondary-foreground: #e7f0ec;
 
     --muted: #32393E;
 
     --rgba-color: rgba(255, 255, 255, 0.20);
     --primary-rgba: rgb(108, 117, 125, 0.20);
-    --secondary-rgba: rgb(210, 224, 217, 0.50);
+    --secondary-rgba: rgba(210, 224, 217, 0.887);
     --overlay: rgba(0, 0, 0, 0.40);
 
 

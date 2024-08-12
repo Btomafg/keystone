@@ -11,8 +11,8 @@ const plus_jakarta_sans = Plus_Jakarta_Sans({
 })
 
 export const metadata = {
-  title: "Architronix",
-  description: "Architronix is a next js and tailwind css website",
+  title: "Keystone Woodworx | Custom Woodworking",
+  description: "Keystone Woodworx is a custom woodworking company that specializes in custom furniture, cabinetry, and more.",
   icons: {
     icon: `${favicon.src}`,
   },

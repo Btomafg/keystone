@@ -14,13 +14,13 @@ const counterList = [
     },
     {
         id: 3,
-        count: '425k',
-        title: "Square Feet covered"
+        count: '4,000',
+        title: "Square Feet Warehouse"
     },
     {
         id: 4,
-        count: '93%',
-        title: "Positive Feedbacks"
+        count: '5',
+        title: "Star Rating"
     },
 
 ]

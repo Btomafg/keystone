@@ -27,10 +27,12 @@ const Home = () => {
       <HeaderOne />
       <main>
         <BannerOne data={bannerOneData} />
-        <AboutOne />
         <Counter />
-        <Gallery />
         <ServicesSlider />
+        <AboutOne />
+       
+        <Gallery />
+       
 
         {/* --------- start team section */}
         <section className='pt-20'>
