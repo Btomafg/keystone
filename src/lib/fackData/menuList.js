@@ -25,62 +25,35 @@ export const menuList = [
                 menus: [
                     {
                         id: 1,
-                        name: "Residential Design",
+                        name: "Custom Cabinetry",
                         path: "/service-single",
-                        desc: "Everything from concept to completion"
+                        desc: "New construction cabinetry furnishes a new home with cabinetry for every space of the home."
                     },
-                    {
-                        id: 2,
-                        name: "Commercial Design",
-                        path: "/service-single",
-                        desc: "Focuses on optimizing functionality and aesthetics"
-                    },
-                    {
-                        id: 3,
-                        name: "Space Planning",
-                        path: "/service-single",
-                        desc: "Maximize the potential of your space"
-                    }
+              
                 ]
             },
             {
                 id: 2,
                 menus: [
                     {
-                        id: 4,
-                        name: "Color Consultation",
+                        id: 2,
+                        name: "Unique Remodel Designs",
                         path: "/service-single",
-                        desc: "We help you choose the perfect palette"
-                    },
-                    {
-                        id: 5,
-                        name: "Project Management",
-                        path: "/service-single",
-                        desc: "We oversee every detail for a successful project"
-                    },
-                    {
-                        id: 6,
-                        name: "Custom Furnishings",
-                        path: "/service-single",
-                        desc: "Elevate your space with unique furnishings"
-                    }
+                        desc: "Removal of existing cabinetry (if needed), Designed cabinetry for existing space, Installation of cabinets and counter. "
+                     },
+                 
                 ]
             },
             {
                 id: 3,
                 menus: [
                     {
-                        id: 7,
-                        name: "Concept Development",
+                        id: 3,
+                        name: "Closet Design",
                         path: "/service-single",
-                        desc: "Develop a design concept"
+                        desc: "Fast closet design, manufacturing, and installation service to organize his and hers space. "
                     },
-                    {
-                        id: 8,
-                        name: "Revamps & Remodels",
-                        path: "/service-single",
-                        desc: "Renovation and remodeling services that breathe new life"
-                    }
+                    
                 ]
             },
             {
@@ -99,7 +72,7 @@ export const menuList = [
     },
     {
         id: 4,
-        name: "Pages",
+        name: "Learn More",
         path: "#",
         isMegaMenu: false,
         isDropdown: [
@@ -118,46 +91,19 @@ export const menuList = [
             //     name: "Service Single",
             //     path: "/service-single"
             // },
+            
             {
-                id: 4,
-                name: "Project Single",
-                path: "/project-single"
-            },
-            {
-                id: 5,
-                name: "Product Single",
-                path: "/product-single"
-            },
-            {
-                id: 6,
-                name: "Product Archive",
-                path: "/product-archive"
-            },
-            {
-                id: 7,
+                id: 3,
                 name: "Career",
                 path: "/career"
             },
+           
             {
-                id: 8,
-                name: "Job Details",
-                path: "/job-details"
-            },
-            {
-                id: 9,
+                id: 4,
                 name: "Team",
                 path: "/team"
             },
-            {
-                id: 10,
-                name: "Team Single",
-                path: "/team-single"
-            },
-            {
-                id: 11,
-                name: "Contact 2",
-                path: "/contact-2"
-            },
+           
         ]
     },
  

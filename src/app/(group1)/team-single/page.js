@@ -12,8 +12,8 @@ import SocialMediaList from '@/components/ui/socialMediaList'
 import { teamData } from '@/lib/fackData/teamData'
 
 export const metadata = {
-  title: "Architronix -- Team Single",
-  description: "Architronix is a next js and tailwind css website",
+  title: "Keystone Woodworx -- Team Single",
+  description: "Keystone Woodworx is a next js and tailwind css website",
 };
 
 const TeamSingle = () => {
@@ -32,7 +32,7 @@ const TeamSingle = () => {
             <div>
               <div className='mb-12.5'>
                 <Title title_text={"Brief Bio:"} />
-                <p>Russell Otten, the Interior Alchemist at Architronix, adds a touch of magic to spaces. With over a decade of experience, Russell blends artistic flair with a deep understanding of client aspirations.</p>
+                <p>Russell Otten, the Interior Alchemist at Keystone Woodworx, adds a touch of magic to spaces. With over a decade of experience, Russell blends artistic flair with a deep understanding of client aspirations.</p>
               </div>
               <div className='pt-12.5'>
                 <Title title_text={"Expertise and Specializations:"} />
@@ -52,7 +52,7 @@ const TeamSingle = () => {
                 <ul>
                   <li>
                     <h5 className='font-bold'>Philosophy Overview:  </h5>
-                    <p className='mt-2.5 xl:ml-[113px] 2sm:ml-14 ml-10'>Russell's design philosop Architronix revolves around capturing the essence of each client's persionality and translating it into a space that feels uniquely theirs.</p>
+                    <p className='mt-2.5 xl:ml-[113px] 2sm:ml-14 ml-10'>Russell's design philosop Keystone Woodworx revolves around capturing the essence of each client's persionality and translating it into a space that feels uniquely theirs.</p>
                   </li>
                   <li className='pt-7.5'>
                     <h5 className='font-bold'>Client-Centric Approach: </h5>
@@ -65,7 +65,7 @@ const TeamSingle = () => {
                 <ul>
                   <li>
                     <h5 className='font-bold'>Educational Background:  </h5>
-                    <p className='mt-2.5 xl:ml-[113px] 2sm:ml-14 ml-10'>Russell holds a Master's in Interior of the Design from Architronix University of Belgium.</p>
+                    <p className='mt-2.5 xl:ml-[113px] 2sm:ml-14 ml-10'>Russell holds a Master's in Interior of the Design from Keystone Woodworx University of Belgium.</p>
                   </li>
                   <li className='pt-7.5'>
                     <h5 className='font-bold'>Professional Credentials:    </h5>
@@ -78,7 +78,7 @@ const TeamSingle = () => {
                 <ul>
                   <li>
                     <h5 className='font-bold'>Achievements:  </h5>
-                    <p className='mt-2.5 xl:ml-[113px] 2sm:ml-14 ml-10'>Russell Otten's work at Architronix has been feeatured in Design Excellence Magazine, earning him the Interior Alchemist title.</p>
+                    <p className='mt-2.5 xl:ml-[113px] 2sm:ml-14 ml-10'>Russell Otten's work at Keystone Woodworx has been feeatured in Design Excellence Magazine, earning him the Interior Alchemist title.</p>
                   </li>
 
                 </ul>
@@ -88,7 +88,7 @@ const TeamSingle = () => {
                 <ul>
                   <li className='flex items-center mb-3'>
                     <h5 className='font-bold min-w-28'>Email:  </h5>
-                    <Link href={"mailto:russell@architronix.com"} className='hover-underline' ><span>russell@architronix.com</span></Link>
+                    <Link href={"mailto:russell@Keystone Woodworx.com"} className='hover-underline' ><span>russell@Keystone Woodworx.com</span></Link>
                   </li>
                   <li className='flex items-center mb-3'>
                     <h5 className='font-bold min-w-28'>Phone:  </h5>

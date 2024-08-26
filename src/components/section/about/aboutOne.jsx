@@ -33,7 +33,7 @@ const AboutOne = ({ text_muted, bg_muted }) => {
     return (
         <section className='pt-20'>
             <div className='container-fluid '>
-                <SectionTitle sectionName={"About Us"} sectionTitle={"Foundations of Architronix "} sectionDesc={"Crafting Architectural Masterpieces and Designing Interior Wonders"} text_muted={text_muted} bg_muted={bg_muted} />
+                <SectionTitle sectionName={"About Us"} sectionTitle={"Foundations of Keystone Woodworx "} sectionDesc={"Crafting Architectural Masterpieces and Designing Interior Wonders"} text_muted={text_muted} bg_muted={bg_muted} />
                 <div className={cn(`bg-primary xl:mt-[220px] lg:mt-25 md:mt-44 mt-[540px] xl:mb-20 mb-0 ${bg_muted}`)}>
                     <div className='container'>
                         <div className='flex lg:flex-row flex-col items-center gap-[66px]'>

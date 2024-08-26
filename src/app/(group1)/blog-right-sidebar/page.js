@@ -6,8 +6,8 @@ import SideBar from '@/components/ui/sideBar'
 import { blogData } from '@/lib/fackData/blogData'
 
 export const metadata = {
-    title: "Architronix -- Blog Right Sidebar",
-    description: "Architronix is a next js and tailwind css website",
+    title: "Keystone Woodworx -- Blog Right Sidebar",
+    description: "Keystone Woodworx is a next js and tailwind css website",
 };
 const BlogRightSidebar = () => {
     return (

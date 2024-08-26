@@ -18,7 +18,7 @@ const AboutTwo = () => {
                             <div className='max-w-[533px] lg:pt-0 pt-20 lg:pb-0 pb-10'>
                                 <h2 className='text-secondary-foreground text-3xl 2sm:text-4xl font-bold leading-120 mb-14 max-w-[400px]'>Designing Dreams: Our Story</h2>
                                 <p className=' text-secondary-foreground'>
-                                    At Architronix, design is our canvas, and spaces are our masterpieces. With a vision for elegance, functionality, and innovation, our creative team curates environments that reflect dreams. From chic urban apartments to countryside estates, we're committed to sustainable design practices that enrich lives and the planet.
+                                    At Keystone Woodworx, design is our canvas, and spaces are our masterpieces. With a vision for elegance, functionality, and innovation, our creative team curates environments that reflect dreams. From chic urban apartments to countryside estates, we're committed to sustainable design practices that enrich lives and the planet.
                                 </p>
                                 <p className='text-secondary-foreground mt-7'>
                                     oin us on a journey where every room is a canvas for creativity, and design transcends the ordinary. Together, let's craft your vision, one design at a time.

@@ -12,17 +12,17 @@ import SectionSidebarImg from '../ui/sectionSidebarImg'
 const skillList = [
     {
         id: 1,
-        skill_name: "Interior Design",
+        skill_name: "Custom Cabinetry",
         achive: "50%"
     },
     {
         id: 2,
-        skill_name: "Sustainability",
+        skill_name: "Furniture Design",
         achive: "85%"
     },
     {
         id: 3,
-        skill_name: "Decor",
+        skill_name: "Delivery & Installation",
         achive: "90%"
     },
     {

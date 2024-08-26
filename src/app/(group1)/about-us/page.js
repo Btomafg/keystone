@@ -7,8 +7,8 @@ import { teamData } from '@/lib/fackData/teamData'
 import { cardSlideAnimation } from '@/lib/utils'
 
 export const metadata = {
-  title: "Architronix -- About Us",
-  description: "Architronix is a next js and tailwind css website",
+  title: "Keystone Woodworx -- About Us",
+  description: "Keystone Woodworx is a next js and tailwind css website",
 };
 const AboutUs = () => {
   return (
@@ -20,7 +20,7 @@ const AboutUs = () => {
         <div className='container-fluid '>
           <SectionTitle
             sectionName={"Team"}
-            sectionTitle={"Architects of Architronix"}
+            sectionTitle={"Architects of Keystone Woodworx"}
             sectionDesc={"Where Imagination Takes Flight, and Excellence Blossoms"}
             button_text={"All Architects"}
             link={"/team"}

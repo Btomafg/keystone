@@ -14,31 +14,31 @@ const testimonialData = [
         id: 1,
         name: "Sarah Johnson",
         position: "Modern Spaces Inc.",
-        review: "I was truly impressed by the design expertise of Architronix. They turned my home into a stylish haven, and I couldn't be happier!"
+        review: "I was truly impressed by the design expertise of Keystone Woodworx. They turned my home into a stylish haven, and I couldn't be happier!"
     },
     {
         id: 2,
         name: "John Smith",
         position: "Smith & Co. Architecture.",
-        review: "Architronix exceeded my expectations. They took my vision and brought it to life, creating a breathtaking design that perfectly complements my"
+        review: "Keystone Woodworx exceeded my expectations. They took my vision and brought it to life, creating a breathtaking design that perfectly complements my"
     },
     {
         id: 3,
         name: "Emily Roberts",
         position: "UrbanLiving Interiors",
-        review: "Architronix Interiors transformed my office space into a functional yet aesthetically pleasing environment. Their attention to detail and innovative designs are top-notch"
+        review: "Keystone Woodworx Interiors transformed my office space into a functional yet aesthetically pleasing environment. Their attention to detail and innovative designs are top-notch"
     },
     {
         id: 4,
         name: "Sarah Johnson",
         position: "Modern Spaces Inc.",
-        review: "I was truly impressed by the design expertise of Architronix. They turned my home into a stylish haven, and I couldn't be happier!"
+        review: "I was truly impressed by the design expertise of Keystone Woodworx. They turned my home into a stylish haven, and I couldn't be happier!"
     },
     {
         id: 5,
         name: "John Smith",
         position: "Smith & Co. Architecture.",
-        review: "Architronix exceeded my expectations. They took my vision and brought it to life, creating a breathtaking design that perfectly complements my"
+        review: "Keystone Woodworx exceeded my expectations. They took my vision and brought it to life, creating a breathtaking design that perfectly complements my"
     },
 
 ]

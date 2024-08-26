@@ -39,9 +39,9 @@ const BannerOne = ({ data, text_muted, bg_muted }) => {
     el: ".hero-pagination",
     renderBullet: function (index, className) {
       return `
-      <span class='${className} flex leading-120'>
-         <span class='inline-block mr-2 lg:text-5xl text-3xl font-extrabold text-transparent webkit-text-stroke-width-1 webkit-text-stroke-primary active-blut'>0${index + 1}</span>
-         <span class='title md:text-lg text-sm font-semibold text-primary-foreground hidden sm:block sm:max-w-56 max-w-48'> ${data[index].title}</span>
+      <span className='${className} flex leading-120'>
+         <span className='inline-block mr-2 lg:text-4xl text-2xl font-extrabold text-transparent webkit-text-stroke-width-1 webkit-text-stroke-primary active-blut'>0${index + 1}</span>
+         <span className='title md:text-lg text-sm font-semibold text-primary-foreground hidden sm:block sm:max-w-56 max-w-48'> ${data[index].title}</span>
       </span>`;
     },
   };

@@ -15,8 +15,8 @@ import dynamic from 'next/dynamic'
 const ProjectSingleSliderTwo = dynamic(() => import('@/components/section/projectSingle/projectSingleSliderTwo'), { ssr: false })
 
 export const metadata = {
-    title: "Architronix -- Project Single",
-    description: "Architronix is a next js and tailwind css website",
+    title: "Keystone Woodworx -- Project Single",
+    description: "Keystone Woodworx is a next js and tailwind css website",
 };
 
 const ProjectSingle = () => {

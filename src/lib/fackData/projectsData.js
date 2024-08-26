@@ -1,4 +1,4 @@
-import project_img_1 from "@/assets/images/project-overview-img-1.jpg"
+import project_img_1 from "@/assets/images/projects/WineCellar.jpg"
 import project_img_2 from "@/assets/images/project-overview-img-2.jpg"
 import project_img_3 from "@/assets/images/project-overview-img-3.jpg"
 import project_img_4 from "@/assets/images/project-overview-img-4.jpg"
@@ -6,9 +6,9 @@ import project_img_4 from "@/assets/images/project-overview-img-4.jpg"
 export const projectsData = [
     {
         id: 1,
-        project_name: "Pixel House",
-        project_img: project_img_2,
-        project_desc: "At the heart of the e+ project, made of natural anodised aluminium, glazing, sandstone and granite, the lobby  ...see more",
+        project_name: "Residential Basement Remodel",
+        project_img: project_img_1,
+        project_desc: "Aesthetic and functional. Designed and built to hide a structural support while functioning as a usable space. ",
         client: "Sogeprom",
         area: "14,891 m²",
         project_year: "2020",

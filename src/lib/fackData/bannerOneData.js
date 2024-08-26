@@ -7,7 +7,7 @@ export const bannerOneData = [
         id: 1,
         title: "Elegant Design Showcase",
         heading_one: "Elegance",
-        heading_two: "Redefined",
+        heading_two: "Redefined!",
         banner_img: hero_1,
     },
     {

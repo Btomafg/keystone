@@ -39,7 +39,7 @@ const Home = () => {
           <div className='container-fluid '>
             <SectionTitle
               sectionName={"Team"}
-              sectionTitle={"Architects of Architronix"}
+              sectionTitle={"Architects of Keystone Woodworx"}
               sectionDesc={"Where Imagination Takes Flight, and Excellence Blossoms"}
               button_text={"All Architects"}
               link={"/team"}
