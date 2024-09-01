@@ -8,7 +8,7 @@ const HeaderOne = () => {
 
   return (
     <>
-      <header className='absolute z-40 top-0 left-0 w-full bg-gray overflow-x-clip header-one'>
+      <header style={{zIndex: 1000}} className='absolute top-0 left-0 w-full bg-gray overflow-x-clip header-one'>
         <div className='hidden xl:block'>
           <TopNavbar />
         </div>
