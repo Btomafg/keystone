@@ -9,10 +9,10 @@ export function useScreenWidth() {
         setScreenWidth(window.innerWidth);
       }
   
-      // Add an event listener for the resize event.
+  
       window.addEventListener('resize', handleResize);
   
-      // Cleanup the event listener when the component unmounts.
+   
       return () => {
         window.removeEventListener('resize', handleResize);
       };
