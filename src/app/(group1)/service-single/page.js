@@ -17,7 +17,7 @@ const ServiceSingle = () => {
     <>
       <section>
         <div className='container-fluid '>
-          <SectionTitle sectionName={"Services"} sectionTitle={"Color Consultation"} sectionDesc={"Exploring Excellence in Every Meticulous Design Detail"} />
+          <SectionTitle sectionName={"Services"} sectionTitle={"Custom Cabinetry"} sectionDesc={"New construction cabinetry furnishes a new home with cabinetry for every space of the home"} />
         </div>
         <div className='container lg:pt-30 2sm:pt-20 pt-14'>
           <div className='grid lg:grid-cols-[58%_auto] xl:gap-[120px] gap-15 items-start'>

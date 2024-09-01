@@ -72,12 +72,12 @@ const BannerOne = ({ data, text_muted, bg_muted }) => {
                   <div className='container '>
                     <div className='xl:pt-[200px] pt-[150px] pb-[250px]'>
                       <div>
-                        <h1 className='xl:text-[200px] lg:text-[170px] 2sm:text-[130px] sm:text-[100px] xm:text-7xl text-5xl leading-[100%] font-extrabold relative'>
+                        <h1 className='2sm:text-[105px] sm:text-[100px] xm:text-7xl text-xl leading-[100%] font-bold relative'>
                           <span className={cn(`text-primary-foreground animate-fill animate-bg after:${bg_muted} ${text_muted}`)}> {heading_one} </span>
-                          <svg strokeWidth="2" className="stroke-primary fill-transparent stroke-dasharray-1000 stroke-dashoffset-1000 animate-text-line-animation w-full 2sm:h-[200px] h-25 text-animation"><text x="0%" dominantBaseline="middle" y="70%">{heading_two}</text></svg>
+                          <svg strokeWidth="2" className="stroke-primary fill-transparent stroke-dasharray-1000 stroke-dashoffset-1000 animate-text-line-animation w-full 2sm:h-[200px] h-25 text-animation"><text x="0%" dominantBaseline="middle" y="50%">{heading_two}</text></svg>
                         </h1>
                         <Link href={"/project-archive"} className='mt-10 inline-block'>
-                          <ButtonFill className={cn(`after:z-[1] sm:px-10 px-4 after:left-0 after:${bg_muted} `)}> <span className='relative z-10'>Explore Our Portfolio</span> </ButtonFill>
+                          <ButtonFill className={cn(`after:z-[1] rounded-md sm:px-10 px-4 after:left-0 after:${bg_muted} `)}> <span className='relative z-10'>Explore Our Portfolio</span> </ButtonFill>
                         </Link>
                       </div>
                     </div>
