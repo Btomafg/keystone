@@ -38,13 +38,14 @@ const MobileNavbar = () => {
 
 
     return (
-        <div style={{zIndex:1000}}  className='mobile-navbar'>
+        <div style={{zIndex:1000}} className='mobile-navbar'>
             <div className='bg-[#f9f9f9] relative overflow-x-clip px-2.5'>
                 <div className='container-fluid '>
                     <div className='flex items-center justify-between py-4'>
                         <Link href={"/"} className='text-primary-foreground'>
                             <Image className='p-3' src={Logo} height={"31"} width={"219"} />
                         </Link>
+                        <div >
                             <nav style={{zIndex:1000}} className={`max-h-screen min-h-screen overflow-y-auto bg-[#F9FFFC] absolute transition-all duration-500 ${isMenuActive ? "right-0" : "hidden md:block md:-right-[150%]"} top-0 py-4 px-4`}>
                                 <div className='flex justify-between items-center'>
                                     <Link href={"/"} className='text-primary-foreground'>
