@@ -75,7 +75,7 @@ const BannerOne = ({  text_muted, bg_muted }) => {
   };
 
   return (
-    <section className='relative banner-one'>
+    <section className='relative banner-one z-0'>
       <Swiper
         spaceBetween={0}
         slidesPerView={1}
@@ -95,7 +95,7 @@ const BannerOne = ({  text_muted, bg_muted }) => {
         {
           bannerOneData.map(({ id, banner_img, heading_one, heading_two }) => {
             return (
-              <SwiperSlide key={id} className='relative ' >
+              <SwiperSlide key={id} className='relative z-0' >
                 <div className='bg-cover bg-no-repeat' style={{ backgroundImage: `url(${banner_img.src})` }}>
                   <div className='container '>
                     <div className='xl:pt-[200px] pt-[150px] pb-[250px]'>
@@ -115,7 +115,7 @@ const BannerOne = ({  text_muted, bg_muted }) => {
             )
           })
         }
-        <div className='flex justify-between absolute right-0 bottom-0 z-40'>
+        <div className='flex justify-between absolute right-0 bottom-0 z-10'>
           <div className='hero-pagination bg-[rgba(210, 224, 217, 0.27)] backdrop-blur-md xl:px-9 xl:py-[61px] sm:px-5 px-2 py-10 max-w-[800px] flex xl:gap-8 gap-5'></div>
           {/* ------- Next and prev arrow */}
           <div className='hidden sm:flex flex-col sm:w-[90px] min-w-17.5 xl:h-[181px] h-[136px] '>
