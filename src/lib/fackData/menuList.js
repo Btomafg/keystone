@@ -26,7 +26,7 @@ export const menuList = [
                     {
                         id: 1,
                         name: "Custom Cabinetry",
-                        path: "/service-single",
+                        path: "/cabinetry",
                         desc: "New construction cabinetry furnishes a new home with cabinetry for every space of the home."
                     },
               
@@ -38,7 +38,7 @@ export const menuList = [
                     {
                         id: 2,
                         name: "Unique Remodel Designs",
-                        path: "/service-single",
+                        path: "/remodels",
                         desc: "Removal of existing cabinetry (if needed), Designed cabinetry for existing space, Installation of cabinets and counter. "
                      },
                  
@@ -50,7 +50,7 @@ export const menuList = [
                     {
                         id: 3,
                         name: "Closet Design",
-                        path: "/service-single",
+                        path: "/closets",
                         desc: "Fast closet design, manufacturing, and installation service to organize his and hers space. "
                     },
                     
@@ -78,28 +78,16 @@ export const menuList = [
         isDropdown: [
             {
                 id: 1,
+                name: "Services",
+                path: "/services"
+            },
+            {
+                id: 2,
                 name: "About Us",
                 path: "/about-us"
             },
             {
-                id: 2,
-                name: "Services",
-                path: "/services"
-            },
-            // {
-            //     id: 3,
-            //     name: "Service Single",
-            //     path: "/service-single"
-            // },
-            
-            {
                 id: 3,
-                name: "Career",
-                path: "/career"
-            },
-           
-            {
-                id: 4,
                 name: "Team",
                 path: "/team"
             },
