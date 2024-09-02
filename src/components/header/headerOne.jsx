@@ -7,7 +7,7 @@ import MobileNavbar from './mobileNavbar';
 const HeaderOne = () => {
 
   return (
-    <>
+   
       <header style={{zIndex: 1000}} className='absolute top-0 left-0 w-full bg-gray overflow-x-clip header-one'>
         <div className='hidden xl:block'>
           <TopNavbar />
@@ -21,7 +21,7 @@ const HeaderOne = () => {
           <MobileNavbar />
         </div>
       </header >
-    </>
+   
   )
 }
 

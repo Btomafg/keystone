@@ -25,7 +25,7 @@ const Home = () => {
   return (
     <>
       <HeaderOne />
-      <main>
+      <main style={{zIndex: 0}}>
         <BannerOne data={bannerOneData} />
         <Counter />
         <ServicesSlider />
