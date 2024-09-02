@@ -26,17 +26,14 @@ const ServiceSingleSidebar = () => {
                     }
                 </ul>
             </div>
-            <div className='mt-17.5'>
-                <Title title_text={"Search"} />
-                <InputFiled placeholderc={"Type & Hit Enter"} type={'text'} />
-            </div>
+           
             <div className='mt-17.5'>
                 <form action="">
                     <Title title_text={"Schedule a Call"} />
                     <InputFiled placeholderc={"Your Name"} type={'text'} className="mb-[15px]" />
                     <InputFiled placeholderc={"Phone Number"} type={'number'} className="mb-[15px]" />
                     <InputFiled placeholderc={"Phone Number"} type={'date'} className="mb-[15px]" />
-                    <TextAreaFiled placeholder={"Your massage"} className={"min-h-[187px]"} />
+                    <TextAreaFiled placeholder={"Your message"} className={"min-h-[187px]"} />
                     <ButtonFill type="submit" className={"sm:px-7.5 sm:py-2.5"}>Send message</ButtonFill>
                 </form>
             </div>

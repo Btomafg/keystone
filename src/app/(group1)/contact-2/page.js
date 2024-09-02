@@ -45,7 +45,7 @@ const ContactTwo = () => {
                             <InputFiled placeholderc={"Phone Number"} type={"number"} className={"mb-[13px]"} />
                             <InputFiled placeholderc={"Your Email"} type={"email"} className={"mb-[13px]"} />
                         </div>
-                        <TextAreaFiled placeholder={'Type your massage'} className={"min-h-[223px] mb-[13px]"} />
+                        <TextAreaFiled placeholder={'Type your message'} className={"min-h-[223px] mb-[13px]"} />
                         <div className='flex justify-end'>
                             <ButtonOutline>Send message <RightArrow height={"22"} width={"35"} /></ButtonOutline>
                         </div>
