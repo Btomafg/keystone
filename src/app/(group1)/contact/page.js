@@ -21,37 +21,17 @@ const LeafletMap = dynamic(
 )
 
 export const metadata = {
-    title: "Keystone Woodworx -- Contact",
-    description: "Keystone Woodworx is a next js and tailwind css website",
+    title: "Keystone Woodworx -- Contact Us",
+    description: "Keystone Woodworx - Custom Cabinetry and Woodworking. Contact us for your next project.",
 };
 
 const Contact = () => {
 
     return (
         <>
-            {/* ------ address and map start */}
-            <section>
-                <div className='container-fluid '>
-                    <SectionTitle sectionName={"Contact"} sectionTitle={"Let's Design Together"} sectionDesc={"Reach out to bring your dream spaces to life."} />
-                </div>
-                <div className='container lg:pt-30 2sm:pt-20 pt-14'>
-                    <div className='grid lg:grid-cols-[32%_auto]'>
-                        <div className='grid lg:grid-cols-1 2sm:grid-cols-2 grid-cols-1 gap-y-6'>
-                            {
-                                addressList.map(({ id, address, company, country, email, phone, lat_lng }) => <AddressCard key={id} id={id} address={address} company={company} country={country} email={email} phone={phone} lat_lng={lat_lng} />)
-                            }
-                        </div>
-                        <div className='w-full max-h-[392px] lg:sticky lg:top-20 z-[1] mt-16 lg:mt-0'>
-                            <LeafletMap />
-                        </div>
-                    </div>
-                </div>
-            </section>
-            {/* ------ address and map end */}
-
-
+          
             {/* ------ contact form start */}
-            <section>
+            <section className='mb-8'>
                 <div className='container-fluid '>
                     <SectionTitle sectionName={"Inquiry"} sectionTitle={"Have a Project in your mind?"} sectionDesc={"Write us directly"} />
                 </div>
@@ -66,14 +46,14 @@ const Contact = () => {
                             </div>
                             <TextAreaFiled placeholder={'Type your massage'} className={"min-h-[223px] mb-[13px]"} />
                             <div className='flex justify-end'>
-                                <ButtonOutline>Send massage <RightArrow height={"22"} width={"35"} /></ButtonOutline>
+                                <ButtonOutline>Send Message <RightArrow height={"22"} width={"35"} /></ButtonOutline>
                             </div>
                         </form>
                     </div>
                 </div>
             </section>
             {/* ------ contact form end */}
-            <Feedback />
+           
         </>
     )
 }

@@ -11,20 +11,20 @@ const SocialMediaList = () => {
             <li>
         
 
-                <Link href="" className='font-semibold text-lg relative after:contents-[""] after:absolute after:h-[20px] after:w-[1px] after:bg-black after:rotate-[22deg] after:top-1/2 after:-translate-y-1/2 after:right-[-15px] hover-underline'>    <FaFacebookSquare className='text-blue-800' /></Link>
+                <Link href="https://www.facebook.com/KeystoneWoodworx/" className='font-semibold text-lg relative after:contents-[""] after:absolute after:h-[20px] after:w-[1px] after:bg-black after:rotate-[22deg] after:top-1/2 after:-translate-y-1/2 after:right-[-15px] hover-underline'>    <FaFacebookSquare className='text-blue-800' /></Link>
             </li>
             <li>
        
 
-                <Link href="" className='font-semibold text-lg relative after:contents-[""] after:absolute after:h-[20px] after:w-[1px] after:bg-black after:rotate-[22deg] after:top-1/2 after:-translate-y-1/2 after:right-[-15px] hover-underline'>     <CiInstagram className='text-pink-700'/></Link>
+                <Link href="https://www.instagram.com/keystone_woodworx/?hl=en" className='font-semibold text-lg relative after:contents-[""] after:absolute after:h-[20px] after:w-[1px] after:bg-black after:rotate-[22deg] after:top-1/2 after:-translate-y-1/2 after:right-[-15px] hover-underline'>     <CiInstagram className='text-pink-700'/></Link>
             </li>
             <li>
        
-                <Link href="" className='font-semibold text-lg relative after:contents-[""] after:absolute after:h-[20px] after:w-[1px] after:bg-black after:rotate-[22deg] after:top-1/2 after:-translate-y-1/2 after:right-[-15px] hover-underline'>     <FaTiktok className='text-black' /></Link>
+                <Link href="https://www.tiktok.com/@keystonewoodworx" className='font-semibold text-lg relative after:contents-[""] after:absolute after:h-[20px] after:w-[1px] after:bg-black after:rotate-[22deg] after:top-1/2 after:-translate-y-1/2 after:right-[-15px] hover-underline'>     <FaTiktok className='text-black' /></Link>
             </li>
             <li>
           
-                <Link href="" className='font-semibold text-lg hover-underline'>  <FaYoutube className='text-red-600'/></Link>
+                <Link href="https://www.youtube.com/@keystonewoodworx4544" className='font-semibold text-lg hover-underline'>  <FaYoutube className='text-red-600'/></Link>
             </li>
         </ul>
     )

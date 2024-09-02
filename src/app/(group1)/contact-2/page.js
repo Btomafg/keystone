@@ -47,7 +47,7 @@ const ContactTwo = () => {
                         </div>
                         <TextAreaFiled placeholder={'Type your massage'} className={"min-h-[223px] mb-[13px]"} />
                         <div className='flex justify-end'>
-                            <ButtonOutline>Send massage <RightArrow height={"22"} width={"35"} /></ButtonOutline>
+                            <ButtonOutline>Send message <RightArrow height={"22"} width={"35"} /></ButtonOutline>
                         </div>
                     </form>
                 </div>

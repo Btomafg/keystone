@@ -2,29 +2,12 @@ export const addressList = [
     {
         id:"01",
         country:"Address USA:",
-        company:"Keystone Woodworx Inc.",
-        address:"208 English Road, High Point, NC 27262, USA",
-        phone:"336 885 6670  ",
-        email:"hello@Keystone Woodworx.com",
-        lat_lng:[35.9588148, -80.0130777]
+        company:"Keystone Woodworx LLC.",
+        address:"1155 Plank Road, Carrolltown, PA 15722, USA",
+        phone:"804 312 7972  ",
+        email:"contact@keystonewoodworx.com",
+        lat_lng:[40.567046014417826, -78.71978097017933]
     },
-    {
-        id:"02",
-        country:"Address Spain:",
-        company:"Keystone Woodworx",
-        address:"Avda. Valencia, 3, 46891, Palomar (Valencia), SPAIN ",
-        phone:"336 885 6670  ",
-        email:"hello@Keystone Woodworx.com",
-        lat_lng:[38.8545732, -0.5016711]
-    },
-    {
-        id:"03",
-        country:"Address London:",
-        company:"Keystone Woodworx LTD. ",
-        address:"Avda. Valencia, 3, 46891, London, England",
-        phone:"336 885 6670  ",
-        email:"hello@Keystone Woodworx.com",
-        lat_lng:[51.5132388, -0.0080891]
-    },
+    
 
 ]

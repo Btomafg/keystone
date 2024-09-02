@@ -1,5 +1,5 @@
 import React from 'react'
-import section_bg from "@/assets/images/section-bg.jpg"
+import section_bg from "@/assets/images/custom-closet2.png"
 import SectionTitle from '@/components/ui/sectionTitle'
 import { servicesData } from '@/lib/fackData/servicesData'
 import ServiceCard from '@/components/ui/cards/serviceCard'
@@ -19,7 +19,7 @@ const Services = () => {
     <>
       <section className='bg-cover bg-no-repeat bg-center relative z-[1] after:contents-[""] after:z-[-1] after:absolute after:left-0 after:top-0 after:w-full after:h-full after:bg-[#d2e0d9a6] pt-20 pb-30' style={{ backgroundImage: `url(${section_bg.src})` }}>
         <div className='container-fluid '>
-          <SectionTitle sectionName={"Services"} sectionTitle={"Explore Our Design Offerings"} sectionDesc={"Exploring Excellence in Every Meticulous Design Detail"} />
+          <SectionTitle sectionName={"Services"} sectionTitle={"Explore What We Do"} sectionDesc={"Everything to transform your space in a way that works for you."} />
         </div>
       </section>
       {/* -------- service list */}
@@ -30,9 +30,7 @@ const Services = () => {
           }
         </div>
       </div>
-      <AboutThree />
-      <Counter />
-      <Expertise />
+ 
       <Faq />
       <Feedback />
     </>
