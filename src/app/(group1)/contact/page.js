@@ -1,4 +1,6 @@
 
+
+import React from 'react'
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
 
@@ -11,6 +13,8 @@ import RightArrow from '@/assets/icons/rightArrow'
 import from_img from "@/assets/images/contact-image.jpg"
 import Feedback from '@/components/section/feedback'
 import ButtonOutline from '@/components/ui/buttons/buttonOutline'
+import ButtonFill from '@/components/ui/buttons/buttonFill'
+import { cn } from '@/lib/utils'
 
 const LeafletMap = dynamic(
     () => import('@/components/ui/leafletMap'),
@@ -33,7 +37,11 @@ const Contact = () => {
             {/* ------ contact form start */}
             <section className='mb-8'>
                 <div className='container-fluid '>
-                    <SectionTitle sectionName={"Inquiry"} sectionTitle={"Have a Project in your mind?"} sectionDesc={"Write us directly"} />
+                    <SectionTitle sectionName={"Inquiry"} sectionTitle={"Have a Project in your mind?"} sectionDesc={<div className='flex flex-col w-full  px-12'>
+                        <h2 className=' text-5xl font-extrabold leading-110 text-primary-foreground mb-5 my-auto' >Write us directly or:</h2>
+                        <a href='https://link.buoycrm.com/widget/booking/iusHrn919zNeEGjFvK4k' target='blank_'><ButtonFill className='ms-5 my-auto'>Schedule An Initial Consultation</ButtonFill></a>
+                        </div>} />
+                    
                 </div>
                 <div className='container lg:pt-30 2sm:pt-20 pt-14'>
                     <div className='grid lg:grid-cols-2 gap-5'>
