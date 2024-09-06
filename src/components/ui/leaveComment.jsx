@@ -1,6 +1,6 @@
 import React from 'react'
 import TextAreaFiled from './textAreaFiled'
-import InputFiled from './inputFiled'
+import InputField from './inputField'
 import ButtonFill from './buttons/buttonFill'
 import RightArrow from '@/assets/icons/rightArrow'
 
@@ -12,8 +12,8 @@ const LeaveComment = () => {
                 <form>
                     <TextAreaFiled placeholder={"Write your comment"} className={"min-h-[225px] mb-7.5"} />
                     <div className='flex sm:flex-row flex-col gap-4'>
-                        <InputFiled placeholderc={"Your name*"} type={"text"} />
-                        <InputFiled placeholderc={"Your Email*"} type={"email"} />
+                        <InputField placeholderc={"Your name*"} type={"text"} />
+                        <InputField placeholderc={"Your Email*"} type={"email"} />
                     </div>
                     <div className='mt-7.5 flex justify-end'>
                         <ButtonFill>Submit <RightArrow width={"35"} height={"22"}/> </ButtonFill>

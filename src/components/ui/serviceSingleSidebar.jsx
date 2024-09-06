@@ -2,7 +2,7 @@ import React from 'react'
 import RightArrow from '@/assets/icons/rightArrow'
 import Link from 'next/link'
 import Title from '@/components/ui/title'
-import InputFiled from '@/components/ui/inputFiled'
+import InputField from '@/components/ui/inputField'
 import TextAreaFiled from '@/components/ui/textAreaFiled'
 import ButtonFill from './buttons/buttonFill'
 import { servicesData } from '@/lib/fackData/servicesData'
@@ -30,9 +30,9 @@ const ServiceSingleSidebar = () => {
             <div className='mt-17.5'>
                 <form action="">
                     <Title title_text={"Schedule a Call"} />
-                    <InputFiled placeholderc={"Your Name"} type={'text'} className="mb-[15px]" />
-                    <InputFiled placeholderc={"Phone Number"} type={'number'} className="mb-[15px]" />
-                    <InputFiled placeholderc={"Phone Number"} type={'date'} className="mb-[15px]" />
+                    <InputField placeholderc={"Your Name"} type={'text'} className="mb-[15px]" />
+                    <InputField placeholderc={"Phone Number"} type={'number'} className="mb-[15px]" />
+                    <InputField placeholderc={"Phone Number"} type={'date'} className="mb-[15px]" />
                     <TextAreaFiled placeholder={"Your message"} className={"min-h-[187px]"} />
                     <ButtonFill type="submit" className={"sm:px-7.5 sm:py-2.5"}>Send message</ButtonFill>
                 </form>

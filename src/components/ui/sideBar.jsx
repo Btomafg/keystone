@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import RightArrow from '@/assets/icons/rightArrow'
-import InputFiled from './inputFiled'
+import InputField from './inputField'
 import ButtonOutline from './buttons/buttonOutline'
 import { blogData } from '@/lib/fackData/blogData'
 import Image from 'next/image'
@@ -113,7 +113,7 @@ const SideBar = ({ order }) => {
         <div className={`lg:sticky lg:top-16 lg:pb-16 ${order}`}>
             <div>
                 <h1 className='[font-size:_clamp(33px,5vw,48px)] font-semibold leading-[100%] text-primary-foreground mb-[30px]'>Serach</h1>
-                <InputFiled placeholderc={"Type & Hit Enter"} type={'text'} />
+                <InputField placeholderc={"Type & Hit Enter"} type={'text'} />
             </div>
             {/* --------- category */}
             <div className='pt-17.5'>
