@@ -11,7 +11,7 @@ import Feedback from '@/components/section/feedback'
 
 export const metadata = {
   title: "Keystone Woodworx -- Services",
-  description: "Keystone Woodworx is a next js and tailwind css website",
+  description: "Keystone Woodworx offers a variety of services to help you transform your space. From custom cabinetry to closet design, we have you covered.",
 };
 
 const Services = () => {

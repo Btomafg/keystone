@@ -9,7 +9,7 @@ import ButtonFill from '@/components/ui/buttons/buttonFill'
 import RightArrow from '@/assets/icons/rightArrow';
 import { data } from 'autoprefixer';
 import hero_1 from "@/assets/images/custom-kitchen-1.png"
-import hero_2 from "@/assets/images/projects/designconcept.jpg"
+import hero_2 from "@/assets/images/projects/designconcept.png"
 import hero_2_sm from "@/assets/images/bt-concept-1.png"
 import hero_3 from "@/assets/images/custom-closet.png"
 import hero_3_sm from "@/assets/images/custom-closet-vert.png"

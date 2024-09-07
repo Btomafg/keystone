@@ -4,17 +4,17 @@ import SlotCounter from "react-slot-counter"
 const counterList = [
     {
         id: 1,
-        count: "12",
+        count: "14",
         title: "Years of Experience"
     },
     {
         id: 2,
-        count: '182+',
+        count: '2200+',
         title: "Projects Completed"
     },
     {
         id: 3,
-        count: '4,000',
+        count: '5200',
         title: "Square Feet Warehouse"
     },
     {
@@ -33,7 +33,7 @@ const Counter = ({text_muted, bg_muted}) => {
                         counterList.map(({ id, count, title }) => {
                             return (
                                 <li key={id} className='flex flex-col'>
-                                    <span className={cn(`[font-size:_clamp(48px,9vw,90px)] font-extrabold text-primary-foreground leading-120 overflow-y-hidden overflow-x-auto ${text_muted}`)}>
+                                    <span className={cn(`[font-size:_clamp(46px,9vw,80px)] font-extrabold text-primary-foreground leading-120 overflow-y-hidden overflow-x-auto ${text_muted}`)}>
                                         <SlotCounter startValue={0} value={count} debounceDelay={5000} duration={2} animateOnVisible={{ triggerOnce: true, rootMargin: '0px 0px -100px 0px' }} />
                                     </span>
                                     <span className={cn(`w-[150px] h-[1px] bg-primary 2sm:mt-3.5 2sm:mb-4 mt-1 mb-2 ${bg_muted}`)}></span>
