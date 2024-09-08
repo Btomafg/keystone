@@ -36,7 +36,7 @@ const Counter = ({ text_muted, bg_muted }) => {
                     `[font-size:_clamp(46px,9vw,80px)] font-extrabold text-primary-foreground leading-120 overflow-y-hidden overflow-x-auto ${text_muted}`,
                   )}
                 >
-                  <SlotCounter startValue={0} value={count} debounceDelay={5000} duration={2} animateOnVisible />
+                  <SlotCounter startValue={0} value={count} debounceDelay={5000} duration={2} />
                 </span>
                 <span className={cn(`w-[150px] h-[1px] bg-primary 2sm:mt-3.5 2sm:mb-4 mt-1 mb-2 ${bg_muted}`)}></span>
                 <span className={cn(`2sm:text-2xl text-xl font-bold text-primary-foreground ${text_muted}`)}>{title}</span>
