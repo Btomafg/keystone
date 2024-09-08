@@ -21,7 +21,7 @@ const MobileNavbar = () => {
   const [offcanvaseActive, setOffcanvaseActive] = useState(false);
   const [cartActive, setCartActive] = useState(false);
 
-  useOverflowHidden(isMenuActive);
+  //useOverflowHidden(isMenuActive);
 
   const handleDropDown = (e, id, isDropdown, isMegaMenu) => {
     // e.preventDefault()
