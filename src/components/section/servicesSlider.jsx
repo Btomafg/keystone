@@ -30,10 +30,13 @@ const ServicesSlider = ({ text_muted, bg_muted }) => {
           text_muted={text_muted}
           bg_muted={bg_muted}
         />
-        <ReactCompareSlider
-          itemOne={<Image src={designconcept} alt="Image one" />}
-          itemTwo={<Image src={designconceptreal} alt="Image two" />}
-        />
+        <div className="max-w-[1000px] mx-auto">
+          <ReactCompareSlider
+            itemOne={<Image src={designconcept} alt="Image one" />}
+            itemTwo={<Image src={designconceptreal} alt="Image two" />}
+          />
+        </div>
+
         <div className="lg:pt-30 2sm:pt-20 pt-14">
           <Swiper
             spaceBetween={30}
