@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import service_img from '@/assets/images/projects/bt-kitchen-1.jpg';
+import service_img from '@/assets/images/projects/albright-concept1.png';
 import SectionTitle from '@/components/ui/sectionTitle';
 import Title from '@/components/ui/title';
 import ServiceSingleSidebar from '@/components/ui/serviceSingleSidebar';
