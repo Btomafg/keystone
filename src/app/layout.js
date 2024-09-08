@@ -1,18 +1,18 @@
-import { Plus_Jakarta_Sans } from "next/font/google";
-import "./globals.css";
-import favicon from "@/app/favicon.ico";
-import LayoutChildren from "@/lib/layoutChildren";
-import ProgressCircle from "@/components/ui/scrollCircle";
+import { Plus_Jakarta_Sans } from 'next/font/google';
+import './globals.css';
+import favicon from '@/app/favicon.ico';
+import LayoutChildren from '@/lib/layoutChildren';
+import ProgressCircle from '@/components/ui/scrollCircle';
 
 const plus_jakarta_sans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
   variable: '--plus-jakarta-sans',
-})
+});
 
 export const metadata = {
-  title: "Keystone Woodworx | Custom Woodworking",
-  description: "Keystone Woodworx is a custom woodworking company that specializes in custom furniture, cabinetry, and more.",
+  title: 'Keystone Woodworx | Custom Cabinetry & Furniture | Located in Carrolltown, PA',
+  description: 'Keystone Woodworx is a custom woodworking company that specializes in custom cabinetry design and manufacturing.',
   icons: {
     icon: `${favicon.src}`,
   },
@@ -33,9 +33,7 @@ export default function RootLayout({ children }) {
           </div>
           {/* ------ body line end */}
           <ProgressCircle />
-          <LayoutChildren>
-            {children}
-          </LayoutChildren>
+          <LayoutChildren>{children}</LayoutChildren>
         </div>
       </body>
     </html>

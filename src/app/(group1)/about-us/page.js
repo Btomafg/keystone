@@ -7,8 +7,8 @@ import { teamData } from '@/lib/fackData/teamData';
 import { cardSlideAnimation } from '@/lib/utils';
 
 export const metadata = {
-  title: 'Keystone Woodworx -- About Us',
-  description: 'Keystone Woodworx is a next js and tailwind css website',
+  title: 'Keystone Woodworx | About Us | Located in Carrolltown, PA',
+  description: 'Keystone Woodworx is a custom woodworking company that specializes in custom cabinetry design and manufacturing.',
 };
 const AboutUs = () => {
   return (

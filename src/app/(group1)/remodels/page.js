@@ -9,7 +9,7 @@ import Feedback from '@/components/section/feedback';
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
 
 export const metadata = {
-  title: 'Keystone Woodworx -- Remodel Services',
+  title: 'Keystone Woodworx | Remodel & Design Services | Located in Carrolltown, PA',
   description: 'Keystone Woodworx offers expert custom remodel designs to enhance your home with personalized cabinetry and more.',
 };
 
