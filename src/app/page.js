@@ -24,8 +24,8 @@ import Footer from '@/components/footer';
 const Home = () => {
   return (
     <>
-      <HeaderOne />
       <main style={{ zIndex: 0 }}>
+        <HeaderOne />
         <BannerOne data={bannerOneData} />
         <Counter />
         <ServicesSlider />
