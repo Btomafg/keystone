@@ -19,7 +19,7 @@ export const menuList = [
   {
     id: 3,
     name: 'Services',
-    path: '/services',
+    path: '#',
     isDropdown: false,
     isMegaMenu: [
       {
