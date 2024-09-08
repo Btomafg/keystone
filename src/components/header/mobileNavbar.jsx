@@ -45,7 +45,7 @@ const MobileNavbar = () => {
             <div>
               <nav
                 style={{ zIndex: 1000 }}
-                className={`max-h-screen min-h-screen overflow-y-auto bg-[#F9FFFC] absolute transition-all duration-500 ${
+                className={`max-h-screen min-h-screen bg-[#F9FFFC] absolute transition-all duration-500 ${
                   isMenuActive ? 'right-0' : 'hidden md:block md:-right-[150%]'
                 } top-0 py-4 px-4`}
               >
