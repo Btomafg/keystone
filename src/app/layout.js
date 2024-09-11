@@ -3,6 +3,7 @@ import './globals.css';
 import favicon from '@/app/favicon.ico';
 import LayoutChildren from '@/lib/layoutChildren';
 import ProgressCircle from '@/components/ui/scrollCircle';
+import Script from 'next/script';
 
 const plus_jakarta_sans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -21,6 +22,22 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Google Analytics Script */}
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-5BSV8TYE06" strategy="afterInteractive" />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-5BSV8TYE06');
+            `,
+          }}
+        />
+      </head>
       <body className={`${plus_jakarta_sans.variable}`} suppressHydrationWarning={true}>
         <div id="page-wapper" className="!relative ">
           {/* ------ body line start */}
