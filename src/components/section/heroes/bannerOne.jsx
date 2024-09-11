@@ -109,12 +109,6 @@ const BannerOne = ({ text_muted, bg_muted }) => {
                           </text>
                         </svg>
                       </h1>
-                      <Link href={'/project-archive'} className="mt-10 inline-block">
-                        <ButtonFill className={cn(`after:z-[1] rounded-md sm:px-10 px-4 after:left-0 after:${bg_muted} `)}>
-                          {' '}
-                          <span className="relative z-10">Explore Our Portfolio</span>{' '}
-                        </ButtonFill>
-                      </Link>
                     </div>
                   </div>
                 </div>
