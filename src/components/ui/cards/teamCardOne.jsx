@@ -8,13 +8,13 @@ import RightArrow from '@/assets/icons/rightArrow';
 const TeamCardOne = ({ img, name, position, text_muted, cardVariants, prantCalss }) => {
   return (
     <motion.div
-      className={cn(`mb-16 ${prantCalss}`)}
+      className={cn(`mb-16 mt-8 ${prantCalss}`)}
       initial="offscreen"
       whileInView="onscreen"
       variants={cardVariants}
       viewport={{ once: true, amount: 0.2 }}
     >
-      <div className="relative group hover-underline">
+      <div className="relative group hover-underline mt-8">
         <div className="relative">
           <Image src={img} loading="lazy" width={'auto'} height={'auto'} alt={name} className="w-full h-full" />
         </div>

@@ -1,5 +1,5 @@
-import Mark from '@/assets/images/team/mark.webp';
-import Cole from '@/assets/images/team/cole.webp';
+import Mark from '@/assets/images/team/mark1.jpg';
+import Cole from '@/assets/images/team/cole1.jpg';
 import Justin from '@/assets/images/team/justin.webp';
 import John from '@/assets/images/team/john.webp';
 
