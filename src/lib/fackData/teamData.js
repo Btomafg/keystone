@@ -13,7 +13,7 @@ export const teamData = [
     id: 1,
     img: Mark,
     name: 'Mark Lantzy',
-    position: 'Founder | Sales & Operations Coordinator',
+    position: 'Co-Owner | Sales & Operations Coordinator',
     social_link: [
       {
         id: 1,
