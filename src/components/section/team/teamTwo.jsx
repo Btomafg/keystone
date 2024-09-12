@@ -71,11 +71,7 @@ const TeamTwo = () => {
         />
       </div>
       <div className="container lg:pt-30 2sm:pt-20 pt-14">
-        <div className="grid 2sm:grid-cols-2  gap-10">
-          {temaList.slice(0, 4).map(({ id, desc, img, name, position, link }) => (
-            <TeamCardTwo key={id} desc={desc} img={img} name={name} position={position} link={link} />
-          ))}
-        </div>
+        <div className="grid 2sm:grid-cols-2  gap-10"></div>
       </div>
       {/* ----  Other Credits */}
       <div className="container pt-30">
