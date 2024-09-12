@@ -80,11 +80,7 @@ const TeamTwo = () => {
             Other <br /> Credits
           </h1>
         </div>
-        <div className="grid lg:grid-cols-3 grid-cols-2 gap-[23px] mt-20">
-          {temaList.slice(4, 6).map(({ id, desc, img, name, position, link }) => (
-            <TeamCardThree key={id} desc={desc} img={img} name={name} position={position} link={link} />
-          ))}
-        </div>
+        <div className="grid lg:grid-cols-3 grid-cols-2 gap-[23px] mt-20"></div>
       </div>
     </section>
   );
