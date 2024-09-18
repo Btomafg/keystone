@@ -2,6 +2,7 @@ import Mark from '@/assets/images/team/mark1.jpg';
 import Cole from '@/assets/images/team/cole1.jpg';
 import Justin from '@/assets/images/team/justin.webp';
 import John from '@/assets/images/team/john.webp';
+import Jenna from '@/assets/images/team/jenna.jpeg';
 
 import portfolio_1 from '@/assets/images/portfolio-1.jpg';
 import portfolio_2 from '@/assets/images/portfolio-2.jpg';
@@ -28,30 +29,6 @@ export const teamData = [
         project_name: 'MFA Lakeside Brielle',
         link: '',
       },
-      {
-        id: 2,
-        img: portfolio_2,
-        project_name: 'Bovio House',
-        link: '',
-      },
-      {
-        id: 3,
-        img: portfolio_3,
-        project_name: 'La Fuente Condo',
-        link: '',
-      },
-      {
-        id: 4,
-        img: portfolio_4,
-        project_name: 'Pixel House',
-        link: '',
-      },
-      {
-        id: 5,
-        img: portfolio_5,
-        project_name: 'La Fuente Condo',
-        link: '',
-      },
     ],
   },
   {
@@ -73,35 +50,11 @@ export const teamData = [
         project_name: 'MFA Lakeside Brielle',
         link: '',
       },
-      {
-        id: 2,
-        img: portfolio_2,
-        project_name: 'Bovio House',
-        link: '',
-      },
-      {
-        id: 3,
-        img: portfolio_3,
-        project_name: 'La Fuente Condo',
-        link: '',
-      },
-      {
-        id: 4,
-        img: portfolio_4,
-        project_name: 'Pixel House',
-        link: '',
-      },
-      {
-        id: 5,
-        img: portfolio_5,
-        project_name: 'La Fuente Condo',
-        link: '',
-      },
     ],
   },
   {
     id: 3,
-    img: Justin,
+    img: John,
     name: 'Justin Biter',
     position: 'Pre-Production & Installation',
     social_link: [
@@ -118,37 +71,13 @@ export const teamData = [
         project_name: 'MFA Lakeside Brielle',
         link: '',
       },
-      {
-        id: 2,
-        img: portfolio_2,
-        project_name: 'Bovio House',
-        link: '',
-      },
-      {
-        id: 3,
-        img: portfolio_3,
-        project_name: 'La Fuente Condo',
-        link: '',
-      },
-      {
-        id: 4,
-        img: portfolio_4,
-        project_name: 'Pixel House',
-        link: '',
-      },
-      {
-        id: 5,
-        img: portfolio_5,
-        project_name: 'La Fuente Condo',
-        link: '',
-      },
     ],
   },
   {
-    id: 3,
-    img: John,
-    name: 'John Yahner',
-    position: 'Manufacturing & Installation',
+    id: 5,
+    img: Jenna,
+    name: 'Jenna Yeckley',
+    position: 'Designer',
     social_link: [
       {
         id: 1,
@@ -161,30 +90,6 @@ export const teamData = [
         id: 1,
         img: portfolio_1,
         project_name: 'MFA Lakeside Brielle',
-        link: '',
-      },
-      {
-        id: 2,
-        img: portfolio_2,
-        project_name: 'Bovio House',
-        link: '',
-      },
-      {
-        id: 3,
-        img: portfolio_3,
-        project_name: 'La Fuente Condo',
-        link: '',
-      },
-      {
-        id: 4,
-        img: portfolio_4,
-        project_name: 'Pixel House',
-        link: '',
-      },
-      {
-        id: 5,
-        img: portfolio_5,
-        project_name: 'La Fuente Condo',
         link: '',
       },
     ],
