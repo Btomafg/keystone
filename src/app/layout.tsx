@@ -1,9 +1,10 @@
-import { Plus_Jakarta_Sans } from 'next/font/google';
-import './globals.css';
 import favicon from '@/app/favicon.ico';
-import LayoutChildren from '@/lib/layoutChildren';
 import ProgressCircle from '@/components/ui/scrollCircle';
+import { Toaster } from '@/components/ui/toaster';
+import LayoutChildren from '@/lib/layoutChildren';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
+import './globals.css';
 
 const plus_jakarta_sans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -38,8 +39,9 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className={`${plus_jakarta_sans.variable}`} suppressHydrationWarning={true}>
+      <body className={`${plus_jakarta_sans.variable} `} suppressHydrationWarning={true}>
         <div id="page-wapper" className="!relative ">
+
           {/* ------ body line start */}
           <div className="w-full h-full fixed -z-[1] top-0 left-0 page-lines">
             <div className="container relative h-full">
@@ -49,8 +51,15 @@ export default function RootLayout({ children }) {
             </div>
           </div>
           {/* ------ body line end */}
+          <Toaster />
           <ProgressCircle />
-          <LayoutChildren>{children}</LayoutChildren>
+          <LayoutChildren className="">
+
+            {children}
+
+
+          </LayoutChildren>
+
         </div>
       </body>
     </html>

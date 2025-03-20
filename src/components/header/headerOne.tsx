@@ -1,8 +1,7 @@
-'use client';
-import React, { useEffect } from 'react';
-import TopNavbar from './topNavbar';
+'use client';;
 import BottomNavbar from './bottomNavbar';
 import MobileNavbar from './mobileNavbar';
+import TopNavbar from './topNavbar';
 
 const HeaderOne = () => {
   return (

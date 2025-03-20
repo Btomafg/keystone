@@ -1,18 +1,14 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Logo from '@/assets/images/logo/KW-LOGO.webp';
 import MenuIcon from '@/assets/icons/menuIcon';
-import { IoMdClose } from 'react-icons/io';
-import { menuList } from '@/lib/fackData/menuList';
-import Search from '@/assets/icons/search';
-import ShopCart from '@/assets/icons/shopCart';
-import { cn, countCartProductQuantity } from '@/lib/utils';
-import Offcanvas from './offCanvas';
-import Cart from './cart';
-import { useSelector } from 'react-redux';
+import Logo from '@/assets/images/logo/KW-LOGO.webp';
 import useOverflowHidden from '@/hooks/useOverflowHidden';
+import { menuList } from '@/lib/fackData/menuList';
 import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import { IoMdClose } from 'react-icons/io';
+import { useSelector } from 'react-redux';
+import TopNavbar from './topNavbar';
 
 const MobileNavbar = () => {
   const { products } = useSelector((state) => state.addToCart);
@@ -57,6 +53,7 @@ const MobileNavbar = () => {
                     <IoMdClose className="text-2xl cursor-pointer" />
                   </div>
                 </div>
+
                 <ul className="mt-7">
                   {menuList.map(({ id, isDropdown, name, path, isMegaMenu }, parentItem) => {
                     return (
@@ -136,6 +133,7 @@ const MobileNavbar = () => {
                       </li>
                     );
                   })}
+                  <TopNavbar />
                   <div className="flex items-center pt-5">
                     {/*<li className='other_icon text-primary-foreground px-6  cursor-pointer' onClick={() => setOffcanvaseActive(true)}>
                                     <Search height={"24"} width={"24"} />

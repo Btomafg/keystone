@@ -1,9 +1,10 @@
 import menu_image_1 from '@/assets/images/menu-image-1.png';
+import { APP_ROUTES } from '@/constants/routes';
 export const menuList = [
   {
     id: 1,
     name: 'Home',
-    path: '/',
+    path: APP_ROUTES.HOME,
     isMegaMenu: false,
     isDropdown: false,
   },
@@ -28,7 +29,7 @@ export const menuList = [
           {
             id: 1,
             name: 'Custom Cabinetry',
-            path: '/cabinetry',
+            path: APP_ROUTES.SERVICES.CABINETRY,
             desc: 'New construction cabinetry furnishes a new home with cabinetry for every space of the home.',
           },
         ],
@@ -39,7 +40,7 @@ export const menuList = [
           {
             id: 2,
             name: 'Unique Remodel Designs',
-            path: '/remodels',
+            path: APP_ROUTES.SERVICES.REMODELS,
             desc: 'Removal of existing cabinetry (if needed), Designed cabinetry for existing space, Installation of cabinets and counter. ',
           },
         ],
@@ -50,7 +51,7 @@ export const menuList = [
           {
             id: 3,
             name: 'Closet Design',
-            path: '/closets',
+            path: APP_ROUTES.SERVICES.CLOSETS,
             desc: 'Fast closet design, manufacturing, and installation service to organize his and hers space. ',
           },
         ],
@@ -61,7 +62,7 @@ export const menuList = [
           {
             id: 9,
             name: 'Embark on a Design Journey with Us',
-            path: '/contact',
+            path: APP_ROUTES.CONTACT,
             desc: 'Let’s Talk',
             img: menu_image_1,
           },
@@ -72,7 +73,7 @@ export const menuList = [
   {
     id: 4,
     name: 'About Us',
-    path: '/about-us',
+    path: APP_ROUTES.ABOUT,
     isMegaMenu: false,
     isDropdown: false,
   },
@@ -80,7 +81,7 @@ export const menuList = [
   {
     id: 6,
     name: 'Contact',
-    path: '/contact',
+    path: APP_ROUTES.CONTACT,
     isMegaMenu: false,
     isDropdown: false,
   },

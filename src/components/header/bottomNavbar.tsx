@@ -1,29 +1,23 @@
-"use client"
-import React, { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
-import DropDownMenu from './dropDownMenu'
-import MegaMenu from './megaMenu'
+"use client";
 import Logo from '@/assets/images/logo/KW-LOGO.webp';
-import Search from '@/assets/icons/search';
 import { menuList } from '@/lib/fackData/menuList';
-import Offcanvas from './offCanvas'
-import Cart from './cart'
-import { cn, countCartProductQuantity,  } from '@/lib/utils'
-import ShopCart from '@/assets/icons/shopCart'
-import { useSelector } from 'react-redux'
-import { usePathname } from 'next/navigation'
-import useActiveNavLink from '@/hooks/useActiveNavLink'
-import useStickyHeader from '@/hooks/useStickyHeader'
-import Image from 'next/image'
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import Cart from './cart';
+import DropDownMenu from './dropDownMenu';
+import MegaMenu from './megaMenu';
+import Offcanvas from './offCanvas';
 
 const BottomNavbar = ({ linkColor }) => {
-    const { products } = useSelector((state) => state.addToCart)
+
     const [offcanvaseActive, setOffcanvaseActive] = useState(false)
     const [cartActive, setCartActive] = useState(false)
 
-    useStickyHeader(linkColor)
     const pathName = usePathname()
-    useActiveNavLink(pathName)
+
 
 
     return (
@@ -31,7 +25,7 @@ const BottomNavbar = ({ linkColor }) => {
             <div className='bottom-navbar flex justify-between items-center'>
                 <div>
                     <Link href="/" className={cn(`logo text-primary-foreground ${linkColor}`)}>
-                    <Image className='p-3' src={Logo} height={"31"} width={"219"} />
+                        <Image alt='' className='p-3' src={Logo} height={"31"} width={"219"} />
                     </Link>
                 </div>
                 <nav>
@@ -61,7 +55,7 @@ const BottomNavbar = ({ linkColor }) => {
                                 )
                             })
                         }
-                           {/*<li className='other_icon text-primary-foreground px-6  cursor-pointer' onClick={() => setOffcanvaseActive(true)}>
+                        {/*<li className='other_icon text-primary-foreground px-6  cursor-pointer' onClick={() => setOffcanvaseActive(true)}>
                                     <Search height={"24"} width={"24"} />
                                 </li>
                                 <li className='other_icon text-primary-foreground pl-6 relative cursor-pointer flex items-center' onClick={() => setCartActive(true)}>
