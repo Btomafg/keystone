@@ -1,0 +1,72 @@
+'use client';;
+import { AppSidebar } from "@/components/app-sidebar";
+import Dashboard from "@/components/app/dashboard/Dashboard";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useTypedSelector } from "@/hooks/useTypedSelector";
+import { usePathname } from 'next/navigation';
+
+import CabinetProjectFlow from "@/components/app/dashboard/projects/NewCabinetProjectFlow";
+import { APP_ROUTES } from "@/constants/routes";
+import { useGetProjects } from "@/hooks/api/projects.queries";
+import { useGetUser } from "@/hooks/api/users.queries";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import Documents from "./dashboard/documents/page";
+import FAQ from "./dashboard/faq/page";
+import Orders from "./dashboard/orders/page";
+import Projects from "./dashboard/projects/page";
+import Settings from "./dashboard/settings/page";
+
+export default function Page({ children }) {
+  const router = useRouter();
+  const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
+  const { data: user } = useGetUser();
+  const { data: projects } = useGetProjects();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated])
+
+  const path = usePathname()
+  const section = path
+
+  const DashboardRender = () => {
+    const isDynamicProject = section?.match(/^\/dashboard\/projects\/new\/[^/]+\/?$/)
+    if (isDynamicProject) {
+      return <CabinetProjectFlow />
+    }
+    switch (section) {
+      case APP_ROUTES.DASHBOARD.HOME.path:
+        return <Dashboard />
+      case APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path:
+        return <Projects />
+      case APP_ROUTES.DASHBOARD.PROJECTS.NEW.path:
+        return <CabinetProjectFlow />
+
+      case APP_ROUTES.DASHBOARD.ORDERS.path:
+        return <Orders />
+      case APP_ROUTES.DASHBOARD.DOCUMENTS.path:
+        return <Documents />
+      case APP_ROUTES.DASHBOARD.FAQ.path:
+        return <FAQ />
+      case APP_ROUTES.DASHBOARD.SETTINGS.SETTINGS.path:
+        return <Settings />
+      default:
+        return <Dashboard />
+    }
+  }
+
+
+  return (
+    <SidebarProvider>
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <DashboardRender />
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}

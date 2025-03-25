@@ -1,11 +1,12 @@
+
 import favicon from '@/app/favicon.ico';
 import ProgressCircle from '@/components/ui/scrollCircle';
 import { Toaster } from '@/components/ui/toaster';
 import LayoutChildren from '@/lib/layoutChildren';
+import { getServerPath } from '@/utils/utils';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
-
 const plus_jakarta_sans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
@@ -21,6 +22,10 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const pathName = getServerPath();
+  const path = pathName.split('/')[3];
+  console.log(path)
+
   return (
     <html lang="en">
       <head>
@@ -43,13 +48,16 @@ export default function RootLayout({ children }) {
         <div id="page-wapper" className="!relative ">
 
           {/* ------ body line start */}
-          <div className="w-full h-full fixed -z-[1] top-0 left-0 page-lines">
-            <div className="container relative h-full">
-              <span className="absolute left-3 top-0 h-full w-[1px] bg-secondary_rgba"></span>
-              <span className="absolute right-[28%] top-0 h-full w-[1px] bg-secondary_rgba"></span>
-              <span className="absolute right-3 top-0 h-full w-[1px] bg-secondary_rgba"></span>
+          {path != 'dashboard' && (
+            <div className="w-full h-full fixed -z-[1] top-0 left-0 page-lines">
+              <div className="container relative h-full">
+                <span className="absolute left-3 top-0 h-full w-[1px] bg-secondary_rgba"></span>
+                <span className="absolute right-[28%] top-0 h-full w-[1px] bg-secondary_rgba"></span>
+                <span className="absolute right-3 top-0 h-full w-[1px] bg-secondary_rgba"></span>
+              </div>
             </div>
-          </div>
+          )}
+
           {/* ------ body line end */}
           <Toaster />
           <ProgressCircle />

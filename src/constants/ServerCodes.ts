@@ -1,0 +1,17 @@
+enum ServerCodes {
+    EMAIL_UNMATCHED = 50,
+    EXISTING = 20,
+    MIGRATING = 30,
+    INVALID_CODE = 500,
+    SUCCESS = 200,
+    FORBIDDEN = 403,
+    UNAUTHORIZED = 401,
+    NOT_FOUND = 404,
+    GONE = 410,
+    CONNECTION_TIMED_OUT = 599,
+    INTERNAL_SERVER_ERROR = 500,
+    SERVICE_UNAVAILABLE = 503,
+    BAD_REQUEST = 400
+}
+
+export { ServerCodes };

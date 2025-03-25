@@ -1,0 +1,55 @@
+export enum ProjectType {
+  Residential = 0,
+  Commercial = 1,
+  Custom = 2,
+}
+
+export const ProjectTypeLabels: Record<ProjectType, string> = {
+  [ProjectType.Residential]: 'Residential',
+  [ProjectType.Commercial]: 'Commercial',
+  [ProjectType.Custom]: 'Custom',
+};
+
+export enum ProjectStatus {
+  New = 0,
+  Review = 1,
+  Design = 2,
+  Proposal = 3,
+  Production = 4,
+  Paint = 5,
+  Delivery = 6,
+  Install = 7,
+}
+
+export const ProjectStatusLabels: Record<ProjectStatus, string> = {
+  [ProjectStatus.New]: 'New',
+  [ProjectStatus.Review]: 'Review',
+  [ProjectStatus.Design]: 'Design',
+  [ProjectStatus.Proposal]: 'Proposal',
+  [ProjectStatus.Production]: 'Production',
+  [ProjectStatus.Paint]: 'Paint',
+  [ProjectStatus.Delivery]: 'Delivery',
+  [ProjectStatus.Install]: 'Install',
+};
+
+export enum RoomType {
+  Kitchen = 0,
+  Bathroom = 1,
+  Mudroom = 2,
+  Laundry = 3,
+  Office = 4,
+  Garage = 5,
+  Closet = 6,
+  Other = 7,
+}
+
+export const RoomTypeLabels: Record<RoomType, string> = {
+  [RoomType.Kitchen]: 'Kitchen',
+  [RoomType.Bathroom]: 'Bathroom',
+  [RoomType.Mudroom]: 'Mudroom',
+  [RoomType.Laundry]: 'Laundry',
+  [RoomType.Office]: 'Office',
+  [RoomType.Garage]: 'Garage',
+  [RoomType.Closet]: 'Closet',
+  [RoomType.Other]: 'Other',
+};

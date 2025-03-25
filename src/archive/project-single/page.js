@@ -1,18 +1,18 @@
-import Image from 'next/image';
+import RightArrow from '@/assets/icons/rightArrow';
 import bg_banner from '@/assets/images/project-hero-image.jpg';
 import project_img_1 from '@/assets/images/project-image-1.jpg';
 import project_img_2 from '@/assets/images/project-image-2.jpg';
-import RightArrow from '@/assets/icons/rightArrow';
-import ProjectSingleSliderOne from '@/components/section/projectSingle/projectSingleSliderOne';
-import Paragraph from '@/components/section/projectSingle/paragraph';
-// import ProjectSingleSliderTwo from '@/components/section/projectSingle/projectSingleSliderTwo'
-import TeamTwo from '@/components/section/team/teamTwo';
-import Feedback from '@/components/section/feedback';
+import Paragraph from '@/components/marketing/section/projectSingle/paragraph';
+import ProjectSingleSliderOne from '@/components/marketing/section/projectSingle/projectSingleSliderOne';
+import Image from 'next/image';
+// import ProjectSingleSliderTwo from '@/components/marketing/section/projectSingle/projectSingleSliderTwo'
+import Feedback from '@/components/marketing/section/feedback';
+import TeamTwo from '@/components/marketing/section/team/teamTwo';
 import ButtonOutline from '@/components/ui/buttons/buttonOutline';
 import Title from '@/components/ui/title';
 import dynamic from 'next/dynamic';
 
-const ProjectSingleSliderTwo = dynamic(() => import('@/components/section/projectSingle/projectSingleSliderTwo'), { ssr: false });
+const ProjectSingleSliderTwo = dynamic(() => import('@/components/marketing/section/projectSingle/projectSingleSliderTwo'), { ssr: false });
 
 export const metadata = {
   title: 'Keystone Woodworx -- Project Single',

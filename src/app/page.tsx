@@ -1,25 +1,16 @@
-import React from 'react';
-import AboutOne from '@/components/section/about/aboutOne';
-import Gallery from '@/components/section/gallery';
-import BannerOne from '@/components/section/heroes/bannerOne';
-import ServicesSlider from '@/components/section/servicesSlider';
-import VideoPortfolio from '@/components/section/videoPortfolio';
-import ProjectsSlider from '@/components/section/projectsSlider';
-import Testimonial from '@/components/section/testimonial';
-import ShopSlider from '@/components/section/shopSlider';
-import BlogSlider from '@/components/section/blogSlider';
-import Feedback from '@/components/section/feedback';
+import Feedback from '@/components/marketing/section/feedback';
+import BannerOne from '@/components/marketing/section/heroes/bannerOne';
+import ServicesSlider from '@/components/marketing/section/servicesSlider';
+import Testimonial from '@/components/marketing/section/testimonial';
+import TeamCardOne from '@/components/ui/cards/teamCardOne';
 import Counter from '@/components/ui/counter';
 import SectionTitle from '@/components/ui/sectionTitle';
-import TeamCardOne from '@/components/ui/cards/teamCardOne';
 
-import { productData } from '@/lib/fackData/productData';
-import { blogData } from '@/lib/fackData/blogData';
+import Footer from '@/components/marketing/footer';
+import HeaderOne from '@/components/marketing/header/headerOne';
+import { bannerOneData } from '@/lib/fackData/bannerOneData';
 import { teamData } from '@/lib/fackData/teamData';
 import { cardSlideAnimation } from '@/lib/utils';
-import { bannerOneData } from '@/lib/fackData/bannerOneData';
-import HeaderOne from '@/components/header/headerOne';
-import Footer from '@/components/footer';
 
 const Home = () => {
   return (
