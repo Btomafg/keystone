@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useCreateCabinets } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
 import CabinetBuilderModal from './CabinetBuilderModal';
 import { Project } from './NewCabinetProjectFlow';
@@ -15,10 +16,10 @@ interface NewProjectCabinetsProps {
 export default function NewProjectCabinets({
     project,
     updateCabinet,
-    addCabinetToRoom,
+
     onBack,
 }: NewProjectCabinetsProps) {
-
+    const { mutateAsync: createCabinet, isPending } = useCreateCabinets();
     const totalCost = project?.rooms?.reduce(
         (acc, room) =>
             acc +
@@ -28,7 +29,16 @@ export default function NewProjectCabinets({
             ),
         0
     );
-    console.log(project)
+    const addCabinetToRoom = async (roomId: string) => {
+        try {
+            await createCabinet({ room: roomId });
+        } catch (error) {
+            console.error(error
+            );
+        };
+    }
+
+
     return (
         <div className="space-y-6">
             <h2 className="text-xl font-semibold">Cabinet Planner</h2>
@@ -59,6 +69,7 @@ export default function NewProjectCabinets({
                                     <TableCell>{cabinet.label}</TableCell>
                                     <TableCell>
                                         <CabinetBuilderModal
+                                            project={project}
                                             cabinetId={cabinet.id}
                                             updateCabinet={updateCabinet}
                                         />

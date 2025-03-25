@@ -42,7 +42,7 @@ const data = {
 
     {
       title: "Projects",
-      url: APP_ROUTES.DASHBOARD.PROJECTS.NEW.path,
+      url: APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path,
       icon: FolderIcon,
     },
     {

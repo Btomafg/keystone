@@ -2,85 +2,62 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { CabinetOptionType } from '@/constants/enums/project.enums';
+import { Cabinet, Project } from '@/constants/models/object.types';
+import { useGetCustomOptions, useUpdateCabinet } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
 import { DialogTrigger } from '@radix-ui/react-dialog';
-import { DoorOpen, PanelBottom, Ruler, RulerIcon, Wrench } from 'lucide-react';
+import { DoorOpen } from 'lucide-react';
 import { useState } from 'react';
-
-const ceilingOptions = [
-    { label: "8' Ceiling", value: '1', icon: <Ruler size={36} /> },
-    { label: "9' Ceiling", value: '1.125', icon: <Ruler size={36} /> },
-    { label: "10' Ceiling", value: '1.25', icon: <Ruler size={36} /> },
-];
-
-const doorMaterialOptions = [
-    { label: 'Paint Grade', value: '66.86' },
-    { label: 'Red Oak', value: '69.13' },
-    { label: 'White Oak', value: '102.06' },
-    { label: 'Hard Maple', value: '84.71' },
-    { label: 'Walnut', value: '127.96' },
-    { label: 'Cherry', value: '92.52' },
-    { label: 'Hickory', value: '76.92' },
-    { label: 'Alder', value: '78.43' },
-    { label: 'Beech', value: '0.00' },
-    { label: 'Ash', value: '67.87' },
-    { label: 'Rift Sawn White Oak', value: '122.68' },
-];
-
-const subMaterialOptions = [
-    { label: 'Veneer Panel', value: '0', icon: <PanelBottom size={32} /> },
-    { label: 'Hardwood Panel', value: '25', icon: <PanelBottom size={32} /> },
-];
-
-const constructionMethodOptions = [
-    { label: 'Frameless', value: '650', icon: <Wrench size={32} /> },
-    { label: 'Face Frame Overlay', value: '775', icon: <Wrench size={32} /> },
-    { label: 'Framed Inset', value: '840', icon: <Wrench size={32} /> },
-];
-
-const toeStyleOptions = [
-    { label: 'None', value: '0', icon: <RulerIcon size={32} /> },
-    { label: 'Furniture', value: '35', icon: <RulerIcon size={32} /> },
-];
-
-const crownOptions = [
-    { label: 'None', value: '0' },
-    { label: 'Riser', value: '15' },
-    { label: 'Crown', value: '20' },
-    { label: 'Riser and Crown', value: '35' },
-];
-
-const lightRailOptions = [
-    { label: 'None', value: '0' },
-    { label: 'Standard', value: '10' },
-];
 
 interface CabinetBuilderModalProps {
     cabinetId: string;
-    updateCabinet: (cabinetId: string, data: any) => void;
+    project: Project;
 }
 
 const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
-    const { updateCabinet, cabinetId } = props;
+    const { cabinetId, project } = props;
     const [step, setStep] = useState(0);
     const [open, setOpen] = useState(false);
-    const [inputs, setInputs] = useState({
-        ceilingHeight: '',
-        doorMaterial: '',
-        subMaterial: '',
-        constructionMethod: '',
-        toeStyle: '',
-        crown: '',
-        lightRail: '',
-        sqft: '',
-    });
+    // Extend inputs to include width, length, and height instead of sqft
+    const [inputs, setInputs] = useState<Partial<Cabinet> & { width?: string; length?: string; height?: string }>({});
+    const cabinet = project?.rooms?.flatMap((room) => room.cabinets).find((cab) => cab.id === cabinetId);
 
-    const selectOption = (field: string, value: string) => {
-        setInputs({ ...inputs, [field]: value });
+    const { mutateAsync: updateCabinet, isPending } = useUpdateCabinet();
+    const { data: customOptions } = useGetCustomOptions();
+
+    const ceilingOptions = customOptions?.filter((opt) => opt.type == CabinetOptionType.Ceiling);
+    const doorMaterialOptions = customOptions?.filter((opt) => opt.type == CabinetOptionType.DoorMaterial);
+    const subMaterialOptions = customOptions?.filter((opt) => opt.type == CabinetOptionType.SubMaterial);
+    const constructionMethodOptions = customOptions?.filter((opt) => opt.type == CabinetOptionType.ConstructionMethod);
+    const toeStyleOptions = customOptions?.filter((opt) => opt.type == CabinetOptionType.ToeStyle);
+    const crownOptions = customOptions?.filter((opt) => opt.type == CabinetOptionType.Crown);
+    const lightRailOptions = customOptions?.filter((opt) => opt.type == CabinetOptionType.LightRail);
+
+    // When an option is selected, update that field in the cabinet and then move to the next step.
+    const selectOption = async (field: string, value: string) => {
+        console.log('UPDATING', field, value);
+        await updateCabinet({ id: cabinetId, room: cabinet?.room, [field]: value });
         setStep((prev) => prev + 1);
     };
 
+    // In this example, updateCabinetValue is not being used for saving.
+    // You might want to integrate it when finishing, if needed.
+    const updateCabinetValue = (cabinetId: string, data: Partial<Cabinet>) => {
+        const quote =
+            (parseFloat(data.ceilingHeight || '0') +
+                parseFloat(data.constructionMethod || '0') +
+                parseFloat(data.crown || '0') +
+                parseFloat(data.doorMaterial || '0') +
+                parseFloat(data.lightRail || '0') +
+                parseFloat(data.subMaterial || '0') +
+                parseFloat(data.toeStyle || '0')) *
+            parseFloat(data.ceilingHeight || '1');
+        // Currently not saving quote; update if needed.
+    };
+
     const handleSteps = () => {
+        // Final step: if we've gone through all option steps, update cabinet with custom inputs.
         if (step >= 8) {
             updateCabinet(cabinetId, { ...inputs });
             setOpen(false);
@@ -106,14 +83,15 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
                 <div className="space-y-4">
                     <h2 className="text-xl font-semibold text-center">{label}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {options.map((opt) => (
+                        {options?.map((opt) => (
                             <Card
                                 key={opt.value}
-                                className={`flex flex-col hover:scale-105 transition hover:bg-blue-50 cursor-pointer h-36 justify-center items-center p-3 ${inputs[field] === opt.value ? 'bg-blue-100 border-blue-400' : ''}`}
-                                onClick={() => selectOption(field, opt.value)}
+                                className={`flex flex-col hover:scale-105 transition hover:bg-blue-50 cursor-pointer h-36 justify-center items-center p-3 ${cabinet && cabinet[field] === opt.id ? 'bg-blue-100 border-blue-400' : ''
+                                    }`}
+                                onClick={() => selectOption(field, opt.id)}
                             >
                                 {opt.icon && opt.icon}
-                                <h3 className="text-lg font-semibold mt-2 text-center">{opt.label}</h3>
+                                <h3 className="text-lg font-semibold mt-2 text-center">{opt.name}</h3>
                             </Card>
                         ))}
                     </div>
@@ -121,32 +99,58 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
             );
         }
 
+        // Step for dimensions: now we need width, length, height.
         if (step === 7) {
             return (
                 <div className="space-y-4">
-                    <h2 className="text-xl font-semibold text-center">How many Sq Ft?</h2>
-                    <div className="flex justify-center">
+                    <h2 className="text-xl font-semibold text-center">Enter Dimensions</h2>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <Input
                             type="number"
-                            value={inputs.sqft}
-                            onChange={(e) => setInputs({ ...inputs, sqft: e.target.value })}
-                            className="w-40 text-center"
-                            placeholder="e.g. 12"
+                            value={inputs.width || ''}
+                            onChange={(e) => setInputs({ ...inputs, width: e.target.value })}
+                            placeholder="Width"
+                            className="text-center"
+                        />
+                        <Input
+                            type="number"
+                            value={inputs.length || ''}
+                            onChange={(e) => setInputs({ ...inputs, length: e.target.value })}
+                            placeholder="Length"
+                            className="text-center"
+                        />
+                        <Input
+                            type="number"
+                            value={inputs.height || ''}
+                            onChange={(e) => setInputs({ ...inputs, height: e.target.value })}
+                            placeholder="Height"
+                            className="text-center"
                         />
                     </div>
                 </div>
             );
         }
 
+        // Final summary step: calculate total price.
+        const doorMaterial = parseFloat(inputs.doorMaterial || '0');
+        const subMaterial = parseFloat(inputs.subMaterial || '0');
+        const constructionMethod = parseFloat(inputs.constructionMethod || '0');
+        const toeStyle = parseFloat(inputs.toeStyle || '0');
+        const crown = parseFloat(inputs.crown || '0');
+        const lightRail = parseFloat(inputs.lightRail || '0');
+        const ceilingHeight = parseFloat(inputs.ceilingHeight || '1');
+
+        const width = parseFloat(inputs.width || '0');
+        const length = parseFloat(inputs.length || '0');
+        const height = parseFloat(inputs.height || '0');
+        // For example, calculate volume (or area) as needed.
+        // Here we calculate a "dimension multiplier" as width * length * height.
+        const dimensionMultiplier = width * length * height || 1;
+
         const total =
-            (parseFloat(inputs.doorMaterial || '0') +
-                parseFloat(inputs.subMaterial || '0') +
-                parseFloat(inputs.constructionMethod || '0') +
-                parseFloat(inputs.toeStyle || '0') +
-                parseFloat(inputs.crown || '0') +
-                parseFloat(inputs.lightRail || '0')) *
-            parseFloat(inputs.ceilingHeight || '1') *
-            parseFloat(inputs.sqft || '1');
+            (doorMaterial + subMaterial + constructionMethod + toeStyle + crown + lightRail) *
+            ceilingHeight *
+            dimensionMultiplier;
 
         return (
             <div className="text-center space-y-4">

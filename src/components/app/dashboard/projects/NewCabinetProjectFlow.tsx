@@ -1,5 +1,5 @@
 import { Cabinet } from '@/constants/models/object.types';
-import { useCreateProjects, useGetProjects } from '@/hooks/api/projects.queries';
+import { useCreateProjects, useGetCustomOptions, useGetProjects } from '@/hooks/api/projects.queries';
 import { useToast } from '@/hooks/use-toast';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -15,15 +15,15 @@ export default function CabinetProjectFlow() {
     const path = usePathname()
     const projectId = path.split('/')[4];
     const { data: projects } = useGetProjects();
+    const { data: options } = useGetCustomOptions();
+    console.log(options)
     const project = projects?.find((p) => p.id == projectId);
 
     const [step, setStep] = useState(project?.step || 1);
     const { toast } = useToast();
 
 
-    const addCabinetToRoom = (roomId: string) => {
 
-    };
 
 
     const updateCabinet = (cabinetId: string, data: Partial<Cabinet>) => {
@@ -88,7 +88,7 @@ export default function CabinetProjectFlow() {
                     <NewProjectCabinets
                         project={project}
                         updateCabinet={updateCabinet}
-                        addCabinetToRoom={addCabinetToRoom}
+
                         onBack={() => setStep(2)}
                     />
                 )}

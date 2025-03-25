@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RoomType } from '@/constants/enums/project.enums';
-import { useCreateRoom, useUpdateRoom } from '@/hooks/api/projects.queries';
+import { useCreateRoom, useDeleteRoom, useUpdateRoom } from '@/hooks/api/projects.queries';
 import { Check, Delete, Edit } from 'lucide-react';
 import { useState } from 'react';
 
@@ -23,6 +23,7 @@ export default function NewProjectRooms({
 
     const { mutateAsync: createRoom, isPending } = useCreateRoom();
     const { mutateAsync: updateRoom, isPending: isUpdating } = useUpdateRoom();
+    const { mutateAsync: deleteRoom, isPending: isDeleting } = useDeleteRoom();
     const addRoom = async (type: string) => {
         const newRoom = {
             name: '',
@@ -39,7 +40,8 @@ export default function NewProjectRooms({
     };
 
     // Delete the room.
-    const deleteRoom = (roomId: string) => {
+    const deleteRoomById = async (roomId: string) => {
+        await deleteRoom(roomId);
 
     };
 
@@ -76,7 +78,7 @@ export default function NewProjectRooms({
                                 key={room.id}
                                 room={room}
                                 updateRoomName={updateRoomName}
-                                deleteRoom={deleteRoom}
+                                deleteRoom={deleteRoomById}
                             />
                         ))}
                     </TableBody>

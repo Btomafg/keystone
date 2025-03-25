@@ -92,13 +92,13 @@ const ProjectsWidget = () => {
                     projectData?.map((data, index) => (
                         <Card
                             key={index}
-                            className="flex flex-col gap-1 min-w-52 h-36 p-2 hover:scale-105 hover:shadow-lg hover:cursor-pointer"
+                            className="flex flex-col text-wrap gap-1 w-52 h-36 p-2 hover:scale-105 hover:shadow-lg hover:cursor-pointer"
                         >
                             <div className="flex flex-row justify-between mt-1" title="Projects">
                                 <span className="text-base">{data.name}</span>
                                 <ChevronRight className="w-4 h-4 my-auto" />
                             </div>
-                            <span className="text-xs">{data.description}</span>
+                            <p className="text-xs text-wrap">{data.description}</p>
                             <Badge className={`w-fit mt-auto ${statusColors[ProjectStatusLabels[data.status]]}`} variant="primary" size="xs">
                                 {ProjectStatusLabels[data.status]}
                             </Badge>

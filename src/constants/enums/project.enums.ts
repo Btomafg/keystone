@@ -53,3 +53,22 @@ export const RoomTypeLabels: Record<RoomType, string> = {
   [RoomType.Closet]: 'Closet',
   [RoomType.Other]: 'Other',
 };
+
+export enum CabinetOptionType {
+  Ceiling = 1,
+  DoorMaterial = 2,
+  SubMaterial = 3,
+  ConstructionMethod = 4,
+  ToeStyle = 5,
+  Crown = 6,
+  LightRail = 7,
+}
+export const CabinetOptionTypeLabels: Record<CabinetOptionType, string> = {
+  [CabinetOptionType.Ceiling]: 'Ceiling Options',
+  [CabinetOptionType.DoorMaterial]: 'Door Material',
+  [CabinetOptionType.SubMaterial]: 'Sub Material',
+  [CabinetOptionType.ConstructionMethod]: 'Construction Method',
+  [CabinetOptionType.ToeStyle]: 'Toe Style',
+  [CabinetOptionType.Crown]: 'Crown',
+  [CabinetOptionType.LightRail]: 'Light Rail',
+};

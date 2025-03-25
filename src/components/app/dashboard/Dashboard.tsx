@@ -2,7 +2,6 @@
 import { useTypedSelector } from "@/hooks/useTypedSelector";
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from "react";
-import CabinetProjectFlow from "./projects/NewCabinetProjectFlow";
 import ProjectsWidget from "./ProjectsWidget";
 export default function Page() {
   const router = useRouter();
@@ -24,7 +23,7 @@ export default function Page() {
   return (
     <div className="flex flex-1 flex-col">
       <ProjectsWidget />
-      <CabinetProjectFlow />
+
     </div>
   )
 }

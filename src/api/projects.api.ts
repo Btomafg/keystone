@@ -1,7 +1,7 @@
 // lib/api/users.ts
 
 import { API } from '@/api/api';
-import { Project, Room } from '@/constants/models/object.types';
+import { Cabinet, Project, Room } from '@/constants/models/object.types';
 import store from '@/store';
 
 export const createProject = async (body: Partial<Project>) => {
@@ -21,7 +21,7 @@ export const getProjects = async () => {
   try {
     const res = await API.getAll(
       'Projects',
-      'id ,name ,description, status, type, step, rooms: Rooms_project_fkey (id,name,type)',
+      'id ,name ,description, status, type, step, rooms: Rooms_project_fkey (id,name,type, cabinets: Cabinets_room_fkey (id, room, ceilingHeight, constructionMethod, crown, doorMaterial, lightRail, subMaterial, toeStyle, length, width, height, sqft))',
       'user',
       user.id,
     );
@@ -50,6 +50,15 @@ export const updateRoom = async (body: Partial<Room>) => {
   }
   return true;
 };
+export const deleteRoom = async (roomId) => {
+  try {
+    const res = await API.delete('Rooms', 'id', roomId);
+    return res;
+  } catch (error) {
+    console.error('ERROR DELETING ROOM', error);
+  }
+  return true;
+};
 
 export const getRoomsByProjectId = async (projectId) => {
   const user = store.getState().auth.user;
@@ -58,5 +67,37 @@ export const getRoomsByProjectId = async (projectId) => {
     return res || [];
   } catch (error) {
     console.error('ERROR GETTING PROJECTS', error);
+  }
+};
+
+export const createCabinets = async (body: Partial<Cabinet>) => {
+  try {
+    const res = await API.upsert('Cabinets', body);
+    console.log('Cabinet created', res);
+    return res;
+  } catch (error) {
+    console.error('ERROR CREATING Cabinet', error);
+  }
+  return true;
+};
+export const updateCabinet = async (body: Partial<Cabinet>) => {
+  try {
+    console.log('UPDATING Cabinet', body);
+    const res = await API.upsert('Cabinets', body);
+
+    console.log('Cabinet created', res);
+    return res;
+  } catch (error) {
+    console.error('ERROR CREATING Cabinet', error);
+  }
+  return true;
+};
+
+export const getCustomOptions = async () => {
+  try {
+    const res = await API.getAll('CustomOptions', 'id , name ,type,image_url,value', 'active', true);
+    return res || [];
+  } catch (error) {
+    console.error('ERROR GETTING CustomOptions', error);
   }
 };

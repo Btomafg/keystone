@@ -37,4 +37,9 @@ export const API = {
     const { error } = await supabase.from(table).update(payload).eq(column, value);
     if (error) throw new Error(error.message);
   },
+
+  async delete<T = any>(table: string, column: string, value: any): Promise<void> {
+    const { error } = await supabase.from(table).delete().eq(column, value);
+    if (error) throw new Error(error.message);
+  },
 };

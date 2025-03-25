@@ -108,6 +108,9 @@ export type Cabinet {
   lightRail?: string;
   subMaterial?: string;
   toeStyle?: string;
+  length?: number;
+  width?: number;
+  height?:
   sqft?: number;
 }
 
