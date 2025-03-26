@@ -98,7 +98,7 @@ export type Room {
 
 export type Cabinet {
   id: string;
-  label: string;
+  name: string;
   status: string;
   quote: number;
   ceilingHeight?: string;
@@ -110,8 +110,11 @@ export type Cabinet {
   toeStyle?: string;
   length?: number;
   width?: number;
-  height?:
+  height?: number;
   sqft?: number;
+  cuft?: number;
+  room?: string;
+
 }
 
 export type Project {

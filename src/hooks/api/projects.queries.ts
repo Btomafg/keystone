@@ -2,6 +2,7 @@ import {
   createCabinets,
   createProject,
   createRoom,
+  deleteCabinet,
   deleteRoom,
   getCustomOptions,
   getProjects,
@@ -112,10 +113,10 @@ export const useDeleteRoom = () => {
   const { toast } = useToast();
   const { refetch } = useGetProjects();
   const mutation = useMutation({
-    mutationFn: (roomId: string) => deleteRoom(roomId),
+    mutationFn: (cabinetId: string) => deleteRoom(cabinetId),
     onSuccess: (response) => {
       refetch();
-      toast({ title: 'Room Deleted' });
+      toast({ title: 'Cabinet Deleted' });
     },
   });
   return mutation;
@@ -137,3 +138,17 @@ export const useGetCustomOptions = () => {
     refetch: query.refetch,
   };
 };
+
+
+export const useDeleteCabinet = () => {
+  const { toast } = useToast();
+  const { refetch } = useGetProjects();
+  const mutation = useMutation({
+    mutationFn: (cabinetId: string) => deleteCabinet(cabinetId),
+    onSuccess: (response) => {
+      refetch();
+      toast({ title: 'Room Deleted' });
+    },
+  });
+  return mutation;
+}

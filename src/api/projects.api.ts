@@ -21,7 +21,7 @@ export const getProjects = async () => {
   try {
     const res = await API.getAll(
       'Projects',
-      'id ,name ,description, status, type, step, rooms: Rooms_project_fkey (id,name,type, cabinets: Cabinets_room_fkey (id, room, ceilingHeight, constructionMethod, crown, doorMaterial, lightRail, subMaterial, toeStyle, length, width, height, sqft))',
+      'id ,name ,description, status, type, step, rooms: Rooms_project_fkey (id,name,type, cabinets: Cabinets_room_fkey (id, room, ceilingHeight, constructionMethod, crown, doorMaterial, lightRail, subMaterial, toeStyle, length, width, height, sqft, cuft, name, quote))',
       'user',
       user.id,
     );
@@ -89,6 +89,15 @@ export const updateCabinet = async (body: Partial<Cabinet>) => {
     return res;
   } catch (error) {
     console.error('ERROR CREATING Cabinet', error);
+  }
+  return true;
+};
+export const deleteCabinet = async (cabinetId) => {
+  try {
+    const res = await API.delete('Cabinets', 'id', cabinetId);
+    return res;
+  } catch (error) {
+    console.error('ERROR DELETING Cabinet', error);
   }
   return true;
 };
