@@ -52,9 +52,9 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
     toeStyle: cabinet?.toeStyle || undefined,
     crown: cabinet?.crown || undefined,
     lightRail: cabinet?.lightRail || undefined,
-    width: cabinet?.width || 0,
-    length: cabinet?.length || 0,
-    height: cabinet?.height || 0,
+    width: cabinet?.width || undefined,
+    length: cabinet?.length || undefined,
+    height: cabinet?.height || undefined,
   });
 
 
@@ -88,6 +88,8 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
 
 
   const selectOption = async (field: string, value: string) => {
+    if (getOptionId(field) === value) return;
+
     setInputs((prev) => ({ ...prev, [field]: value }));
     const newStep = cabinet?.createStep >= step + 1 ? cabinet.createStep : step + 1;
     await updateCabinet({ id: cabinetId, createStep: newStep || 0, room: cabinet?.room, [field]: value });

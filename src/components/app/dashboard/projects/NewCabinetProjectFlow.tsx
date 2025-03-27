@@ -1,3 +1,4 @@
+'use client'
 import { useCreateProjects, useGetProjects, useUpdateProject } from '@/hooks/api/projects.queries';
 import { useToast } from '@/hooks/use-toast';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
