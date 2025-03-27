@@ -42,27 +42,25 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
     .find((cab) => cab.id === cabinetId);
 
 
-  const { mutateAsync: updateCabinet } = useUpdateCabinet();
+  const { mutateAsync: updateCabinet, isPending: isUpdating } = useUpdateCabinet();
   const { data: customOptions } = useGetCustomOptions();
 
   // Initialize from the cabinet data on mount/update.
   useEffect(() => {
     if (cabinet) {
       setInputs({
-        ceilingHeight: cabinet.ceilingHeight,
-        doorMaterial: cabinet.doorMaterial,
-        subMaterial: cabinet.subMaterial,
-        constructionMethod: cabinet.constructionMethod,
-        toeStyle: cabinet.toeStyle,
-        crown: cabinet.crown,
-        lightRail: cabinet.lightRail,
-        width: cabinet.width?.toString(),
-        length: cabinet.length?.toString(),
-        height: cabinet.height?.toString(),
+        ceilingHeight: cabinet?.ceilingHeight || undefined,
+        doorMaterial: cabinet?.doorMaterial || undefined,
+        subMaterial: cabinet?.subMaterial || undefined,
+        constructionMethod: cabinet?.constructionMethod || undefined,
+        toeStyle: cabinet?.toeStyle || undefined,
+        crown: cabinet?.crown || undefined,
+        lightRail: cabinet?.lightRail || undefined,
+        width: cabinet?.width || 0,
+        length: cabinet?.length || 0,
+        height: cabinet?.height || 0,
       });
-      if (cabinet.createStep + 1 > step) {
-        setStep(cabinet.createStep || 0);
-      }
+
       setSpacePhotos([]);
       setInspirationPhotos([]);
     }
@@ -249,7 +247,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
             ) : (
               <div />
             )}
-            <Button onClick={handleNext} >
+            <Button onClick={handleNext} loading={isUpdating}>
               {step >= stepLabels.length - 1 ? 'Finish' : 'Next'}
             </Button>
           </div>

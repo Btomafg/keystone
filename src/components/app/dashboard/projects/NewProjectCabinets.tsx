@@ -199,7 +199,7 @@ function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: Cabi
     const [isEditing, setIsEditing] = useState(cabinet.name ? false : true);
     const [tempName, setTempName] = useState(cabinet.name || '');
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalStep, setModalStep] = useState(0);
+    const [modalStep, setModalStep] = useState(cabinet?.createStep || 0);
     const handleEditClick = () => {
         setTempName(cabinet.name);
         setIsEditing(true);
