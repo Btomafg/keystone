@@ -7,7 +7,7 @@ import { useCreateCabinets, useDeleteCabinet, useUpdateCabinet, useUpdateRoom } 
 import { useScreenWidth } from '@/hooks/uiHooks';
 import { toUSD } from '@/utils/common';
 import { Check, Delete, Edit } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import CabinetBuilderModal from './CabinetBuilderModal';
 
 interface NewProjectCabinetsProps {
@@ -66,8 +66,8 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
         <div style={{ maxWidth: screenWidth * .9 }} className="space-y-6 max-w-md md:max-w-2xl mx-auto">
             <h2 className="text-xl font-semibold">Cabinet Planner</h2>
             <p className="text-muted">Add cabinet sections to each room.</p>
-            {project?.rooms?.sort((a, b) => a.id - b.id)?.map((room) => (
-                <div key={room.id} className="space-y-2 border-b p-2 ">
+            {project?.rooms?.sort((a, b) => a.id - b.id)?.map((room, index) => (
+                <div key={index} className="space-y-2 border-b p-2 ">
 
                     <RoomHeader room={room} updateRoomName={updateRoomName} deleteRoom={deleteRoom} />
 
@@ -195,7 +195,7 @@ interface CabinetRowProps {
     deleteCabinet: (cabinetId: string) => void;
 }
 
-const CabinetRow = React.memo(({ cabinet, project, updateCabinetName, deleteCabinet }: CabinetRowProps) => {
+function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: CabinetRowProps) {
     const [isEditing, setIsEditing] = useState(cabinet.name ? false : true);
     const [tempName, setTempName] = useState(cabinet.name || '');
     const [modalOpen, setModalOpen] = useState(false);
@@ -264,4 +264,4 @@ const CabinetRow = React.memo(({ cabinet, project, updateCabinetName, deleteCabi
             <TableCell className="w-1/4">{toUSD(cabinet.quote)}</TableCell>
         </TableRow>
     );
-});
+}
