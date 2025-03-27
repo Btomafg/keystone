@@ -9,6 +9,7 @@ import NewProjectRooms from './NewProjectRooms';
 export default function CabinetProjectFlow() {
   const { mutateAsync: createProject, isPending } = useCreateProjects();
   const { mutateAsync: updateProject, isPending: isUpdating } = useUpdateProject();
+
   const router = useRouter();
   const path = usePathname();
   const projectId = path.split('/')[4];

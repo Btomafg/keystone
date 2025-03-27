@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -10,7 +10,6 @@ import { CabinetOptionType } from '@/constants/enums/project.enums';
 import { Cabinet, Project } from '@/constants/models/object.types';
 import { useGetCustomOptions, useUpdateCabinet } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
-import { DialogTrigger } from '@radix-ui/react-dialog';
 import { useEffect, useMemo, useState } from 'react';
 import { CabinetStepper } from './CabinetBuilderModal/CabinetStepper';
 import DimensionsStep from './CabinetBuilderModal/DimensionsStep';
@@ -27,9 +26,12 @@ interface FilePreview {
 interface CabinetBuilderModalProps {
   cabinetId: string;
   project: Project;
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = ({ cabinetId, project }) => {
+const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
+  const { cabinetId, project, open, setOpen } = props;
   const [inputs, setInputs] = useState<Partial<Cabinet> & {
     width?: string;
     length?: string;
@@ -42,7 +44,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = ({ cabinetId, pr
     ?.flatMap((room) => room.cabinets)
     .find((cab) => cab.id === cabinetId);
   const [step, setStep] = useState(0);
-  const [open, setOpen] = useState(false);
+
   const { mutateAsync: updateCabinet } = useUpdateCabinet();
   const { data: customOptions } = useGetCustomOptions();
 
@@ -229,11 +231,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = ({ cabinetId, pr
   return (
     <div>
       <Dialog open={open} onOpenChange={setOpen} >
-        <DialogTrigger asChild>
-          <Button size="sm" variant="outline">
-            Customize
-          </Button>
-        </DialogTrigger>
+
         <DialogContent className="max-w-3xl">
           <DialogHeader className="flex flex-col items-center">
             <DialogTitle>Cabinet Builder</DialogTitle>

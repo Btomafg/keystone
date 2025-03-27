@@ -21,8 +21,7 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
     const { mutateAsync: deleteCabinet } = useDeleteCabinet();
     const { mutateAsync: updateRoom } = useUpdateRoom();
     const screenWidth = useScreenWidth();
-    // Stub functions for updating and deleting a room.
-    // Replace these with your actual API calls.
+
     const updateRoomName = async (roomId: string, newName: string) => {
         await updateRoom({ id: roomId, name: newName });
     };
@@ -199,7 +198,7 @@ interface CabinetRowProps {
 function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: CabinetRowProps) {
     const [isEditing, setIsEditing] = useState(cabinet.name ? false : true);
     const [tempName, setTempName] = useState(cabinet.name);
-
+    const [modalOpen, setModalOpen] = useState(false);
     const handleEditClick = () => {
         setTempName(cabinet.name);
         setIsEditing(true);
@@ -225,7 +224,10 @@ function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: Cabi
                 )}
             </TableCell>
             <TableCell className="w-1/4">
-                <CabinetBuilderModal project={project} cabinetId={cabinet.id} />
+                <Button size="sm" variant="outline" onClick={() => setModalOpen(true)}>
+                    Customize
+                </Button>
+                <CabinetBuilderModal open={modalOpen} setModalOpen={setModalOpen} project={project} cabinetId={cabinet.id} />
             </TableCell>
             <TableCell className="w-1/4">
                 {isEditing ? (
