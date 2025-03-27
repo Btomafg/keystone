@@ -216,7 +216,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
 
   return (
     <div>
-      <Dialog open={open} onOpenChange={() => setOpen(false)} >
+      <Dialog open={open}  >
 
         <DialogContent className="max-w-3xl" >
 
