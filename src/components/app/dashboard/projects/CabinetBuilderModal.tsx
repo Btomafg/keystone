@@ -1,11 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CabinetOptionType } from '@/constants/enums/project.enums';
 import { Cabinet, Project } from '@/constants/models/object.types';
 import { useGetCustomOptions, useUpdateCabinet } from '@/hooks/api/projects.queries';
@@ -27,7 +22,7 @@ interface CabinetBuilderModalProps {
   cabinetId: string;
   project: Project;
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: (open) => void;
 }
 
 const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
@@ -69,7 +64,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
       setSpacePhotos([]);
       setInspirationPhotos([]);
     }
-  }, []);
+  }, [cabinet]);
 
   // Step labels for the stepper
   const stepLabels = [
@@ -99,7 +94,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
   const crownOptions = customOptions?.filter((opt) => opt.type === CabinetOptionType.Crown);
   const lightRailOptions = customOptions?.filter((opt) => opt.type === CabinetOptionType.LightRail);
 
-  // Option selection handler for steps 0-6
+
   const selectOption = async (field: string, value: string) => {
     setInputs((prev) => ({ ...prev, [field]: value }));
     const newStep = cabinet?.createStep >= step + 1 ? cabinet.createStep : step + 1;
@@ -230,9 +225,10 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
 
   return (
     <div>
-      <Dialog open={open} onOpenChange={setOpen} >
+      <Dialog open={open} onOpenChange={() => setOpen(false)} >
 
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl" >
+
           <DialogHeader className="flex flex-col items-center">
             <DialogTitle>Cabinet Builder</DialogTitle>
             <CabinetStepper

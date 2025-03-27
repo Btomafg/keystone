@@ -227,7 +227,7 @@ function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: Cabi
                 <Button size="sm" variant="outline" onClick={() => setModalOpen(true)}>
                     Customize
                 </Button>
-                <CabinetBuilderModal open={modalOpen} setModalOpen={setModalOpen} project={project} cabinetId={cabinet.id} />
+                <CabinetBuilderModal open={modalOpen} setOpen={() => setModalOpen(false)} project={project} cabinetId={cabinet.id} />
             </TableCell>
             <TableCell className="w-1/4">
                 {isEditing ? (
