@@ -20,7 +20,7 @@ export default function CabinetProjectFlow() {
 
   const searchParams = useSearchParams();
   const initialStep = parseInt(searchParams.get('step') || '1', 10);
-  const [step, setStep] = useState(project?.step || initialStep);
+  const [step, setStep] = useState(initialStep);
   const { toast } = useToast();
 
   const onNext = () => {

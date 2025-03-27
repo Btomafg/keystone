@@ -1,6 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { CabinetOptionType } from '@/constants/enums/project.enums';
 import { Cabinet, Project } from '@/constants/models/object.types';
 import { useGetCustomOptions, useUpdateCabinet } from '@/hooks/api/projects.queries';
@@ -222,8 +222,12 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
 
   return (
     <div>
-      <Dialog open={open}  >
-
+      <Dialog >
+        <DialogTrigger>
+          <Button size="sm" variant="outline" >
+            Customize
+          </Button>
+        </DialogTrigger>
         <DialogContent className="max-w-3xl" >
 
           <DialogHeader className="flex flex-col items-center">

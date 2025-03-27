@@ -27,7 +27,6 @@ export const NavUser: React.FC = () => {
   const [bugOpen, setBugOpen] = useState(false);
   const { mutateAsync: logOut } = useLogout();
   const { data: user } = useGetUser();
-  console.log('USERZ', user)
   const { showReportBug } = useReportBug();
   const router = useRouter();
 
