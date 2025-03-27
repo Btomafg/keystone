@@ -1,6 +1,6 @@
 import { useCreateProjects, useGetProjects, useUpdateProject } from '@/hooks/api/projects.queries';
 import { useToast } from '@/hooks/use-toast';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import NewProjectCabinets from './NewProjectCabinets';
 import NewProjectDetails from './NewProjectDetails';
@@ -16,9 +16,19 @@ export default function CabinetProjectFlow() {
 
   const project = projects?.find((p) => p.id == projectId);
 
-  const [step, setStep] = useState(1);
+  const searchParams = useSearchParams();
+  const initialStep = parseInt(searchParams.get('step') || '1', 10);
+  const [step, setStep] = useState(initialStep);
   const { toast } = useToast();
 
+  const onNext = () => {
+    setStep(step + 1);
+    router.push(`/dashboard/projects/new/${project?.id}?step=${step + 1}`);
+  }
+  const onBack = () => {
+    setStep(step - 1);
+    router.push(`/dashboard/projects/new/${project?.id}?step=${step - 1}`);
+  }
   const createNewProject = async (data) => {
     try {
       let newProject = {
@@ -30,10 +40,7 @@ export default function CabinetProjectFlow() {
       };
       data.id && (newProject = { ...newProject, id: data.id });
       const res = data.id ? await updateProject(newProject) : await createProject(newProject);
-
-      router.push(`/dashboard/projects/new/${res?.id}`);
-
-
+      router.push(`/dashboard/projects/new/${res?.id}?step=2`);
       setStep(2);
     } catch (error) {
       toast({ title: 'Error Creating Project' });
@@ -47,8 +54,8 @@ export default function CabinetProjectFlow() {
       <p className="text-muted mx-auto">Create a new cabinet project to start planning your next project.</p>
       <div className="space-y-6 py-6 w-[500px] mx-auto">
         {step === 1 && <NewProjectDetails onNext={createNewProject} loading={isPending} />}
-        {step === 2 && <NewProjectRooms project={project} onBack={() => setStep(1)} onNext={() => setStep(3)} />}
-        {step === 3 && <NewProjectCabinets project={project} onBack={() => setStep(2)} />}
+        {step === 2 && <NewProjectRooms project={project} onBack={onBack} onNext={onNext} />}
+        {step === 3 && <NewProjectCabinets project={project} onBack={onBack} />}
       </div>
     </div>
   );
