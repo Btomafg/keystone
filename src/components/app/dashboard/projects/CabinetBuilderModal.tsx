@@ -5,7 +5,7 @@ import { CabinetOptionType } from '@/constants/enums/project.enums';
 import { Cabinet, Project } from '@/constants/models/object.types';
 import { useGetCustomOptions, useUpdateCabinet } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CabinetStepper } from './CabinetBuilderModal/CabinetStepper';
 import DimensionsStep from './CabinetBuilderModal/DimensionsStep';
 import OptionStep from './CabinetBuilderModal/OptionStep';
@@ -57,6 +57,10 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
     height: cabinet?.height || undefined,
   });
 
+  useEffect(() => {
+    console.log('CabinetBuilderModal mounted for cabinet', cabinetId);
+    return () => console.log('CabinetBuilderModal unmounted for cabinet', cabinetId);
+  }, [cabinetId]);
 
   // Step labels for the stepper
   const stepLabels = [
