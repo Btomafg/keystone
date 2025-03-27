@@ -73,25 +73,5 @@ export const teamData = [
       },
     ],
   },
-  {
-    id: 5,
-    img: Jenna,
-    name: 'Jenna Yeckley',
-    position: 'Designer',
-    social_link: [
-      {
-        id: 1,
-        link: 'https://www.facebook.com/KeystoneWoodworx/',
-        media: 'FB',
-      },
-    ],
-    portfolio: [
-      {
-        id: 1,
-        img: portfolio_1,
-        project_name: 'MFA Lakeside Brielle',
-        link: '',
-      },
-    ],
-  },
+  
 ];
