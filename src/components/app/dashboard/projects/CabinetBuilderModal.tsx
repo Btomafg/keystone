@@ -19,14 +19,16 @@ interface FilePreview {
 }
 
 interface CabinetBuilderModalProps {
-  cabinetId: string;
+  cabinetId: number;
   project: Project;
   open: boolean;
   setOpen: (open) => void;
+  step: number;
+  setStep: (step) => void;
 }
 
 const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
-  const { cabinetId, project, open, setOpen } = props;
+  const { cabinetId, project, open, setOpen, step, setStep } = props;
   const [inputs, setInputs] = useState<Partial<Cabinet> & {
     width?: string;
     length?: string;
@@ -38,7 +40,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
   const cabinet = project?.rooms
     ?.flatMap((room) => room.cabinets)
     .find((cab) => cab.id === cabinetId);
-  const [step, setStep] = useState(0);
+
 
   const { mutateAsync: updateCabinet } = useUpdateCabinet();
   const { data: customOptions } = useGetCustomOptions();
@@ -64,7 +66,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
       setSpacePhotos([]);
       setInspirationPhotos([]);
     }
-  }, [cabinet]);
+  }, []);
 
   // Step labels for the stepper
   const stepLabels = [
@@ -150,7 +152,6 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
 
 
   const handleNext = () => {
-
     updateCabinet({
       id: cabinet?.id,
       room: cabinet?.room,
@@ -158,7 +159,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
       ...inputs,
       quote: computedQuote,
     });
-    setStep((prev) => prev + 1);
+
   };
 
 

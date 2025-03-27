@@ -191,7 +191,7 @@ function RoomHeader({ room, updateRoomName, deleteRoom }: RoomHeaderProps) {
 interface CabinetRowProps {
     cabinet: Cabinet;
     project: Project;
-    updateCabinetName: (cabinetId: string, roomId: string, newName: string) => void;
+    updateCabinetName: (cabinetId: number, roomId: string, newName: string) => void;
     deleteCabinet: (cabinetId: string) => void;
 }
 
@@ -199,6 +199,7 @@ function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: Cabi
     const [isEditing, setIsEditing] = useState(cabinet.name ? false : true);
     const [tempName, setTempName] = useState(cabinet.name);
     const [modalOpen, setModalOpen] = useState(false);
+    const [modalStep, setModalStep] = useState(0);
     const handleEditClick = () => {
         setTempName(cabinet.name);
         setIsEditing(true);
@@ -227,7 +228,7 @@ function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: Cabi
                 <Button size="sm" variant="outline" onClick={() => setModalOpen(true)}>
                     Customize
                 </Button>
-                <CabinetBuilderModal open={modalOpen} setOpen={() => setModalOpen(false)} project={project} cabinetId={cabinet.id} />
+                <CabinetBuilderModal step={modalStep} setStep={setModalStep} open={modalOpen} setOpen={() => setModalOpen(false)} project={project} cabinetId={cabinet.id} />
             </TableCell>
             <TableCell className="w-1/4">
                 {isEditing ? (
