@@ -4,6 +4,7 @@ import {
   createRoom,
   deleteCabinet,
   deleteRoom,
+  getCabinetById,
   getCustomOptions,
   getProjects,
   getRoomOptions,
@@ -109,14 +110,28 @@ export const useCreateCabinets = () => {
   });
   return mutation;
 };
+export const useGetCabinetById = (cabinetId) => {
+  const query = useQuery({
+    queryKey: ['getCabinetById'],
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+    queryFn: () => getCabinetById(cabinetId),
+  });
+  return {
+    data: query?.data as Cabinet,
+    isSuccess: query.isSuccess,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: (cabinetId) => query.refetch(cabinetId),
+  };
+};
 
 export const useUpdateCabinet = () => {
   const { toast } = useToast();
-  const { refetch } = useGetProjects();
+
   const mutation = useMutation({
     mutationFn: (body: Partial<Cabinet>) => updateCabinet(body),
     onSuccess: (response) => {
-      //refetch();
       toast({ title: 'Cabinet Updated' });
     },
   });

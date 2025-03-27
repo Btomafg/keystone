@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Cabinet, Project, Room } from '@/constants/models/object.types';
-import { useCreateCabinets, useDeleteCabinet, useUpdateCabinet, useUpdateRoom } from '@/hooks/api/projects.queries';
+import { useCreateCabinets, useDeleteCabinet, useGetProjects, useUpdateCabinet, useUpdateRoom } from '@/hooks/api/projects.queries';
 import { useScreenWidth } from '@/hooks/uiHooks';
 import { toUSD } from '@/utils/common';
 import { Check, Delete, Edit } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
     const { mutateAsync: createCabinet } = useCreateCabinets();
     const { mutateAsync: updateCabinet } = useUpdateCabinet();
     const { mutateAsync: deleteCabinet } = useDeleteCabinet();
+    const { refetch: refetchProjects } = useGetProjects();
     const { mutateAsync: updateRoom } = useUpdateRoom();
     const screenWidth = useScreenWidth();
     const [modalOpen, setModalOpen] = useState(false);
@@ -51,6 +52,7 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
     const updateCabinetName = async (cabinetId: string, roomId: string, newName: string) => {
         try {
             await updateCabinet({ id: cabinetId, room: roomId, name: newName });
+            await refetchProjects();
         } catch (error) {
             console.error(error);
         }
@@ -66,7 +68,8 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
 
     return (
         <div style={{ maxWidth: screenWidth * .9 }} className="space-y-6 max-w-md md:max-w-2xl mx-auto">
-            <CabinetBuilderModal step={modalStep} setStep={setModalStep} open={modalOpen} setOpen={() => setModalOpen(false)} editingCabinetId={editingCabinetId} project={project} />
+            {editingCabinetId && <CabinetBuilderModal step={modalStep} setStep={setModalStep} open={modalOpen} setOpen={() => setModalOpen(false)} editingCabinetId={editingCabinetId} />}
+
             <h2 className="text-xl font-semibold">Cabinet Planner</h2>
             <p className="text-muted">Add cabinet sections to each room.</p>
             {project?.rooms?.sort((a, b) => a.id - b.id)?.map((room, index) => (

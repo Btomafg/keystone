@@ -1,9 +1,10 @@
 'use client';
+import { getCabinetById } from '@/api/projects.api';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CabinetOptionType } from '@/constants/enums/project.enums';
-import { Cabinet, Project } from '@/constants/models/object.types';
-import { useGetCustomOptions, useUpdateCabinet } from '@/hooks/api/projects.queries';
+import { Cabinet } from '@/constants/models/object.types';
+import { useGetCabinetById, useGetCustomOptions, useGetProjects, useUpdateCabinet } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
 import { useEffect, useMemo, useState } from 'react';
 import { CabinetStepper } from './CabinetBuilderModal/CabinetStepper';
@@ -20,7 +21,7 @@ interface FilePreview {
 
 interface CabinetBuilderModalProps {
 
-  project: Project;
+
   open: boolean;
   setOpen: (open) => void;
   step: number;
@@ -30,41 +31,46 @@ interface CabinetBuilderModalProps {
 }
 
 const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
-  const { project, open, setOpen, step, setStep, editingCabinetId } = props;
+  const { open, setOpen, step, setStep, editingCabinetId } = props;
 
   const [spacePhotos, setSpacePhotos] = useState<FilePreview[]>([]);
   const [inspirationPhotos, setInspirationPhotos] = useState<FilePreview[]>([]);
-  const cabinetId = editingCabinetId;
-  console.log(cabinetId)
-  const cabinet = project?.rooms
-    ?.flatMap((room) => room.cabinets)
-    .find((cab) => cab.id === cabinetId);
+  const { refetch: refetchProjects } = useGetProjects();
 
 
+  const { data: cabinet } = useGetCabinetById(editingCabinetId);
   console.log(cabinet)
   const { mutateAsync: updateCabinet, isPending: isUpdating } = useUpdateCabinet();
   const { data: customOptions } = useGetCustomOptions();
   const [inputs, setInputs] = useState<Partial<Cabinet> & {
-    width?: string;
-    length?: string;
-    height?: string;
+    width?: number;
+    length?: number;
+    height?: number;
   }>({
-    ceilingHeight: cabinet?.ceilingHeight || undefined,
-    doorMaterial: cabinet?.doorMaterial || undefined,
-    subMaterial: cabinet?.subMaterial || undefined,
-    constructionMethod: cabinet?.constructionMethod || undefined,
-    toeStyle: cabinet?.toeStyle || undefined,
-    crown: cabinet?.crown || undefined,
-    lightRail: cabinet?.lightRail || undefined,
-    width: cabinet?.width || undefined,
-    length: cabinet?.length || undefined,
-    height: cabinet?.height || undefined,
+
   });
 
+
   useEffect(() => {
-    console.log('CabinetBuilderModal mounted for cabinet', open);
-    return () => console.log('CabinetBuilderModal unmounted for cabinet', open);
-  }, [open]);
+    if (cabinet) {
+      console.log('updating')
+      setInputs({
+        ceilingHeight: cabinet[0].ceilingHeight,
+        doorMaterial: cabinet[0].doorMaterial,
+        subMaterial: cabinet[0].subMaterial,
+        constructionMethod: cabinet[0].constructionMethod,
+        toeStyle: cabinet[0].toeStyle,
+        crown: cabinet[0].crown,
+        lightRail: cabinet[0].lightRail,
+        width: cabinet[0].width,
+        length: cabinet[0].length,
+        height: cabinet[0].height,
+
+      });
+      setStep(cabinet[0].createStep || 0);
+    }
+
+  }, [cabinet]);
 
   // Step labels for the stepper
   const stepLabels = [
@@ -95,31 +101,33 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
   const lightRailOptions = customOptions?.filter((opt) => opt.type === CabinetOptionType.LightRail);
 
 
-  const selectOption = async (field: string, value: string) => {
+  const selectOption = async (field: string, value: number) => {
     if (getOptionId(field) === value) return;
 
     setInputs((prev) => ({ ...prev, [field]: value }));
     const newStep = cabinet?.createStep >= step + 1 ? cabinet.createStep : step + 1;
-    await updateCabinet({ id: cabinetId, createStep: newStep || 0, room: cabinet?.room, [field]: value });
+    await updateCabinet({ id: editingCabinetId, createStep: newStep || 0, [field]: value });
+    await getCabinetById(editingCabinetId);
     setStep((prev) => prev + 1);
   };
 
   // Calculate live quote for dimensions step
-  const widthVal = parseFloat(inputs.width ?? cabinet?.width?.toString() ?? '0');
-  const lengthVal = parseFloat(inputs.length ?? cabinet?.length?.toString() ?? '0');
-  const heightVal = parseFloat(inputs.height ?? cabinet?.height?.toString() ?? '0');
+  const widthVal = inputs.width ?? cabinet?.width ?? 0;
+  const lengthVal = inputs.length ?? cabinet?.length ?? 0;
+  const heightVal = inputs.height ?? cabinet?.height ?? 0;
   const sqft = widthVal * lengthVal;
   const cuft = widthVal * lengthVal * heightVal;
 
-  const ceilingHeightValue = parseFloat(ceilingOptions?.find((opt) => opt.id === getOptionId('ceilingHeight'))?.value || '0');
-  const doorMaterialValue = parseFloat(doorMaterialOptions?.find((opt) => opt.id === getOptionId('doorMaterial'))?.value || '0');
-  const subMaterialValue = parseFloat(subMaterialOptions?.find((opt) => opt.id === getOptionId('subMaterial'))?.value || '0');
-  const constructionMethodValue = parseFloat(constructionMethodOptions?.find((opt) => opt.id === getOptionId('constructionMethod'))?.value || '0');
-  const toeStyleValue = parseFloat(toeStyleOptions?.find((opt) => opt.id === getOptionId('toeStyle'))?.value || '0');
-  const crownValue = parseFloat(crownOptions?.find((opt) => opt.id === getOptionId('crown'))?.value || '0');
-  const lightRailValue = parseFloat(lightRailOptions?.find((opt) => opt.id === getOptionId('lightRail'))?.value || '0');
 
-  const computedQuote = useMemo(() => {
+  const ceilingHeightValue = ceilingOptions?.find((opt) => opt.id == getOptionId('ceilingHeight'))?.value || 0;
+  const doorMaterialValue = doorMaterialOptions?.find((opt) => opt.id == getOptionId('doorMaterial'))?.value || 0;
+  const subMaterialValue = subMaterialOptions?.find((opt) => opt.id == getOptionId('subMaterial'))?.value || 0;
+  const constructionMethodValue = constructionMethodOptions?.find((opt) => opt.id == getOptionId('constructionMethod'))?.value || 0;
+  const toeStyleValue = toeStyleOptions?.find((opt) => opt.id == getOptionId('toeStyle'))?.value || 0;
+  const crownValue = crownOptions?.find((opt) => opt.id == getOptionId('crown'))?.value || 0;
+  const lightRailValue = lightRailOptions?.find((opt) => opt.id == getOptionId('lightRail'))?.value || 0;
+
+  const computedQuote = () => {
     return (
       (ceilingHeightValue +
         doorMaterialValue +
@@ -130,36 +138,29 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
         lightRailValue) *
       sqft
     );
-  }, [
-    ceilingHeightValue,
-    doorMaterialValue,
-    subMaterialValue,
-    constructionMethodValue,
-    toeStyleValue,
-    crownValue,
-    lightRailValue,
-    sqft,
-  ]);
+  }
+
 
   const liveQuoteDisplay = useMemo(() => (
     <div className="mt-4 text-center text-sm text-muted">
       <p>
         Calculated Area: {sqft.toFixed(2)} sqft, Volume: {cuft.toFixed(2)} cuft
       </p>
-      <p>Live Quote: {toUSD(computedQuote)}</p>
+      <p>Live Quote: {toUSD(computedQuote())}</p>
     </div>
-  ), [sqft, cuft, computedQuote]);
+  ), [widthVal, heightVal, sqft, cuft, computedQuote]);
 
 
   const handleNext = () => {
     updateCabinet({
-      id: cabinet?.id,
-      room: cabinet?.room,
+      id: editingCabinetId,
       createStep: step + 1,
-      ...inputs,
-      quote: computedQuote,
+      length: inputs.length,
+      width: inputs.width,
+      height: inputs.height,
+      quote: computedQuote(),
     });
-
+    setStep((prev) => prev + 1);
   };
 
 
@@ -224,9 +225,18 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
     );
   };
 
+  const handleClose = async () => {
+    await refetchProjects();
+    setOpen(false);
+    setStep(0);
+    setInputs({});
+    setSpacePhotos([]);
+    setInspirationPhotos([]);
+  };
+
   return (
 
-    <Dialog open={open} onClose={() => setOpen(false)}>
+    <Dialog open={open} onOpenChange={handleClose}>
 
       <DialogContent className="max-w-3xl">
         <DialogHeader className="flex flex-col items-center">
@@ -240,18 +250,21 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
         <div className="mt-4">
           {renderStep()}
         </div>
-        <div className="flex justify-between pt-6">
-          {step > 0 ? (
-            <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
-              Back
+        {step >= 7 && (
+          <div className="flex justify-between pt-6">
+            {step > 0 ? (
+              <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
+                Back
+              </Button>
+            ) : (
+              <div />
+            )}
+            <Button onClick={handleNext} loading={isUpdating}>
+              {step >= stepLabels.length - 1 ? 'Finish' : 'Next'}
             </Button>
-          ) : (
-            <div />
-          )}
-          <Button onClick={handleNext} loading={isUpdating}>
-            {step >= stepLabels.length - 1 ? 'Finish' : 'Next'}
-          </Button>
-        </div>
+          </div>
+        )}
+
       </DialogContent>
     </Dialog>
 

@@ -26,6 +26,7 @@ export default function NewProjectRooms({
     const { mutateAsync: createRoom, isPending } = useCreateRoom();
     const { mutateAsync: updateRoom, isPending: isUpdating } = useUpdateRoom();
     const { mutateAsync: deleteRoom, isPending: isDeleting } = useDeleteRoom();
+
     const { data: commonRooms } = useGetRoomOptions();
     const sortedCommonRooms = commonRooms?.sort((a, b) => a.id - b.id);
     const addRoom = async (type: number) => {

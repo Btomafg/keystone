@@ -1,3 +1,7 @@
+import Grid from "@/components/app/projects/Grid";
+
 export default function Orders() {
-    return <div>Orders Page</div>;
+    return <div><Grid />
+
+    </div>;
 }

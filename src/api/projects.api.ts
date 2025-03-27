@@ -99,6 +99,19 @@ export const createCabinets = async (body: Partial<Cabinet>) => {
   }
   return true;
 };
+export const getCabinetById = async (cabinetId) => {
+  try {
+    const res = await API.getAll(
+      'Cabinets',
+      'id, room, ceilingHeight, constructionMethod, crown, doorMaterial, lightRail, subMaterial, toeStyle, length, width, height, sqft, cuft, name, quote, createStep',
+      'id',
+      cabinetId,
+    );
+    return res;
+  } catch (error) {
+    console.error('ERROR GETTING Cabinet', error);
+  }
+};
 export const updateCabinet = async (body: Partial<Cabinet>) => {
   try {
     console.log('UPDATING Cabinet', body);
