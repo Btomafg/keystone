@@ -16,7 +16,7 @@ export default function CabinetProjectFlow() {
 
   const project = projects?.find((p) => p.id == projectId);
 
-  const [step, setStep] = useState(3);
+  const [step, setStep] = useState(1);
   const { toast } = useToast();
 
   const createNewProject = async (data) => {

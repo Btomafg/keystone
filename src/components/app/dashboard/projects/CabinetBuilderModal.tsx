@@ -60,7 +60,9 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = ({ cabinetId, pr
         length: cabinet.length?.toString(),
         height: cabinet.height?.toString(),
       });
-      setStep(cabinet.createStep || 0);
+      if (cabinet.createStep + 1 > step) {
+        setStep(cabinet.createStep || 0);
+      }
       setSpacePhotos([]);
       setInspirationPhotos([]);
     }
