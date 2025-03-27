@@ -21,7 +21,9 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
     const { mutateAsync: deleteCabinet } = useDeleteCabinet();
     const { mutateAsync: updateRoom } = useUpdateRoom();
     const screenWidth = useScreenWidth();
-
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingCabinetId, setEditingCabinetId] = useState<number | null>(null);
+    const [modalStep, setModalStep] = useState(0);
     const updateRoomName = async (roomId: string, newName: string) => {
         await updateRoom({ id: roomId, name: newName });
     };
@@ -64,10 +66,11 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
 
     return (
         <div style={{ maxWidth: screenWidth * .9 }} className="space-y-6 max-w-md md:max-w-2xl mx-auto">
+            <CabinetBuilderModal step={modalStep} setStep={setModalStep} open={modalOpen} setOpen={() => setModalOpen(false)} editingCabinetId={editingCabinetId} project={project} />
             <h2 className="text-xl font-semibold">Cabinet Planner</h2>
             <p className="text-muted">Add cabinet sections to each room.</p>
             {project?.rooms?.sort((a, b) => a.id - b.id)?.map((room, index) => (
-                <div key={index} className="space-y-2 border-b p-2 ">
+                <div key={room.id} className="space-y-2 border-b p-2">
 
                     <RoomHeader room={room} updateRoomName={updateRoomName} deleteRoom={deleteRoom} />
 
@@ -83,13 +86,18 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
                             </TableHeader>
                             <TableBody>
                                 {room?.cabinets?.map((cabinet: Cabinet, index) => (
+
                                     <CabinetRow
-                                        key={index}
+                                        key={cabinet.id}
                                         cabinet={cabinet}
                                         project={project}
                                         updateCabinetName={updateCabinetName}
+                                        setModalOpen={setModalOpen}
+                                        cabinetId={editingCabinetId}
+                                        setEditingCabinetId={setEditingCabinetId}
                                         deleteCabinet={deleteCabinetById}
                                     />
+
                                 ))}
                                 <tr>
                                     <td colSpan={4}>
@@ -102,7 +110,8 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
                         </Table>
                     </div>
                 </div>
-            ))}
+            ))
+            }
             <div className="flex justify-between items-center">
                 <h3 className="font-medium">Total Estimated Project Cost:</h3>
                 <h3 className="font-medium">{toUSD(totalCost)}</h3>
@@ -115,7 +124,7 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
                     Continue
                 </Button>
             </div>
-        </div>
+        </div >
     );
 }
 
@@ -193,13 +202,15 @@ interface CabinetRowProps {
     project: Project;
     updateCabinetName: (cabinetId: number, roomId: string, newName: string) => void;
     deleteCabinet: (cabinetId: string) => void;
+    setModalOpen: (open: boolean) => void;
+    editingCabinetId: number | null;
+    setEditingCabinetId: (id: number) => void;
 }
 
-function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: CabinetRowProps) {
+function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet, setModalOpen, editingCabinetId, setEditingCabinetId }: CabinetRowProps) {
     const [isEditing, setIsEditing] = useState(cabinet.name ? false : true);
     const [tempName, setTempName] = useState(cabinet.name || '');
-    const [modalOpen, setModalOpen] = useState(false);
-    const [modalStep, setModalStep] = useState(cabinet?.createStep || 0);
+
     const handleEditClick = () => {
         setTempName(cabinet.name);
         setIsEditing(true);
@@ -225,8 +236,10 @@ function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: Cabi
                 )}
             </TableCell>
             <TableCell className="w-1/4">
+                <Button size="sm" variant="outline" onClick={() => { setEditingCabinetId(cabinet.id); setModalOpen(true); }}>
+                    Customize
+                </Button>
 
-                <CabinetBuilderModal step={modalStep} setStep={setModalStep} open={modalOpen} setOpen={() => setModalOpen(false)} project={project} cabinetId={cabinet.id} />
             </TableCell>
             <TableCell className="w-1/4">
                 {isEditing ? (

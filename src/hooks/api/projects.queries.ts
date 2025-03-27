@@ -116,7 +116,7 @@ export const useUpdateCabinet = () => {
   const mutation = useMutation({
     mutationFn: (body: Partial<Cabinet>) => updateCabinet(body),
     onSuccess: (response) => {
-      refetch();
+      //refetch();
       toast({ title: 'Cabinet Updated' });
     },
   });

@@ -1,6 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { CabinetOptionType } from '@/constants/enums/project.enums';
 import { Cabinet, Project } from '@/constants/models/object.types';
 import { useGetCustomOptions, useUpdateCabinet } from '@/hooks/api/projects.queries';
@@ -19,25 +19,29 @@ interface FilePreview {
 }
 
 interface CabinetBuilderModalProps {
-  cabinetId: number;
+
   project: Project;
   open: boolean;
   setOpen: (open) => void;
   step: number;
   setStep: (step) => void;
+
+  editingCabinetId: number;
 }
 
 const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
-  const { cabinetId, project, open, setOpen, step, setStep } = props;
+  const { project, open, setOpen, step, setStep, editingCabinetId } = props;
 
   const [spacePhotos, setSpacePhotos] = useState<FilePreview[]>([]);
   const [inspirationPhotos, setInspirationPhotos] = useState<FilePreview[]>([]);
-
+  const cabinetId = editingCabinetId;
+  console.log(cabinetId)
   const cabinet = project?.rooms
     ?.flatMap((room) => room.cabinets)
     .find((cab) => cab.id === cabinetId);
 
 
+  console.log(cabinet)
   const { mutateAsync: updateCabinet, isPending: isUpdating } = useUpdateCabinet();
   const { data: customOptions } = useGetCustomOptions();
   const [inputs, setInputs] = useState<Partial<Cabinet> & {
@@ -58,9 +62,9 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
   });
 
   useEffect(() => {
-    console.log('CabinetBuilderModal mounted for cabinet', cabinetId);
-    return () => console.log('CabinetBuilderModal unmounted for cabinet', cabinetId);
-  }, [cabinetId]);
+    console.log('CabinetBuilderModal mounted for cabinet', open);
+    return () => console.log('CabinetBuilderModal unmounted for cabinet', open);
+  }, [open]);
 
   // Step labels for the stepper
   const stepLabels = [
@@ -221,41 +225,36 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
   };
 
   return (
-    <div>
-      <Dialog >
-        <DialogTrigger>
-          <Button size="sm" variant="outline" >
-            Customize
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-3xl" >
 
-          <DialogHeader className="flex flex-col items-center">
-            <DialogTitle>Cabinet Builder</DialogTitle>
-            <CabinetStepper
-              steps={stepLabels}
-              currentStep={step}
-              onStepClick={(newStep) => setStep(newStep)}
-            />
-          </DialogHeader>
-          <div className="mt-4">
-            {renderStep()}
-          </div>
-          <div className="flex justify-between pt-6">
-            {step > 0 ? (
-              <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
-                Back
-              </Button>
-            ) : (
-              <div />
-            )}
-            <Button onClick={handleNext} loading={isUpdating}>
-              {step >= stepLabels.length - 1 ? 'Finish' : 'Next'}
+    <Dialog open={open} onClose={() => setOpen(false)}>
+
+      <DialogContent className="max-w-3xl">
+        <DialogHeader className="flex flex-col items-center">
+          <DialogTitle>Cabinet Builder</DialogTitle>
+          <CabinetStepper
+            steps={stepLabels}
+            currentStep={step}
+            onStepClick={(newStep) => setStep(newStep)}
+          />
+        </DialogHeader>
+        <div className="mt-4">
+          {renderStep()}
+        </div>
+        <div className="flex justify-between pt-6">
+          {step > 0 ? (
+            <Button variant="outline" onClick={() => setStep((s) => s - 1)}>
+              Back
             </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+          ) : (
+            <div />
+          )}
+          <Button onClick={handleNext} loading={isUpdating}>
+            {step >= stepLabels.length - 1 ? 'Finish' : 'Next'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+
   );
 };
 
