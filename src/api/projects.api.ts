@@ -6,7 +6,7 @@ import store from '@/store';
 
 export const createProject = async (body: Partial<Project>) => {
   const user = store.getState().auth.user;
-  const newProject = { ...body, user: user.id };
+  const newProject = { ...body, user_id: user.id };
   try {
     const res = await API.upsert('Projects', newProject);
     return res;
@@ -16,13 +16,23 @@ export const createProject = async (body: Partial<Project>) => {
   return true;
 };
 
+export const updateProject = async (body: Partial<Project>) => {
+  try {
+    const res = await API.update('Projects', body);
+    return res;
+  } catch (error) {
+    console.error('ERROR UPDATING PROJECT', error);
+  }
+  return true;
+};
+
 export const getProjects = async () => {
   const user = store.getState().auth.user;
   try {
     const res = await API.getAll(
       'Projects',
-      'id ,name ,description, status, type, step, rooms: Rooms_project_fkey (id,name,type, cabinets: Cabinets_room_fkey (id, room, ceilingHeight, constructionMethod, crown, doorMaterial, lightRail, subMaterial, toeStyle, length, width, height, sqft, cuft, name, quote))',
-      'user',
+      'id ,name ,description, status, type, step, rooms: Rooms_project_fkey (id,name,type, cabinets: Cabinets_room_fkey (id, room, ceilingHeight, constructionMethod, crown, doorMaterial, lightRail, subMaterial, toeStyle, length, width, height, sqft, cuft, name, quote, createStep))',
+      'user_id',
       user.id,
     );
     return res || [];
@@ -43,7 +53,7 @@ export const createRoom = async (body: Partial<Room>) => {
 export const updateRoom = async (body: Partial<Room>) => {
   try {
     console.log('UPDATING ROOM', body);
-    const res = await API.update('Rooms', body, 'id', body.id);
+    const res = await API.update('Rooms', body);
     return res;
   } catch (error) {
     console.error('ERROR CREATING PROJECT', error);
@@ -64,6 +74,15 @@ export const getRoomsByProjectId = async (projectId) => {
   const user = store.getState().auth.user;
   try {
     const res = await API.getAll('Rooms', 'id ,name ,type', 'project', projectId);
+    return res || [];
+  } catch (error) {
+    console.error('ERROR GETTING PROJECTS', error);
+  }
+};
+
+export const getRoomOptions = async (projectId) => {
+  try {
+    const res = await API.getAll('RoomOptions', 'id ,name ,image_url', 'active', true);
     return res || [];
   } catch (error) {
     console.error('ERROR GETTING PROJECTS', error);

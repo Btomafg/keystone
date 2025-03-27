@@ -1,12 +1,10 @@
-import React from 'react'
-import Title from './title'
-import Link from 'next/link'
 import RightArrow from '@/assets/icons/rightArrow'
-import ButtonOutline from './buttons/buttonOutline'
+import Link from 'next/link'
+import Title from './title'
 
-const jobOverview = [ 
+const jobOverview = [
     {
-        id:1,
+        id: 1,
 
     }
 ]
@@ -46,7 +44,7 @@ const JobDetailsSidebar = () => {
             </ul>
             <Link href={""} >
                 <button className={"flex items-center justify-center gap-3 text-2xl font-bold text-secondary-foreground  border-2 border-secondary  hover:text-primary-foreground px-10 py-[15px] whitespace-nowrap w-full relative after:absolute after:left-0 after:right-0 after:top-0 after:bg-secondary after:w-full after:h-0 hover:after:h-full after:transition-all after:duration-500 after:z-[-1] hover:after:bg-secondary transition-all duration-500"}>
-                    Download Brochures <span className='rotate-90'><RightArrow height={"25"} width={"22"} /></span> 
+                    Download Brochures <span className='rotate-90'><RightArrow height={"25"} width={"22"} /></span>
                 </button>
             </Link>
         </div>

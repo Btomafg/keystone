@@ -65,7 +65,9 @@ export default function Page({ children }) {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
+
         <DashboardRender />
+
       </SidebarInset>
     </SidebarProvider>
   )

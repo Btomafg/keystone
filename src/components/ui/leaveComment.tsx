@@ -1,8 +1,7 @@
-import React from 'react'
-import TextAreaFiled from './textAreaFiled'
-import InputField from './inputField'
-import ButtonFill from './buttons/buttonFill'
 import RightArrow from '@/assets/icons/rightArrow'
+import ButtonFill from './buttons/buttonFill'
+import InputField from './inputField'
+import TextAreaFiled from './textAreaFiled'
 
 const LeaveComment = () => {
     return (
@@ -16,7 +15,7 @@ const LeaveComment = () => {
                         <InputField placeholderc={"Your Email*"} type={"email"} />
                     </div>
                     <div className='mt-7.5 flex justify-end'>
-                        <ButtonFill>Submit <RightArrow width={"35"} height={"22"}/> </ButtonFill>
+                        <ButtonFill>Submit <RightArrow width={"35"} height={"22"} /> </ButtonFill>
                     </div>
                 </form>
             </div>

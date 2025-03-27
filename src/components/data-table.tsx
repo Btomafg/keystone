@@ -125,7 +125,7 @@ function DragHandle({ id }: { id: number }) {
     <Button
       {...attributes}
       {...listeners}
-      variant="ghost"
+      variant="outline"
       size="icon"
       className="size-7 text-muted-foreground hover:bg-transparent"
     >
@@ -292,7 +292,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
+            variant="outline"
             className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
             size="icon"
           >

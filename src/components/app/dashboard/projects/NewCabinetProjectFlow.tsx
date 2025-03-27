@@ -1,5 +1,4 @@
-import { Cabinet } from '@/constants/models/object.types';
-import { useCreateProjects, useGetCustomOptions, useGetProjects } from '@/hooks/api/projects.queries';
+import { useCreateProjects, useGetProjects, useUpdateProject } from '@/hooks/api/projects.queries';
 import { useToast } from '@/hooks/use-toast';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -9,6 +8,7 @@ import NewProjectRooms from './NewProjectRooms';
 
 export default function CabinetProjectFlow() {
   const { mutateAsync: createProject, isPending } = useCreateProjects();
+  const { mutateAsync: updateProject, isPending: isUpdating } = useUpdateProject();
   const router = useRouter();
   const path = usePathname();
   const projectId = path.split('/')[4];
@@ -16,7 +16,7 @@ export default function CabinetProjectFlow() {
 
   const project = projects?.find((p) => p.id == projectId);
 
-  const [step, setStep] = useState(!projectId ? 1 : !project?.rooms ? 2 : 3);
+  const [step, setStep] = useState(3);
   const { toast } = useToast();
 
   const createNewProject = async (data) => {
@@ -29,10 +29,10 @@ export default function CabinetProjectFlow() {
         step: 2,
       };
       data.id && (newProject = { ...newProject, id: data.id });
-      const res = await createProject(newProject);
+      const res = data.id ? await updateProject(newProject) : await createProject(newProject);
 
       router.push(`/dashboard/projects/new/${res?.id}`);
-      toast({ title: 'Project created successfully' });
+
 
       setStep(2);
     } catch (error) {

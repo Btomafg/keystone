@@ -11,6 +11,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { bugTypes } from "@/constants/general";
+import { useCreateBugReport } from "@/hooks/api/settings.queries";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { List } from "lucide-react";
 import React from "react";
@@ -32,7 +33,7 @@ const reportBugSchema = z.object({
 type ReportBugFormValues = z.infer<typeof reportBugSchema>;
 
 const ReportBug: React.FC<ReportBugProps> = ({ open, setOpen }) => {
-
+    const { mutateAsync: createBugReport, isPending } = useCreateBugReport();
     const form = useForm<ReportBugFormValues>({
         resolver: zodResolver(reportBugSchema),
         defaultValues: {
@@ -43,7 +44,7 @@ const ReportBug: React.FC<ReportBugProps> = ({ open, setOpen }) => {
 
     const onSubmit = async (data: ReportBugFormValues) => {
         console.log("Bug report submitted:", data);
-
+        await createBugReport(data);
         setOpen(false);
         form.reset();
     };
@@ -138,7 +139,7 @@ const ReportBug: React.FC<ReportBugProps> = ({ open, setOpen }) => {
                             >
                                 Cancel
                             </Button>
-                            <Button type="submit">Submit</Button>
+                            <Button loading={isPending} type="submit">Submit</Button>
                         </div>
                     </form>
                 </Form>

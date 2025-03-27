@@ -1,19 +1,15 @@
 'use client';
-import Link from 'next/link';
-import { useRef } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Navigation, Autoplay } from 'swiper/modules';
-import 'swiper/css';
-import { cn } from '@/lib/utils';
-import ButtonFill from '@/components/ui/buttons/buttonFill';
 import RightArrow from '@/assets/icons/rightArrow';
-import { data } from 'autoprefixer';
+import hero_3_sm from '@/assets/images/custom-closet-vert.png';
+import hero_3 from '@/assets/images/custom-closet.png';
 import hero_1 from '@/assets/images/custom-kitchen-1.png';
 import hero_2 from '@/assets/images/projects/designconcept.png';
-import hero_2_sm from '@/assets/images/bt-concept-1.png';
-import hero_3 from '@/assets/images/custom-closet.png';
-import hero_3_sm from '@/assets/images/custom-closet-vert.png';
 import { useScreenWidth } from '@/hooks/uiHooks';
+import { cn } from '@/lib/utils';
+import { useRef } from 'react';
+import 'swiper/css';
+import { Autoplay, Navigation, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
 const BannerOne = ({ text_muted, bg_muted }) => {
   const swiperRef = useRef();

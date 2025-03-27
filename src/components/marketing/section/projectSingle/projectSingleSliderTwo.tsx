@@ -1,17 +1,17 @@
 "use client"
-import React, { useEffect, useRef, useState } from 'react'
 import Image from 'next/image';
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { Navigation, Thumbs, FreeMode } from "swiper/modules"
+import { useEffect, useRef, useState } from 'react';
 import 'swiper/css';
+import { FreeMode, Navigation, Thumbs } from "swiper/modules";
+import { Swiper, SwiperSlide } from 'swiper/react';
 
-import project_img_1 from "@/assets/images/project-gallery-1.jpg"
-import project_img_2 from "@/assets/images/project-gallery-2.jpg"
-import project_img_3 from "@/assets/images/project-gallery-3.jpg"
-import project_img_4 from "@/assets/images/project-gallery-4.jpg"
-import project_img_5 from "@/assets/images/project-gallery-5.jpg"
-import project_img_6 from "@/assets/images/project-gallery-6.jpg"
 import RightArrow from '@/assets/icons/rightArrow';
+import project_img_1 from "@/assets/images/project-gallery-1.jpg";
+import project_img_2 from "@/assets/images/project-gallery-2.jpg";
+import project_img_3 from "@/assets/images/project-gallery-3.jpg";
+import project_img_4 from "@/assets/images/project-gallery-4.jpg";
+import project_img_5 from "@/assets/images/project-gallery-5.jpg";
+import project_img_6 from "@/assets/images/project-gallery-6.jpg";
 import ButtonFill from '@/components/ui/buttons/buttonFill';
 
 const projectImg = [
@@ -76,7 +76,7 @@ const ProjectSingleSliderTwo = () => {
                         projectImg?.map(({ id, img }) => {
                             return (
                                 <SwiperSlide key={id}>
-                                    <Image src={img} loading='lazy'  alt='img' className='w-full h-full max-h-[720px]' />
+                                    <Image src={img} loading='lazy' alt='img' className='w-full h-full max-h-[720px]' />
                                 </SwiperSlide>
                             )
                         })
@@ -119,7 +119,7 @@ const ProjectSingleSliderTwo = () => {
                     projectImg?.map(({ id, img }) => {
                         return (
                             <SwiperSlide key={id}>
-                                <Image src={img} loading='lazy'  alt='img' className='w-full lg:min-h-[250px] min-h-[100px] max-h-[100px] h-full ' />
+                                <Image src={img} loading='lazy' alt='img' className='w-full lg:min-h-[250px] min-h-[100px] max-h-[100px] h-full ' />
                             </SwiperSlide>
                         )
                     })

@@ -1,13 +1,15 @@
 import { Button } from '@/components/ui/button';
+import { BackgroundCard } from '@/components/ui/cards/backgroundCard';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { RoomType } from '@/constants/enums/project.enums';
-import { useCreateRoom, useDeleteRoom, useUpdateRoom } from '@/hooks/api/projects.queries';
+import { useCreateRoom, useDeleteRoom, useGetRoomOptions, useUpdateRoom } from '@/hooks/api/projects.queries';
+import { useScreenWidth } from '@/hooks/uiHooks';
 import { Check, Delete, Edit } from 'lucide-react';
 import { useState } from 'react';
 
 
-const commonRooms = ['Kitchen', 'Bathroom', 'Mudroom', 'Laundry', 'Office', 'Garage', 'Closet', 'Other'];
+
 
 interface NewProjectRoomsProps {
     project: any;
@@ -20,42 +22,49 @@ export default function NewProjectRooms({
     onBack,
     onNext,
 }: NewProjectRoomsProps) {
-
+    const screenWidth = useScreenWidth();
     const { mutateAsync: createRoom, isPending } = useCreateRoom();
     const { mutateAsync: updateRoom, isPending: isUpdating } = useUpdateRoom();
     const { mutateAsync: deleteRoom, isPending: isDeleting } = useDeleteRoom();
-    const addRoom = async (type: string) => {
+    const { data: commonRooms } = useGetRoomOptions();
+    const sortedCommonRooms = commonRooms?.sort((a, b) => a.id - b.id);
+    const addRoom = async (type: number) => {
         const newRoom = {
             name: '',
-            type: RoomType[type as keyof typeof RoomType],
+            type: type,
+            project: project.id,
         };
-        await createRoom({ ...newRoom, project: project.id });
+        await createRoom(newRoom);
     };
 
     // Update the room name in the project state.
     const updateRoomName = async (roomId: string, newName: string) => {
         console.log('updateRoomName', roomId, newName);
-        await createRoom({ id: roomId, name: newName, project: project.id });
+        await updateRoom({ id: roomId, name: newName, project: project.id });
 
     };
 
     // Delete the room.
     const deleteRoomById = async (roomId: string) => {
         await deleteRoom(roomId);
-
     };
 
+    const roomsMissingNames = project?.rooms?.filter((room) => !room.name);
+    const roomsMissingNamesCount = roomsMissingNames?.length;
+    console.log('roomsMissingNames', roomsMissingNames);
+    console.log('roomsMissingNamesCount', roomsMissingNamesCount);
+
     return (
-        <div className="space-y-6">
+        <div style={{ maxWidth: screenWidth * .85 }} className="flex flex-col mx-auto">
             <h2 className="text-xl font-semibold">Add Rooms</h2>
-            <p className="text-muted">
+            <p className="text-muted text-sm">
                 Select a room type to add a new room. Then fill in the room name inline.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {commonRooms?.map((type) => (
-                    <Button key={type} variant="outline" onClick={() => addRoom(type)}>
-                        {type}
-                    </Button>
+            <div className="grid grid-cols-3 gap-1 md:gap-3 p-2 mx-auto">
+                {sortedCommonRooms?.map((room) => (
+                    <BackgroundCard key={room.id} imageUrl={room.image_url} title={room.name} description='sdsd' variant="outline" onClick={() => addRoom(room.id)}>
+                        {room.name}
+                    </BackgroundCard>
                 ))}
             </div>
 
@@ -64,16 +73,16 @@ export default function NewProjectRooms({
                     No rooms added yet. Click a room type to add one.
                 </p>
             ) : (
-                <Table>
+                <Table className=" mx-auto">
                     <TableHeader>
-                        <TableRow>
+                        <TableRow >
                             <TableHead className="text-sm !text-muted">Room Name</TableHead>
                             <TableHead className="text-sm !text-muted">Room Type</TableHead>
                             <TableHead className="text-sm !text-muted">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {project?.rooms?.map((room) => (
+                        {project?.rooms?.sort((a, b) => a.id - b.id).map((room) => (
                             <RoomRow
                                 key={room.id}
                                 room={room}
@@ -86,10 +95,10 @@ export default function NewProjectRooms({
             )}
 
             <div className="flex justify-between pt-4">
-                <Button variant="ghost" onClick={onBack}>
+                <Button variant="outline" onClick={onBack}>
                     Back
                 </Button>
-                <Button disabled={project?.rooms?.length === 0} onClick={onNext}>
+                <Button disabled={project?.rooms?.length === 0 || roomsMissingNamesCount != 0} onClick={onNext}>
                     Next: Select Your Cabinets
                 </Button>
             </div>
@@ -106,6 +115,7 @@ interface Room {
 
 interface RoomRowProps {
     room: Room;
+
     updateRoomName: (roomId: string, newName: string) => void;
     deleteRoom: (roomId: string) => void;
 }
@@ -113,7 +123,11 @@ interface RoomRowProps {
 function RoomRow({ room, updateRoomName, deleteRoom }: RoomRowProps) {
     const [isEditing, setIsEditing] = useState(room && !room.name);
     const [tempName, setTempName] = useState(room.name);
+    const { data: commonRooms } = useGetRoomOptions();
 
+    const roomTypeName = (type: number) => {
+        return commonRooms?.find((room) => room.id === type)?.name;
+    };
     const handleEditClick = () => {
         setTempName(room.name);
         setIsEditing(true);
@@ -125,7 +139,7 @@ function RoomRow({ room, updateRoomName, deleteRoom }: RoomRowProps) {
     };
 
     return (
-        <TableRow>
+        <TableRow className=" ">
             <TableCell>
                 {isEditing ? (
                     <Input
@@ -138,7 +152,7 @@ function RoomRow({ room, updateRoomName, deleteRoom }: RoomRowProps) {
                     room.name || <span className="text-muted">No name</span>
                 )}
             </TableCell>
-            <TableCell>{room.type}</TableCell>
+            <TableCell>{roomTypeName(room.type)}</TableCell>
             <TableCell className="flex flex-row flex-1 align-middle justify-center gap-2">
                 {isEditing ? (
 
@@ -146,9 +160,22 @@ function RoomRow({ room, updateRoomName, deleteRoom }: RoomRowProps) {
                     <Button size='sm' variant='outline' onClick={handleSaveClick}>
                         Save <Check className='text-green-400' /> </Button>
                 ) : (
-                    <div className="flex flex-row gap-2">
+                    <div className="flex flex-row justify-between gap-2">
                         <Edit size={18} onClick={handleEditClick} className="cursor-pointer hover:scale-105 my-auto text-blue-600" />
-                        <Delete size={18} onClick={() => deleteRoom(room.id)} className="cursor-pointer hover:scale-105 my-auto text-red-600" />
+
+                        <Popover>
+                            <PopoverTrigger><Delete size={18} className="cursor-pointer hover:scale-105 my-auto text-red-600" /></PopoverTrigger>
+                            <PopoverContent className='flex flex-col gap-2 p-4 bg-white text-black rounded-md shadow-md'>
+
+                                <p className='text-sm'>Are you sure you want to delete?</p>
+                                <div className='flex flex-row justify-between gap-2'>
+                                    <Button size='xs' variant='outline'>No</Button>
+                                    <Button size='xs' variant='destructive' onClick={() => deleteRoom(room.id)}>Yes</Button>
+
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+
                     </div>
                 )}
 

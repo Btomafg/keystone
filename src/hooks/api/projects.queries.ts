@@ -6,11 +6,12 @@ import {
   deleteRoom,
   getCustomOptions,
   getProjects,
+  getRoomOptions,
   getRoomsByProjectId,
   updateCabinet,
   updateRoom,
 } from '@/api/projects.api';
-import { Project, Room } from '@/constants/models/object.types';
+import { Cabinet, Project, Room } from '@/constants/models/object.types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useToast } from '../use-toast';
 
@@ -43,6 +44,18 @@ export const useCreateProjects = () => {
   return mutation;
 };
 
+export const useUpdateProject = () => {
+  const { toast } = useToast();
+
+  const mutation = useMutation({
+    mutationFn: (body: Partial<Project>) => createProject(body),
+    onSuccess: (response) => {
+      toast({ title: 'Project Updated', description: 'Your project has been successfully updated.' });
+    },
+  });
+  return mutation;
+};
+
 export const useGetRoomsByProjectId = (projectId) => {
   const query = useQuery({
     queryKey: [projectId],
@@ -65,7 +78,7 @@ export const useCreateRoom = () => {
     mutationFn: (body: Partial<Room>) => createRoom(body),
     onSuccess: (response) => {
       refetch();
-      toast({ title: 'Project Created', description: 'Your project has been successfully created.' });
+      toast({ title: 'Room Created', description: 'A new room has been added to your project' });
     },
   });
   return mutation;
@@ -101,7 +114,7 @@ export const useUpdateCabinet = () => {
   const { toast } = useToast();
   const { refetch } = useGetProjects();
   const mutation = useMutation({
-    mutationFn: (body: Partial<Room>) => updateCabinet(body),
+    mutationFn: (body: Partial<Cabinet>) => updateCabinet(body),
     onSuccess: (response) => {
       refetch();
       toast({ title: 'Cabinet Updated' });
@@ -122,6 +135,22 @@ export const useDeleteRoom = () => {
   return mutation;
 };
 
+export const useGetRoomOptions = () => {
+  const query = useQuery({
+    queryKey: ['getRoomOptions'],
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+    queryFn: getRoomOptions,
+  });
+
+  return {
+    data: query?.data as any[],
+    isSuccess: query.isSuccess,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
+};
 export const useGetCustomOptions = () => {
   const query = useQuery({
     queryKey: ['getCustomOptions'],
@@ -139,7 +168,6 @@ export const useGetCustomOptions = () => {
   };
 };
 
-
 export const useDeleteCabinet = () => {
   const { toast } = useToast();
   const { refetch } = useGetProjects();
@@ -151,4 +179,4 @@ export const useDeleteCabinet = () => {
     },
   });
   return mutation;
-}
+};

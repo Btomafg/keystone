@@ -40,7 +40,8 @@ export enum RoomType {
   Office = 4,
   Garage = 5,
   Closet = 6,
-  Other = 7,
+  Pantry = 7,
+  Other = 8,
 }
 
 export const RoomTypeLabels: Record<RoomType, string> = {
@@ -51,6 +52,7 @@ export const RoomTypeLabels: Record<RoomType, string> = {
   [RoomType.Office]: 'Office',
   [RoomType.Garage]: 'Garage',
   [RoomType.Closet]: 'Closet',
+  [RoomType.Pantry]: 'Pantry',
   [RoomType.Other]: 'Other',
 };
 

@@ -93,6 +93,7 @@ const ProjectsWidget = () => {
                         <Card
                             key={index}
                             className="flex flex-col text-wrap gap-1 w-52 h-36 p-2 hover:scale-105 hover:shadow-lg hover:cursor-pointer"
+                            onClick={() => router.push(`${APP_ROUTES.DASHBOARD.PROJECTS.NEW.path}/${data.id}`)}
                         >
                             <div className="flex flex-row justify-between mt-1" title="Projects">
                                 <span className="text-base">{data.name}</span>

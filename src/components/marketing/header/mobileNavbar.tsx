@@ -30,7 +30,7 @@ const MobileNavbar = () => {
   };
 
   return (
-    <div style={{ zIndex: 1000 }} className="mobile-navbar">
+    <div style={{ zIndex: 1000 }} className="mobile-navbar ">
       <div className=" relative overflow-x-clip px-2.5">
         <div className="container-fluid ">
           <div className="flex items-center justify-between py-4">

@@ -88,7 +88,7 @@ export type PaymentMethod = [
 ];
 
 export type Room {
-  id: string;
+  id: number;
   name: string;
   type: RoomType;
   project: string;
@@ -97,7 +97,7 @@ export type Room {
 }
 
 export type Cabinet {
-  id: string;
+  id: number;
   name: string;
   status: string;
   quote: number;
@@ -114,6 +114,7 @@ export type Cabinet {
   sqft?: number;
   cuft?: number;
   room?: string;
+  createStep?: number;
 
 }
 
@@ -136,4 +137,13 @@ type CabinetCalculatorInput = {
   crown: string;
   lightRail: string;
   linearFootage: string;
+};
+
+export type BugReport = {
+  id: string;
+  user: string;
+  type: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
 };

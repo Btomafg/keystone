@@ -33,9 +33,11 @@ export const API = {
     return data as T;
   },
 
-  async update<T = any>(table: string, column: string, value: any, payload: Partial<T>): Promise<void> {
-    const { error } = await supabase.from(table).update(payload).eq(column, value);
+  async update<T = any>(table: string, payload: Partial<T> & { id: string }): Promise<T> {
+    const { data, error } = await supabase.from(table).update(payload).eq('id', payload.id).select().single();
+
     if (error) throw new Error(error.message);
+    return data;
   },
 
   async delete<T = any>(table: string, column: string, value: any): Promise<void> {

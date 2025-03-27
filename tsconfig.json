@@ -5,14 +5,11 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-
     "noImplicitReturns": true,
-
     "preserveConstEnums": true,
     "sourceMap": true,
     "declaration": true,
     "downlevelIteration": true,
-
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "forceConsistentCasingInFileNames": true,

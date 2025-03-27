@@ -1,9 +1,9 @@
 "use client"
-import Image from 'next/image'
-import { motion } from "framer-motion"
 import RightArrow from '@/assets/icons/rightArrow'
-import ButtonFill from '../buttons/buttonFill'
+import { motion } from "framer-motion"
+import Image from 'next/image'
 import Link from 'next/link'
+import ButtonFill from '../buttons/buttonFill'
 
 const ProjectCardOne = ({ order, position, project_year, project_desc, project_img, location, project_type, project_name, link, imageVariants, cardVariants }) => {
     return (
@@ -19,7 +19,7 @@ const ProjectCardOne = ({ order, position, project_year, project_desc, project_i
                                 viewport={{ once: true, amount: 0 }}
                             >
 
-                                <Image src={project_img} loading='lazy'      alt='project-img-1' width={"auto"} height={"auto"} className=' h-full' />
+                                <Image src={project_img} loading='lazy' alt='project-img-1' width={"auto"} height={"auto"} className=' h-full' />
                             </motion.div>
                         </div>
                     </div>
