@@ -102,9 +102,9 @@ export const createCabinets = async (body: Partial<Cabinet>) => {
 export const updateCabinet = async (body: Partial<Cabinet>) => {
   try {
     console.log('UPDATING Cabinet', body);
-    const res = await API.upsert('Cabinets', body);
+    const res = await API.update('Cabinets', body);
 
-    console.log('Cabinet created', res);
+    console.log('Cabinet updated', res);
     return res;
   } catch (error) {
     console.error('ERROR CREATING Cabinet', error);

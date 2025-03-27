@@ -197,7 +197,7 @@ interface CabinetRowProps {
 
 function CabinetRow({ cabinet, project, updateCabinetName, deleteCabinet }: CabinetRowProps) {
     const [isEditing, setIsEditing] = useState(cabinet.name ? false : true);
-    const [tempName, setTempName] = useState(cabinet.name);
+    const [tempName, setTempName] = useState(cabinet.name || '');
     const [modalOpen, setModalOpen] = useState(false);
     const [modalStep, setModalStep] = useState(0);
     const handleEditClick = () => {
