@@ -33,6 +33,7 @@ export default function Page({ children }) {
   const path = usePathname()
   const section = path
 
+
   const DashboardRender = () => {
     const isDynamicProject = section?.match(/^\/dashboard\/projects\/new\/[^/]+\/?$/)
     if (isDynamicProject) {
@@ -59,14 +60,22 @@ export default function Page({ children }) {
     }
   }
 
-
+  const DashboardWrapper = () => {
+    return (
+      <div className="flex flex-col w-full h-full px-4 py-6 ">
+        <div className="flex-1">
+          <DashboardRender />
+        </div>
+      </div>
+    )
+  }
   return (
     <SidebarProvider>
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
 
-        <DashboardRender />
+        <DashboardWrapper />
 
       </SidebarInset>
     </SidebarProvider>
