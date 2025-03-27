@@ -155,7 +155,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
     updateCabinet({
       id: cabinet?.id,
       room: cabinet?.room,
-      createStep: step,
+      createStep: step + 1,
       ...inputs,
       quote: computedQuote,
     });
