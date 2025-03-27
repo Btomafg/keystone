@@ -1,3 +1,4 @@
+'use client'
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -150,7 +151,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = ({ cabinetId, pr
     </div>
   ), [sqft, cuft, computedQuote]);
 
-  // Navigation: on finishing the final step, save quote and close.
+
   const handleNext = () => {
 
     updateCabinet({
@@ -163,7 +164,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = ({ cabinetId, pr
     setStep((prev) => prev + 1);
   };
 
-  // Render the current step by delegating to the appropriate subcomponent.
+
   const renderStep = () => {
     // Steps 0-6: Option selection
     const optionSteps = [
