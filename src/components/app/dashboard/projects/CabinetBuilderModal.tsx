@@ -5,7 +5,7 @@ import { CabinetOptionType } from '@/constants/enums/project.enums';
 import { Cabinet, Project } from '@/constants/models/object.types';
 import { useGetCustomOptions, useUpdateCabinet } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CabinetStepper } from './CabinetBuilderModal/CabinetStepper';
 import DimensionsStep from './CabinetBuilderModal/DimensionsStep';
 import OptionStep from './CabinetBuilderModal/OptionStep';
@@ -29,11 +29,7 @@ interface CabinetBuilderModalProps {
 
 const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
   const { cabinetId, project, open, setOpen, step, setStep } = props;
-  const [inputs, setInputs] = useState<Partial<Cabinet> & {
-    width?: string;
-    length?: string;
-    height?: string;
-  }>({});
+
   const [spacePhotos, setSpacePhotos] = useState<FilePreview[]>([]);
   const [inspirationPhotos, setInspirationPhotos] = useState<FilePreview[]>([]);
 
@@ -44,27 +40,23 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = (props) => {
 
   const { mutateAsync: updateCabinet, isPending: isUpdating } = useUpdateCabinet();
   const { data: customOptions } = useGetCustomOptions();
+  const [inputs, setInputs] = useState<Partial<Cabinet> & {
+    width?: string;
+    length?: string;
+    height?: string;
+  }>({
+    ceilingHeight: cabinet?.ceilingHeight || undefined,
+    doorMaterial: cabinet?.doorMaterial || undefined,
+    subMaterial: cabinet?.subMaterial || undefined,
+    constructionMethod: cabinet?.constructionMethod || undefined,
+    toeStyle: cabinet?.toeStyle || undefined,
+    crown: cabinet?.crown || undefined,
+    lightRail: cabinet?.lightRail || undefined,
+    width: cabinet?.width || 0,
+    length: cabinet?.length || 0,
+    height: cabinet?.height || 0,
+  });
 
-  // Initialize from the cabinet data on mount/update.
-  useEffect(() => {
-    if (cabinet) {
-      setInputs({
-        ceilingHeight: cabinet?.ceilingHeight || undefined,
-        doorMaterial: cabinet?.doorMaterial || undefined,
-        subMaterial: cabinet?.subMaterial || undefined,
-        constructionMethod: cabinet?.constructionMethod || undefined,
-        toeStyle: cabinet?.toeStyle || undefined,
-        crown: cabinet?.crown || undefined,
-        lightRail: cabinet?.lightRail || undefined,
-        width: cabinet?.width || 0,
-        length: cabinet?.length || 0,
-        height: cabinet?.height || 0,
-      });
-
-      setSpacePhotos([]);
-      setInspirationPhotos([]);
-    }
-  }, []);
 
   // Step labels for the stepper
   const stepLabels = [
