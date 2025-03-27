@@ -152,10 +152,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = ({ cabinetId, pr
 
   // Navigation: on finishing the final step, save quote and close.
   const handleNext = () => {
-    if (step === stepLabels.length - 1) {
-      setOpen(false);
-      return;
-    }
+
     updateCabinet({
       id: cabinet?.id,
       room: cabinet?.room,
@@ -230,7 +227,7 @@ const CabinetBuilderModal: React.FC<CabinetBuilderModalProps> = ({ cabinetId, pr
 
   return (
     <div>
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={setOpen} >
         <DialogTrigger asChild>
           <Button size="sm" variant="outline">
             Customize
