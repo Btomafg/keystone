@@ -27,20 +27,63 @@ export const updateProject = async (body: Partial<Project>) => {
 };
 
 export const getProjects = async () => {
-  const user = store.getState().auth.user;
+  const { auth: { user } } = store.getState();
+
+  if (!user) {
+    console.error('No user found in store.');
+    return [];
+  }
+
+  // Build the query string with improved readability
+  const query = `
+    id,
+    name,
+    description,
+    status,
+    type,
+    step,
+    rooms: Rooms_project_fkey (
+      id,
+      name,
+      type,
+      layout,
+      walls: Walls_room_id_fkey (
+        id,
+        name,
+        wall_number,
+        
+        length,
+        cabinets: Cabinets_wall_id_fkey (
+          id,
+          wall_id,
+          ceilingHeight,
+          constructionMethod,
+          crown,
+          doorMaterial,
+          lightRail,
+          subMaterial,
+          toeStyle,
+          length,
+          width,
+          height,
+          sqft,
+          cuft,
+          name,
+          quote,
+          createStep
+        )
+      )
+    )
+  `;
+
   try {
-    const res = await API.getAll(
-      'Projects',
-      'id ,name ,description, status, type, step, rooms: Rooms_project_fkey (id,name,type, cabinets: Cabinets_room_fkey (id, room, ceilingHeight, constructionMethod, crown, doorMaterial, lightRail, subMaterial, toeStyle, length, width, height, sqft, cuft, name, quote, createStep))',
-      'user_id',
-      user.id,
-    );
+    const res = await API.getAll('Projects', query, 'user_id', user.id);
     return res || [];
   } catch (error) {
     console.error('ERROR GETTING PROJECTS', error);
+    return [];
   }
 };
-
 export const createRoom = async (body: Partial<Room>) => {
   try {
     const res = await API.upsert('Rooms', body);

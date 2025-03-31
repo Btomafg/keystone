@@ -89,11 +89,23 @@ export type PaymentMethod = [
 export type Room {
   id: number;
   name: string;
+length: number;
   type: RoomType;
   project: string;
-  cabinets: Cabinet[];
+  walls: Wall[];
+  layout: number;
   status?: string;
 }
+
+export type Wall {
+  id: number;
+  name: string;
+  number: number;
+  length: number;
+  cabinets: Cabinet[];
+}
+
+
 
 export type Cabinet {
   id: number;
