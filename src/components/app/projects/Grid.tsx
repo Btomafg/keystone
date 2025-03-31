@@ -1,10 +1,10 @@
 'use client';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 /* -----------------------------------------------
    Constants & Helper Functions
 ----------------------------------------------- */
-const CELLS_PER_FOOT = 2; // each foot equals 2 cells (0.5ft increments)
+const CELLS_PER_FOOT = 1; // each foot equals 2 cells (0.5ft increments)
 const CELL_SIZE = 10; // pixel dimension of each cell
 
 function isInSelectionRange(x, y, start, end) {

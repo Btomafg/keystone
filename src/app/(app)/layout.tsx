@@ -6,7 +6,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { useTypedSelector } from "@/hooks/useTypedSelector";
 import { usePathname } from 'next/navigation';
 
-import CabinetProjectFlow from "@/components/app/dashboard/projects/NewCabinetProjectFlow";
+import NewProjectPage from "@/components/app/dashboard/projects/NewProjectPage";
 import { APP_ROUTES } from "@/constants/routes";
 import { useGetProjects } from "@/hooks/api/projects.queries";
 import { useGetUser } from "@/hooks/api/users.queries";
@@ -37,7 +37,7 @@ export default function Page({ children }) {
   const DashboardRender = () => {
     const isDynamicProject = section?.match(/^\/dashboard\/projects\/new\/[^/]+\/?$/)
     if (isDynamicProject) {
-      return <CabinetProjectFlow />
+      return <NewProjectPage />
     }
     switch (section) {
       case APP_ROUTES.DASHBOARD.HOME.path:
@@ -45,7 +45,7 @@ export default function Page({ children }) {
       case APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path:
         return <Projects />
       case APP_ROUTES.DASHBOARD.PROJECTS.NEW.path:
-        return <CabinetProjectFlow />
+        return <NewProjectPage />
 
       case APP_ROUTES.DASHBOARD.ORDERS.path:
         return <Orders />

@@ -3,7 +3,8 @@ import { useTypedSelector } from "@/hooks/useTypedSelector";
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from "react";
 import Grid from "../projects/Grid";
-import ProjectsWidget from "./ProjectsWidget";
+import QuickCards from "./dashboard/QuickCards";
+import WelcomeBanner from "./dashboard/WelcomeBanner";
 export default function Page() {
   const router = useRouter();
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
@@ -23,7 +24,9 @@ export default function Page() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <ProjectsWidget />
+      <WelcomeBanner />
+      <QuickCards />
+
       <Grid />
 
     </div>

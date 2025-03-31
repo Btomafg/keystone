@@ -4,15 +4,24 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useRouteEntries } from "@/hooks/useRouteEntries";
 
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export function SiteHeader() {
+  const router = useRouter();
   const pathname = usePathname();
   const entries = useRouteEntries();
 
 
-  console.log(pathname);
-  const title = entries.find((r) => r.path.includes(pathname))?.title;
+  const pathLength = pathname.split("/").length;
+
+  const path = pathLength <= 4 ? pathname.split("/").slice(0, pathLength - 1).join("/") : pathname.split("/").slice(0, pathLength - 2).join("/");
+
+  const matchedEntry = entries.find((r) => r.path.includes(path));
+
+  const title = matchedEntry?.title;
+
+
+
 
   return (
     <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">

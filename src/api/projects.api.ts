@@ -142,3 +142,17 @@ export const getCustomOptions = async () => {
     console.error('ERROR GETTING CustomOptions', error);
   }
 };
+
+export const getLayoutOptions = async () => {
+  try {
+    const res = await API.getAll(
+      'Layouts',
+      'id , name ,image_url,walls, wall_one_image_url, wall_two_image_url, wall_three_image_url',
+      'active',
+      true,
+    );
+    return res || [];
+  } catch (error) {
+    console.error('ERROR GETTING LayoutOptions', error);
+  }
+};

@@ -4,7 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import NewProjectCabinets from './NewProjectCabinets';
-import NewProjectDetails from './NewProjectDetails';
+import NewProjectDetails from './NewProjectModal/NewProjectDetails';
 import NewProjectRooms from './NewProjectRooms';
 
 export default function CabinetProjectFlow() {

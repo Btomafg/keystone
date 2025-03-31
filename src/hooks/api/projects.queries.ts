@@ -6,6 +6,7 @@ import {
   deleteRoom,
   getCabinetById,
   getCustomOptions,
+  getLayoutOptions,
   getProjects,
   getRoomOptions,
   getRoomsByProjectId,
@@ -194,4 +195,21 @@ export const useDeleteCabinet = () => {
     },
   });
   return mutation;
+};
+
+export const useGetLayoutOptions = () => {
+  const query = useQuery({
+    queryKey: ['getLayoutOptions'],
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+    queryFn: getLayoutOptions,
+  });
+
+  return {
+    data: query?.data as any[],
+    isSuccess: query.isSuccess,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
 };

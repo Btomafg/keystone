@@ -2,7 +2,6 @@ import { ProjectStatus, ProjectType, RoomType } from "../enums/project.enums";
 
 export type User = {
   id: string;
-  id: string;
   created_at: string;
   title: string;
   date_of_birth: string | null;
@@ -119,10 +118,15 @@ export type Cabinet {
 }
 
 export type Project {
-  id: string;
+  id: number;
   name: string;
   description: string;
   step: number;
+  firstCustom: boolean;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
   type: ProjectType;
   status: ProjectStatus ;
   rooms: Room[];
