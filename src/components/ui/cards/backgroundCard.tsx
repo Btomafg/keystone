@@ -16,19 +16,19 @@ export const BackgroundCard = ({ title, description, imageUrl, onClick }: CardPr
         "https://www.keystonewoodworx.com/_next/static/media/mark1.9d2e7f3b.jpg";
 
     return (
-        <div className=" w-full group">
+        <div className=" w-[75px] md:w-[120px] group">
             <div
                 onClick={onClick}
                 className={cn(
-                    "cursor-pointer overflow-hidden relative h-32 sm:h-36 rounded-md shadow-xl aspect-square  mx-auto flex flex-col justify-between p-3 bg-cover"
+                    "cursor-pointer overflow-hidden relative  rounded-md shadow-xl aspect-square  mx-auto flex flex-col justify-between p-2 bg-cover"
                 )}
                 style={{ backgroundImage: `url(${img})` }}
             >
                 <div className="absolute w-full h-full top-0 left-0 transition duration-300 bg-black opacity-40 group-hover:bg-transparent"></div>
                 <div className="flex flex-col relative z-10 text-content justify-between ">
-                    <h1 className="font-bold text-xl md:text-2xl text-white ">{title}</h1>
+                    <h1 className="font-bold text-lg md:text-xl text-white ">{title}</h1>
 
-                    <Badge color="blue" className="text-white text-xs group-hover:block hidden mx-auto mt-16"> Add {title} </Badge>
+                    <Badge color="blue" className="text-white text-xs group-hover:block hidden mx-auto mt-4"> Selected </Badge>
                 </div>
             </div>
         </div>

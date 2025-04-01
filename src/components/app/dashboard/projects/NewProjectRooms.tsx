@@ -1,188 +1,262 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BackgroundCard } from '@/components/ui/cards/backgroundCard';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useCreateRoom, useDeleteRoom, useGetRoomOptions, useUpdateRoom } from '@/hooks/api/projects.queries';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useCreateRoom, useDeleteRoom, useGetLayoutOptions, useGetProjects, useGetRoomOptions, useUpdateRoom } from '@/hooks/api/projects.queries';
 import { useScreenWidth } from '@/hooks/uiHooks';
-import { Check, Delete, Edit } from 'lucide-react';
-import { useState } from 'react';
-
-
-
+import { cn } from '@/lib/utils';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ChevronLeft } from 'lucide-react';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
 interface NewProjectRoomsProps {
-    project: any;
-    onBack: () => void;
-    onNext: () => void;
+
+    open: boolean;
+    setOpen: (open: boolean) => void;
 }
 
-export default function NewProjectRooms({
-    project,
-    onBack,
-    onNext,
-}: NewProjectRoomsProps) {
+export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps) {
+    const [newRoomStep, setNewRoomStep] = React.useState(0);
+    const [newRoom, setNewRoom] = React.useState<any>(null);
     const screenWidth = useScreenWidth();
     const { mutateAsync: createRoom, isPending } = useCreateRoom();
     const { mutateAsync: updateRoom, isPending: isUpdating } = useUpdateRoom();
     const { mutateAsync: deleteRoom, isPending: isDeleting } = useDeleteRoom();
-
+    const { data: projects, isLoading } = useGetProjects();
     const { data: commonRooms } = useGetRoomOptions();
+    const { data: layouts } = useGetLayoutOptions();
+    const typeLayouts = layouts?.filter((layout) => layout.room_option_id === newRoom?.type);
+    const path = usePathname();
+    const projectId = path.split('/')[4];
+    const project = projects?.find((project) => project?.id == projectId);
     const sortedCommonRooms = commonRooms?.sort((a, b) => a.id - b.id);
-    const addRoom = async (type: number) => {
+
+
+    const saveRoom = async (data) => {
+        const res = await createRoom(data);
+        console.log('Room created:', res);
+        setOpen(false);
+        setNewRoomStep(0);
+        setNewRoom(null);
+    };
+
+    const selectRoomType = async (type: number) => {
         const newRoom = {
-            name: '',
             type: type,
             project: project.id,
         };
-        await createRoom(newRoom);
+        setNewRoom(newRoom);
+        setNewRoomStep(1);
     };
 
-    // Update the room name in the project state.
+    const selectLayout = async (layoutId: number) => {
+        const newRoomData = {
+            ...newRoom,
+            layout: layoutId,
+        };
+        setNewRoom(newRoomData);
+        setNewRoomStep(2);
+    };
+
     const updateRoomName = async (roomId: string, newName: string) => {
         console.log('updateRoomName', roomId, newName);
         await updateRoom({ id: roomId, name: newName, project: project.id });
-
     };
 
-    // Delete the room.
     const deleteRoomById = async (roomId: string) => {
         await deleteRoom(roomId);
     };
 
-    const roomsMissingNames = project?.rooms?.filter((room) => !room.name);
-    const roomsMissingNamesCount = roomsMissingNames?.length;
-    console.log('roomsMissingNames', roomsMissingNames);
-    console.log('roomsMissingNamesCount', roomsMissingNamesCount);
+    const onBack = () => {
+        if (newRoomStep === 0) {
+            console.log('Closing modal or going back');
+        }
+        if (newRoomStep === 1) {
+            setNewRoomStep(0);
+        }
+        if (newRoomStep === 2) {
+            setNewRoomStep(1);
+        }
+    };
 
-    return (
-        <div style={{ maxWidth: screenWidth * .85 }} className="flex flex-col mx-auto">
-            <h2 className="text-xl font-semibold">Add Rooms</h2>
-            <p className="text-muted text-sm">
-                Select a room type to add a new room. Then fill in the room name inline.
-            </p>
-            <div className="grid grid-cols-3 gap-1 md:gap-3 p-2 mx-auto">
-                {sortedCommonRooms?.map((room) => (
-                    <BackgroundCard key={room.id} imageUrl={room.image_url} title={room.name} description='sdsd' variant="outline" onClick={() => addRoom(room.id)}>
-                        {room.name}
-                    </BackgroundCard>
-                ))}
-            </div>
 
-            {project?.rooms?.length === 0 ? (
-                <p className="text-muted text-center">
-                    No rooms added yet. Click a room type to add one.
-                </p>
-            ) : (
-                <Table className=" mx-auto">
-                    <TableHeader>
-                        <TableRow >
-                            <TableHead className="text-sm !text-muted">Room Name</TableHead>
-                            <TableHead className="text-sm !text-muted">Room Type</TableHead>
-                            <TableHead className="text-sm !text-muted">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {project?.rooms?.sort((a, b) => a.id - b.id).map((room) => (
-                            <RoomRow
-                                key={room.id}
-                                room={room}
-                                updateRoomName={updateRoomName}
-                                deleteRoom={deleteRoomById}
-                            />
-                        ))}
-                    </TableBody>
-                </Table>
-            )}
 
-            <div className="flex justify-between pt-4">
-                <Button variant="outline" onClick={onBack}>
-                    Back
-                </Button>
-                <Button disabled={project?.rooms?.length === 0 || roomsMissingNamesCount != 0} onClick={onNext}>
-                    Next: Select Your Cabinets
-                </Button>
+    const stepData = [
+        {
+            title: 'Select Room Type',
+            description: 'What type of room do you want to add?',
+        },
+        {
+            title: 'Select Room Layout',
+            description: 'Choose a layout that best fits the room.',
+        },
+        {
+            title: 'Room Details',
+            description: 'Add details for the room.',
+        },
+    ];
+
+    const NewRoomStep1 = () => (
+        <div className="grid grid-cols-4 md:grid-cols-4 gap-1 md:gap-2 p-2 mx-auto">
+            {sortedCommonRooms?.map((room) => (
+                <BackgroundCard
+                    key={room.id}
+                    imageUrl={room.image_url}
+                    title={room.name}
+                    description="sdsd"
+                    variant="outline"
+                    onClick={() => selectRoomType(room.id)}
+                >
+                    {room.name}
+                </BackgroundCard>
+            ))}
+        </div>
+    );
+
+    const NewRoomStep2 = () => (
+        <div className="grid grid-cols-4 md:grid-cols-4 gap-1 md:gap-2 p-2 mx-auto">
+            {typeLayouts?.map((layout) => (
+                <div key={layout.id} className="w-[75px] md:w-[120px] group" onClick={() => selectLayout(layout.id)}>
+                    <div
+                        className={cn(
+                            'cursor-pointer overflow-hidden relative rounded-md shadow-xl aspect-square mx-auto flex flex-col justify-between p-2 bg-cover'
+                        )}
+                    >
+                        <div className="absolute w-full h-full top-0 left-0 transition duration-300 bg-white rounded-xl group-hover:border-primary group-hover:border-2"></div>
+                        <div className="flex flex-col relative z-10 text-content justify-between">
+                            <h1 className="font-bold text-lg md:text-xl text-muted">{layout.name}</h1>
+                            <Image src={layout.image_url} alt="Room Layout" width={100} height={100} className="object-cover" />
+                            <Badge color="blue" className="text-white text-xs group-hover:block hidden mx-auto mt-4">
+                                Selected
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
+            ))}
+            <div className="w-[75px] md:w-[120px] group" onClick={() => selectLayout(9)}>
+                <div
+                    className={cn(
+                        'cursor-pointer overflow-hidden relative rounded-md shadow-xl aspect-square mx-auto flex flex-col justify-between p-2 bg-cover'
+                    )}
+                >
+                    <div className="absolute w-full h-full top-0 left-0 transition duration-300 bg-white rounded-xl group-hover:border-primary group-hover:border-2"></div>
+                    <div className="flex flex-col relative z-10 text-content justify-between">
+                        <h1 className="font-bold text-lg md:text-xl text-muted my-auto">Custom</h1>
+                        <Badge color="blue" className="text-white text-xs group-hover:block hidden mx-auto mt-4">
+                            Selected
+                        </Badge>
+                    </div>
+                </div>
             </div>
         </div>
     );
-}
 
-interface Room {
-    id: string;
-    name: string;
-    type: string;
-    cabinets: any[];
-}
 
-interface RoomRowProps {
-    room: Room;
+    const roomDetailsSchema = z.object({
+        roomName: z.string().min(1, { message: 'Room name is required' }),
+        height: z.number({ required_error: 'Select a wall height' }),
+    });
 
-    updateRoomName: (roomId: string, newName: string) => void;
-    deleteRoom: (roomId: string) => void;
-}
+    const NewRoomStep3 = () => {
+        const form = useForm({
+            resolver: zodResolver(roomDetailsSchema),
+            defaultValues: {
+                roomName: '',
+                height: 8,
+            },
+        });
 
-function RoomRow({ room, updateRoomName, deleteRoom }: RoomRowProps) {
-    const [isEditing, setIsEditing] = useState(room && !room.name);
-    const [tempName, setTempName] = useState(room.name);
-    const { data: commonRooms } = useGetRoomOptions();
+        const onSubmit = (data: z.infer<typeof roomDetailsSchema>) => {
+            const roomData = {
+                ...newRoom,
+                name: data.roomName,
+                height: data.height,
+                project: project.id,
+            };
 
-    const roomTypeName = (type: number) => {
-        return commonRooms?.find((room) => room.id === type)?.name;
+            saveRoom(roomData);
+        };
+
+        return (
+            <div className="flex flex-col gap-2 min-w-[375px] md:min-w-[520px] z-[999]">
+                <Form  {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="">
+                        <div className="w-[300px] mx-auto">
+                            <FormField
+                                control={form.control}
+                                name="roomName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Room Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter room name" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="height"
+
+                                render={({ field }) => (
+                                    <FormItem >
+                                        <FormLabel>Wall Height</FormLabel>
+                                        <FormControl>
+                                            <Select value={field.value} onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select wall height" />
+                                                </SelectTrigger>
+                                                <SelectContent className='z-[999] cursor-pointer'>
+                                                    <SelectItem className=' cursor-pointer' value={8}>8ft</SelectItem>
+                                                    <SelectItem className=' cursor-pointer' value={9}>9ft</SelectItem>
+                                                    <SelectItem className=' cursor-pointer' value={10}>10ft</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="flex justify-end mt-3">
+                            <Button type="submit">Save New Room</Button>
+                        </div>
+                    </form>
+                </Form>
+            </div>
+        );
     };
-    const handleEditClick = () => {
-        setTempName(room.name);
-        setIsEditing(true);
-    };
 
-    const handleSaveClick = () => {
-        updateRoomName(room.id, tempName);
-        setIsEditing(false);
+    const RenderSteps = () => {
+        switch (newRoomStep) {
+            case 0:
+                return <NewRoomStep1 />;
+            case 1:
+                return <NewRoomStep2 />;
+            case 2:
+                return <NewRoomStep3 />;
+            default:
+                return null;
+        }
     };
 
     return (
-        <TableRow className=" ">
-            <TableCell>
-                {isEditing ? (
-                    <Input
-                        value={tempName}
-                        onChange={(e) => setTempName(e.target.value)}
-                        placeholder="What should we call this room?"
-                        className="w-full h-6"
-                    />
-                ) : (
-                    room.name || <span className="text-muted">No name</span>
-                )}
-            </TableCell>
-            <TableCell>{roomTypeName(room.type)}</TableCell>
-            <TableCell className="flex flex-row flex-1 align-middle justify-center gap-2">
-                {isEditing ? (
-
-
-                    <Button size='sm' variant='outline' onClick={handleSaveClick}>
-                        Save <Check className='text-green-400' /> </Button>
-                ) : (
-                    <div className="flex flex-row justify-between gap-2">
-                        <Edit size={18} onClick={handleEditClick} className="cursor-pointer hover:scale-105 my-auto text-blue-600" />
-
-                        <Popover>
-                            <PopoverTrigger><Delete size={18} className="cursor-pointer hover:scale-105 my-auto text-red-600" /></PopoverTrigger>
-                            <PopoverContent className='flex flex-col gap-2 p-4 bg-white text-black rounded-md shadow-md'>
-
-                                <p className='text-sm'>Are you sure you want to delete?</p>
-                                <div className='flex flex-row justify-between gap-2'>
-                                    <Button size='xs' variant='outline'>No</Button>
-                                    <Button size='xs' variant='destructive' onClick={() => deleteRoom(room.id)}>Yes</Button>
-
-                                </div>
-                            </PopoverContent>
-                        </Popover>
-
-                    </div>
-                )}
-
-
-
-            </TableCell>
-        </TableRow>
+        <div style={{ maxWidth: screenWidth * 0.85 }} className="flex flex-col mx-auto">
+            <div className="flex flex-row gap-3 w-full">
+                {newRoomStep > 0 && <ChevronLeft className="text-muted cursor-pointer my-auto text-2xl" onClick={onBack} />}
+                <div className="flex flex-col w-1/2">
+                    <h2 className="text-xl font-semibold">{stepData[newRoomStep]?.title}</h2>
+                    <p className="text-muted text-sm">{stepData[newRoomStep]?.description}</p>
+                </div>
+            </div>
+            <RenderSteps />
+        </div>
     );
 }

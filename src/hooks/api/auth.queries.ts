@@ -1,5 +1,6 @@
 import { APP_ROUTES } from '@/constants/routes';
 import { SupabaseAuthService } from '@/lib/actions/auth';
+import store from '@/store';
 import { logout, setEmail, setIsAuthenticated, setRefreshTokenInterval, setStep, setToken, setUser } from '@/store/slices/authSlice';
 import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -22,6 +23,10 @@ export const useLogin = () => {
       toast({ title: 'Login Failed', description: error.message });
     },
     onSuccess: async (res) => {
+      store.dispatch(setToken(res.session.access_token));
+      store.dispatch(setRefreshTokenInterval(new Date().toISOString()));
+      store.dispatch(setIsAuthenticated(true));
+      store.dispatch(setUser(res.session.user));
       if (res.type == 'email_not_confirmed') {
         dispatch(setStep('otp'));
       }

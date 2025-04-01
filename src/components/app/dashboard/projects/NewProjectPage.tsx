@@ -1,18 +1,17 @@
 // pages/projects/[id]/edit.tsx
-'use client';
+'use client';;
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { ProjectStatusLabels } from '@/constants/enums/project.enums';
 import { useGetLayoutOptions, useGetProjects, useGetRoomOptions } from '@/hooks/api/projects.queries';
-import { ChevronDown, Plus, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import React from 'react';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Popover, PopoverTrigger } from '@/components/ui/popover';
-import { PopoverContent } from '@radix-ui/react-popover';
+import NewRoomModal from './NewRoomModal';
 
 export default function NewProjectPage() {
   const path = usePathname();
@@ -25,7 +24,7 @@ export default function NewProjectPage() {
   const { data: roomOptions } = useGetRoomOptions();
   const { data: projects } = useGetProjects();
   const project = projects?.find((project) => project?.id == projectId);
-  console.log('PROJECT', project);
+
 
   const toggleWalls = (roomId: number) => {
     setOpenWalls((prev) => ({ ...prev, [roomId]: !prev[roomId] }));
@@ -54,24 +53,9 @@ export default function NewProjectPage() {
     <div className="space-y-4 max-w-5xl mx-auto">
       <ProjectHeader project={project} />
       <div className="flex flex-col">
-        <div className="flex flex-row items-center mt-3">
+        <div className="flex flex-row items-center mt-3 justify-between">
           <h3 className="text-2xl font-bold">Rooms</h3>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button>
-                Add Room <Plus className="ml-2" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className="p-2">
-                {roomOptions?.map((option: any) => (
-                  <Button key={option.id} onClick={() => console.log('Add room', option.id)} className="w-full text-left">
-                    {option.name}
-                  </Button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+          <NewRoomModal />
         </div>
         <Table>
           <TableHeader>
@@ -82,7 +66,7 @@ export default function NewProjectPage() {
               <TableCell className="w-[100px]">Height</TableCell>
               <TableCell className="w-[100px]">Estimated Cost</TableCell>
               <TableCell className="w-[50px]">Actions</TableCell>
-              <TableCell className="w-[50px]">.</TableCell>
+              <TableCell className="w-[50px]"></TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -108,7 +92,7 @@ export default function NewProjectPage() {
   );
 }
 
-// Component for rendering a single room row
+
 const RoomRow = ({
   room,
   isOpen,
@@ -146,7 +130,7 @@ const RoomRow = ({
           className="object-cover"
         />
       </TableCell>
-      <TableCell>{room.height ? `${room.height} ft` : 'N/A'}</TableCell>
+      <TableCell>{room?.height ? `${room?.height} ft` : 'N/A'}</TableCell>
       <TableCell>$--</TableCell>
       {/* Actions column */}
       <TableCell>

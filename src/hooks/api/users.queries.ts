@@ -13,6 +13,7 @@ const defaultUser = {
 const dud = () => defaultUser;
 export const useGetUser = () => {
   const userId = store.getState().auth.user?.id;
+
   const query = useQuery({
     queryKey: [userId],
     staleTime: 1000 * 60 * 5,

@@ -1,10 +1,11 @@
-// lib/api/users.ts
+// lib/API/users.ts
 
-import { API } from '@/api/api';
 import { Cabinet, Project, Room } from '@/constants/models/object.types';
-import store from '@/store';
+import { getAPI } from '@/lib/api/api';
 
+import store from '@/store';
 export const createProject = async (body: Partial<Project>) => {
+  const API = await getAPI();
   const user = store.getState().auth.user;
   const newProject = { ...body, user_id: user.id };
   try {
@@ -27,14 +28,15 @@ export const updateProject = async (body: Partial<Project>) => {
 };
 
 export const getProjects = async () => {
-  const { auth: { user } } = store.getState();
+  const {
+    auth: { user },
+  } = store.getState();
 
   if (!user) {
     console.error('No user found in store.');
     return [];
   }
 
-  // Build the query string with improved readability
   const query = `
     id,
     name,
@@ -47,11 +49,11 @@ export const getProjects = async () => {
       name,
       type,
       layout,
+      height,
       walls: Walls_room_id_fkey (
         id,
         name,
         wall_number,
-        
         length,
         cabinets: Cabinets_wall_id_fkey (
           id,
@@ -84,26 +86,29 @@ export const getProjects = async () => {
     return [];
   }
 };
+
 export const createRoom = async (body: Partial<Room>) => {
   try {
     const res = await API.upsert('Rooms', body);
     return res;
   } catch (error) {
-    console.error('ERROR CREATING PROJECT', error);
+    console.error('ERROR CREATING ROOM', error);
   }
   return true;
 };
+
 export const updateRoom = async (body: Partial<Room>) => {
   try {
     console.log('UPDATING ROOM', body);
     const res = await API.update('Rooms', body);
     return res;
   } catch (error) {
-    console.error('ERROR CREATING PROJECT', error);
+    console.error('ERROR UPDATING ROOM', error);
   }
   return true;
 };
-export const deleteRoom = async (roomId) => {
+
+export const deleteRoom = async (roomId: string) => {
   try {
     const res = await API.delete('Rooms', 'id', roomId);
     return res;
@@ -113,22 +118,21 @@ export const deleteRoom = async (roomId) => {
   return true;
 };
 
-export const getRoomsByProjectId = async (projectId) => {
-  const user = store.getState().auth.user;
+export const getRoomsByProjectId = async (projectId: string) => {
   try {
-    const res = await API.getAll('Rooms', 'id ,name ,type', 'project', projectId);
+    const res = await API.getAll('Rooms', 'id, name, type', 'project', projectId);
     return res || [];
   } catch (error) {
-    console.error('ERROR GETTING PROJECTS', error);
+    console.error('ERROR GETTING ROOMS', error);
   }
 };
 
-export const getRoomOptions = async (projectId) => {
+export const getRoomOptions = async () => {
   try {
-    const res = await API.getAll('RoomOptions', 'id ,name ,image_url', 'active', true);
+    const res = await API.getAll('RoomOptions', 'id, name, image_url', 'active', true);
     return res || [];
   } catch (error) {
-    console.error('ERROR GETTING PROJECTS', error);
+    console.error('ERROR GETTING ROOM OPTIONS', error);
   }
 };
 
@@ -138,11 +142,12 @@ export const createCabinets = async (body: Partial<Cabinet>) => {
     console.log('Cabinet created', res);
     return res;
   } catch (error) {
-    console.error('ERROR CREATING Cabinet', error);
+    console.error('ERROR CREATING CABINET', error);
   }
   return true;
 };
-export const getCabinetById = async (cabinetId) => {
+
+export const getCabinetById = async (cabinetId: string) => {
   try {
     const res = await API.getAll(
       'Cabinets',
@@ -152,37 +157,38 @@ export const getCabinetById = async (cabinetId) => {
     );
     return res;
   } catch (error) {
-    console.error('ERROR GETTING Cabinet', error);
+    console.error('ERROR GETTING CABINET', error);
   }
 };
+
 export const updateCabinet = async (body: Partial<Cabinet>) => {
   try {
-    console.log('UPDATING Cabinet', body);
+    console.log('UPDATING CABINET', body);
     const res = await API.update('Cabinets', body);
-
     console.log('Cabinet updated', res);
     return res;
   } catch (error) {
-    console.error('ERROR CREATING Cabinet', error);
+    console.error('ERROR UPDATING CABINET', error);
   }
   return true;
 };
-export const deleteCabinet = async (cabinetId) => {
+
+export const deleteCabinet = async (cabinetId: string) => {
   try {
     const res = await API.delete('Cabinets', 'id', cabinetId);
     return res;
   } catch (error) {
-    console.error('ERROR DELETING Cabinet', error);
+    console.error('ERROR DELETING CABINET', error);
   }
   return true;
 };
 
 export const getCustomOptions = async () => {
   try {
-    const res = await API.getAll('CustomOptions', 'id , name ,type,image_url,value', 'active', true);
+    const res = await API.getAll('CustomOptions', 'id, name, type, image_url, value', 'active', true);
     return res || [];
   } catch (error) {
-    console.error('ERROR GETTING CustomOptions', error);
+    console.error('ERROR GETTING CUSTOM OPTIONS', error);
   }
 };
 
@@ -190,12 +196,12 @@ export const getLayoutOptions = async () => {
   try {
     const res = await API.getAll(
       'Layouts',
-      'id , name ,image_url,walls, wall_one_image_url, wall_two_image_url, wall_three_image_url',
+      'id, name, image_url, walls, wall_one_image_url, wall_two_image_url, wall_three_image_url, room_option_id',
       'active',
       true,
     );
     return res || [];
   } catch (error) {
-    console.error('ERROR GETTING LayoutOptions', error);
+    console.error('ERROR GETTING LAYOUT OPTIONS', error);
   }
 };

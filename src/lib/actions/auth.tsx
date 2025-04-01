@@ -1,17 +1,16 @@
-import { API } from "@/api/api";
+
 import { APP_ROUTES } from "@/constants/routes";
+import { API } from '@/lib/api/api';
 import store from "@/store"; // Adjust to match your store setup
 import { logout, setIsAuthenticated, setRefreshTokenInterval, setToken, setUser } from "@/store/slices/authSlice"; // Adjust to match your slice setup
-import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from '@/utils/supabase/component';
 import { User } from "@supabase/supabase-js";
 
-const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createClient();
 
 export class SupabaseAuthService {
   static async signUp(email: string, password: string) {
+    "use server";
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -32,6 +31,7 @@ export class SupabaseAuthService {
   }
 
   static async signIn(email: string, password: string) {
+    "use server";
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       if (error.code === "email_not_confirmed") {
