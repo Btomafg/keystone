@@ -2,7 +2,6 @@
 import { useTypedSelector } from "@/hooks/useTypedSelector";
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from "react";
-import Grid from "../projects/Grid";
 import QuickCards from "./dashboard/QuickCards";
 import WelcomeBanner from "./dashboard/WelcomeBanner";
 export default function Page() {
@@ -27,7 +26,7 @@ export default function Page() {
       <WelcomeBanner />
       <QuickCards />
 
-      <Grid />
+
 
     </div>
   )

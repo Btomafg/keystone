@@ -27,7 +27,7 @@ export const projectDetailsSchema = z.object({
 
     name: z.string().min(1, 'Project name is required'),
     description: z.string().optional(),
-    firstCustom: z.boolean().optional(),
+    first_custom: z.boolean().optional(),
     street: z.string().nonempty('Street is required'),
     city: z.string().nonempty('City is required'),
     state: z.string().nonempty('State is required'),
@@ -55,7 +55,7 @@ const NewProjectDetails: React.FC<NewProjectDetailsProps> = (props) => {
         defaultValues: {
             name: '',
             description: '',
-            firstCustom: false,
+            first_custom: false,
             street: '',
             city: '',
             state: '',
@@ -72,6 +72,7 @@ const NewProjectDetails: React.FC<NewProjectDetailsProps> = (props) => {
 
         try {
             const newId = await createProject({ ...data, status: 0, step: 0 });
+            console.log('NEW PROJECT ID', newId);
             router.push(`${APP_ROUTES.DASHBOARD.PROJECTS.NEW.path}/${newId?.id as any}`);
             setOpen(false);
         } catch (error) {
@@ -84,7 +85,7 @@ const NewProjectDetails: React.FC<NewProjectDetailsProps> = (props) => {
             if (project) {
                 setValue('name', project.name);
                 setValue('description', project.description);
-                setValue('firstCustom', project.firstCustom);
+                setValue('first_custom', project.first_custom);
                 setValue('street', project.street);
                 setValue('city', project.city);
                 setValue('state', project.state);
@@ -145,11 +146,11 @@ const NewProjectDetails: React.FC<NewProjectDetailsProps> = (props) => {
 
                 < FormField
                     control={form.control}
-                    name="firstCustom"
+                    name="first_custom"
                     render={({ field }) => (
                         <FormItem className="flex flex-row items-center space-x-3 ">
                             <FormControl>
-                                <Checkbox id='firstCustom' onChange={(e) => field.onChange(e.target.checked)} />
+                                <Checkbox id='first_custom' onChange={(e) => field.onChange(e.target.checked)} />
 
                             </FormControl>
                             <span className='!my-auto text-sm' >Is this your first custom project?</span>

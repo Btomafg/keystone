@@ -1,19 +1,17 @@
-'use client';
-import { useEffect, useMemo, useState } from 'react';
+'use client';;
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { useScreenSize } from '@/utils/common';
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-/* -----------------------------------------------
-   Constants & Helper Functions
------------------------------------------------ */
-const CELLS_PER_FOOT = 1; // each foot equals 2 cells (0.5ft increments)
-const CELL_SIZE = 10; // pixel dimension of each cell
+const CELLS_PER_FOOT = 2; // each foot equals 2 cells (0.5ft increments)
 
 function isInSelectionRange(x, y, start, end) {
   return x >= start.x && x <= end.x && y >= start.y && y <= end.y;
 }
 
-/* -----------------------------------------------
-   Blue Shades Array
------------------------------------------------ */
 const blueShades = [
   'bg-blue-100',
   'bg-blue-200',
@@ -35,9 +33,9 @@ function Cell({ x, y, grid, zoneMap, currentSelection, onStart, onMove, onEnd })
   const cellValue = grid[x][y];
   const isInProgress = currentSelection && isInSelectionRange(x, y, currentSelection.start, currentSelection.end);
 
-  let cellClass = 'border border-slate-200 w-3 h-3 cursor-pointer transition-colors duration-200 ease-in-out';
+  let cellClass = 'border border-slate-200 w-full h-full cursor-pointer transition-colors duration-200 ease-in-out';
   if (isInProgress) {
-    cellClass += ' bg-yellow-200'; // in-progress selection = yellow
+    cellClass += ' bg-yellow-200';
   } else if (cellValue) {
     const zoneColor = zoneMap[cellValue] || 'bg-blue-200';
     cellClass += ` ${zoneColor}`;
@@ -45,7 +43,6 @@ function Cell({ x, y, grid, zoneMap, currentSelection, onStart, onMove, onEnd })
     cellClass += ' bg-white hover:bg-gray-50';
   }
 
-  // Common handler that passes along x,y.
   const handleStart = () => onStart(x, y);
   const handleMove = () => onMove(x, y);
   const handleEnd = () => onEnd();
@@ -58,9 +55,7 @@ function Cell({ x, y, grid, zoneMap, currentSelection, onStart, onMove, onEnd })
       onMouseUp={handleEnd}
       onTouchStart={handleStart}
       onTouchMove={(e) => {
-        // Prevent default scrolling behavior
         e.preventDefault();
-        // Get the touch point and determine cell based on element bounding box.
         handleMove();
       }}
       onTouchEnd={handleEnd}
@@ -75,81 +70,93 @@ function DimensionPopup({ mouseX, mouseY, width, height }) {
   if (width <= 0 || height <= 0) return null;
   return (
     <div
-      style={{ position: 'fixed', top: mouseY + 10, left: mouseX + 10 }}
-      className="z-50 bg-popover text-popover-foreground border border-slate-200 p-2 rounded-md shadow-md pointer-events-none text-sm"
+      style={{ position: 'absolute', top: mouseY - 30, left: mouseX + 6 }}
+      className="z-[9999] bg-popover w-fit text-nowrap text-popover-foreground border border-slate-200 p-2 rounded-md shadow-md pointer-events-none text-sm"
     >
-      {width / CELLS_PER_FOOT}ft × {height / CELLS_PER_FOOT}ft
+      <p className='font-bold'>New Cabinet Dimensions</p>
+      <p>{width / CELLS_PER_FOOT}ft × {height / CELLS_PER_FOOT}ft</p>
+
     </div>
   );
 }
 
-/* -----------------------------------------------
-   NameZonePopover Component (for new zone or editing)
------------------------------------------------ */
+
+
 function NameZonePopover({ pendingZone, cellSize, defaultName = '', onSave, onCancel }) {
   const [zoneName, setZoneName] = useState(defaultName);
   const { start, end } = pendingZone;
   const zoneWidth = (end.x - start.x + 1) * cellSize;
   const zoneHeight = (end.y - start.y + 1) * cellSize;
-  // Position popover at center of pending zone.
   const left = start.x * cellSize + zoneWidth / 2;
-  const top = start.y * cellSize + zoneHeight / 2;
+  const top = start.y * cellSize - 10; // show slightly above
 
   return (
     <div
-      style={{ position: 'absolute', left, top, transform: 'translate(-50%, -50%)' }}
-      className="z-50 bg-white border border-gray-300 p-4 rounded shadow-md"
+      style={{
+        position: 'absolute',
+        left,
+        top,
+        transform: 'translate(-50%, -100%)',
+        zIndex: 9999,
+      }}
+      className="bg-white border border-gray-300 p-4 rounded shadow-md w-48"
     >
-      <div className="mb-2 text-sm font-semibold">{defaultName ? 'Edit Zone Name:' : 'Name this cabinet zone:'}</div>
-      <input
+      <div className="mb-2 text-sm font-semibold">{defaultName ? 'Edit Section Name:' : 'Name this cabinet section:'}</div>
+      <Input
         type="text"
         value={zoneName}
         onChange={(e) => setZoneName(e.target.value)}
         className="border p-1 rounded w-full mb-2"
-        placeholder="Zone name..."
+        placeholder="Section name..."
       />
       <div className="flex justify-end space-x-2">
-        <button onClick={onCancel} className="px-3 py-1 rounded bg-red-500 text-white text-sm">
+        <Button size='xs' variant='outline' onClick={onCancel} className="text-sm">
           Cancel
-        </button>
-        <button onClick={() => onSave(zoneName)} className="px-3 py-1 rounded bg-green-500 text-white text-sm">
+        </Button>
+        <Button size='xs' onClick={() => onSave(zoneName)} className=" text-sm">
           Save
-        </button>
+        </Button>
       </div>
     </div>
   );
 }
 
-/* -----------------------------------------------
-   Main Grid Component
------------------------------------------------ */
-export default function Grid() {
-  // Room dimensions in feet (user input)
-  const [roomWidthFeet, setRoomWidthFeet] = useState(10);
-  const [roomHeightFeet, setRoomHeightFeet] = useState(8);
+interface GridProps {
+  wallLength?: number;
+  roomHeight?: number;
+  onCabinetSave?: (cabinet: any) => void;
+}
 
-  // Derived grid dimensions (cells)
+export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProps) {
+  const [roomWidthFeet, setRoomWidthFeet] = useState(wallLength || 10);
+  const [roomHeightFeet, setRoomHeightFeet] = useState(roomHeight || 10);
+  const screenSize = useScreenSize()
+  const isMobile = screenSize.width < 768
+  const isLandscape = screenSize.width > screenSize.height
   const roomCols = roomWidthFeet * CELLS_PER_FOOT;
   const roomRows = roomHeightFeet * CELLS_PER_FOOT;
+  const [hoveredCell, setHoveredCell] = useState<{ x: number; y: number } | null>(null);
+
+  const maxGridWidth = 600;
+  const maxGridHeight = 300;
+  const cellSizeByWidth = Math.floor(maxGridWidth / roomCols);
+  const cellSizeByHeight = Math.floor(maxGridHeight / roomRows);
+  const dynamicCellSize = Math.min(cellSizeByWidth, cellSizeByHeight);
+  const CELL_SIZE = dynamicCellSize < 8 ? 8 : dynamicCellSize;
 
   const createEmptyGrid = (cols, rows) => Array.from({ length: cols }, () => Array(rows).fill(false));
   const [grid, setGrid] = useState(createEmptyGrid(roomCols, roomRows));
   const [zones, setZones] = useState([]);
 
-  // Selection states
   const [selected, setSelected] = useState(null);
   const [lastSelected, setLastSelected] = useState(null);
   const [currentSelection, setCurrentSelection] = useState(null);
-  // Pending zone for naming (or editing).
   const [pendingZone, setPendingZone] = useState(null);
-  // If editing, store the zone id.
   const [editingZoneId, setEditingZoneId] = useState(null);
-
   const [isDragging, setIsDragging] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [nextZoneId, setNextZoneId] = useState(1);
-
-  // Reinitialize grid when room dimensions change.
+  const gridRef = useRef(null);
   useEffect(() => {
     setGrid(createEmptyGrid(roomCols, roomRows));
     setZones([]);
@@ -165,10 +172,21 @@ export default function Grid() {
     setEditingZoneId(null);
     setIsDragging(false);
   };
+  const getCellFromTouch = (touch) => {
+    const rect = gridRef.current?.getBoundingClientRect();
+    if (!rect) return null;
 
-  /* -----------------------------
-     Event Handlers (for Mouse/Touch)
-  ----------------------------- */
+    const offsetX = touch.clientX - rect.left;
+    const offsetY = touch.clientY - rect.top;
+
+    const x = Math.floor(offsetX / CELL_SIZE);
+    const y = Math.floor(offsetY / CELL_SIZE);
+
+    if (x < 0 || x >= roomCols || y < 0 || y >= roomRows) return null;
+
+    return { x, y };
+  };
+
   const handleStart = (x, y) => {
     if (grid[x][y]) return;
     setSelected({ x, y });
@@ -181,7 +199,6 @@ export default function Grid() {
     const maxX = Math.max(selected.x, x);
     const minY = Math.min(selected.y, y);
     const maxY = Math.max(selected.y, y);
-    // Abort if any cell in the range is already finalized.
     for (let i = minX; i <= maxX; i++) {
       for (let j = minY; j <= maxY; j++) {
         if (grid[i][j]) return;
@@ -210,18 +227,31 @@ export default function Grid() {
   };
 
   const handleMoveContainer = (e) => {
-    if (!isDragging) return;
-    // Use clientX/clientY from mouse or touch.
+
+    let x, y;
+
     if (e.touches) {
-      setMousePos({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+      const touch = e.touches[0];
+      const coords = getCellFromTouch(touch);
+      if (!coords) return;
+      x = coords.x;
+      y = coords.y;
+      setMousePos({ x: touch.clientX, y: touch.clientY });
     } else {
+      const rect = gridRef.current?.getBoundingClientRect();
+      x = Math.floor((e.clientX - rect.left) / CELL_SIZE);
+      y = Math.floor((e.clientY - rect.top) / CELL_SIZE);
       setMousePos({ x: e.clientX, y: e.clientY });
     }
+    if (x < 0 || x > roomCols || y < 0 || y >= roomRows) return;
+    console.log(roomRows, roomCols, x, y)
+    console.log(`Hovered cell: ${x}, ${y}`);
+    setHoveredCell({ x, y });
+    if (!isDragging) return;
+    handleMove(x, y);
   };
 
-  /* -----------------------------
-     Finalizing/Editing Zones
-  ----------------------------- */
+
   const savePendingZone = (name) => {
     const newGrid = grid.map((col) => [...col]);
     const { start, end } = pendingZone;
@@ -233,8 +263,11 @@ export default function Grid() {
     setGrid(newGrid);
     const color = blueShades[(nextZoneId - 1) % blueShades.length] + '/70';
     const newZone = { id: nextZoneId, start, end, name, color };
-    const updatedZones = [...zones, newZone].sort((a, b) => (a.start.y !== b.start.y ? a.start.y - b.start.y : a.start.x - b.start.x));
+    const updatedZones = [...zones, newZone].sort((a, b) =>
+      a.start.y !== b.start.y ? a.start.y - b.start.y : a.start.x - b.start.x
+    );
     setZones(updatedZones);
+    onCabinetSave(updatedZones);
     setNextZoneId(nextZoneId + 1);
     setPendingZone(null);
   };
@@ -246,6 +279,7 @@ export default function Grid() {
   const saveEditedZone = (zoneId, newName) => {
     const updatedZones = zones.map((zone) => (zone.id === zoneId ? { ...zone, name: newName } : zone));
     setZones(updatedZones);
+    onCabinetSave(updatedZones.find((zone) => zone.id === zoneId));
     setEditingZoneId(null);
   };
 
@@ -267,7 +301,6 @@ export default function Grid() {
     setZones(updatedZones);
   };
 
-  // Mapping from zone id to its color.
   const zoneMap = useMemo(() => {
     const map = {};
     zones.forEach((zone) => {
@@ -281,21 +314,22 @@ export default function Grid() {
     const x = index % roomCols;
     const y = Math.floor(index / roomCols);
     return (
-      <Cell
-        key={index}
-        x={x}
-        y={y}
-        grid={grid}
-        zoneMap={zoneMap}
-        currentSelection={currentSelection}
-        onStart={handleStart}
-        onMove={handleMove}
-        onEnd={handleEnd}
-      />
+      <div style={{ width: CELL_SIZE, height: CELL_SIZE }}>
+        <Cell
+          key={index}
+          x={x}
+          y={y}
+          grid={grid}
+          zoneMap={zoneMap}
+          currentSelection={currentSelection}
+          onStart={handleStart}
+          onMove={handleMove}
+          onEnd={handleEnd}
+        />
+      </div>
     );
   });
 
-  // Compute dimensions (in cells) for the DimensionPopup.
   let dragWidth = 0;
   let dragHeight = 0;
   if (selected && lastSelected) {
@@ -306,38 +340,29 @@ export default function Grid() {
     dragWidth = maxX - minX + 1;
     dragHeight = maxY - minY + 1;
   }
+  const invertedY = roomRows - hoveredCell?.y;
 
   return (
-    <div className="flex flex-col items-center space-y-4 p-4">
-      <h2 className="text-2xl font-bold">Kitchen Cabinet Layout</h2>
-      {/* Room Dimensions in Feet */}
-      <div className="flex space-x-4 items-center">
-        <label className="flex flex-col">
-          Room Width (ft)
-          <input
-            type="number"
-            value={roomWidthFeet}
-            onChange={(e) => setRoomWidthFeet(Math.max(1, parseFloat(e.target.value) || 1))}
-            className="border p-1 rounded"
-          />
-        </label>
-        <label className="flex flex-col">
-          Room Height (ft)
-          <input
-            type="number"
-            value={roomHeightFeet}
-            onChange={(e) => setRoomHeightFeet(Math.max(1, parseFloat(e.target.value) || 1))}
-            className="border p-1 rounded"
-          />
-        </label>
-        <button onClick={resetGrid} className="bg-green-500 text-white px-3 py-1 rounded">
-          Reset Room
-        </button>
+    <div className="flex flex-nowrap items-center space-y-4 p-4 overflow-visible">
+      <div
+        className="text-nowrap text-center mx-auto flex flex-col w-fit justify-center items-center text-[10px] font-semibold text-muted-foreground gap-0 p-2"
+      >
+        <ChevronUp className="text-muted cursor-pointer my-auto text-xl h-4" />
+        <span className="h-4" >{roomHeight}ft</span>
+        <span className="h-4">Wall</span>
+        <span className="h-4">Height</span>
+        <ChevronDown className="text-muted cursor-pointer my-auto text-xl h-4 mt-3" />
+
+
+
+
       </div>
-      <div className="relative">
-        {/* Main Grid */}
+      <div className="flex flex-col relative max-w-[800px] overflow-visible">
+
         <div
-          className="grid border border-gray-300 relative"
+          ref={gridRef}
+          key={`grid-${roomCols}-${roomRows}`}
+          className="grid border border-gray-300 relative "
           style={{
             gridTemplateColumns: `repeat(${roomCols}, ${CELL_SIZE}px)`,
             gridTemplateRows: `repeat(${roomRows}, ${CELL_SIZE}px)`,
@@ -347,12 +372,58 @@ export default function Grid() {
         >
           {cells}
           {isDragging && currentSelection && (
-            <DimensionPopup mouseX={mousePos.x} mouseY={mousePos.y} width={dragWidth} height={dragHeight} />
+            <DimensionPopup
+              mouseX={mousePos.x - gridRef.current?.getBoundingClientRect()?.left ?? 0}
+              mouseY={mousePos.y - gridRef.current?.getBoundingClientRect()?.top ?? 0}
+              width={dragWidth}
+              height={dragHeight}
+            />
+          )}
+          {hoveredCell && !isDragging && !pendingZone && editingZoneId === null && (
+            <>
+
+              <div
+                className="absolute bg-blue-500/30 pointer-events-none"
+                style={{
+                  left: hoveredCell.x * CELL_SIZE,
+                  top: 0,
+                  width: 1,
+                  height: roomRows * CELL_SIZE,
+                }}
+              />
+
+
+              <div
+                className="absolute bg-blue-500/30 pointer-events-none"
+                style={{
+                  top: hoveredCell.y * CELL_SIZE,
+                  left: 0,
+                  height: 1,
+                  width: roomCols * CELL_SIZE,
+                }}
+              />
+              <div
+                style={{ position: 'absolute', top: -18, left: hoveredCell.x * CELL_SIZE, }}
+                className="z-[9999] bg-white rounded-xl  pointer-events-none text-xs"
+              >
+
+                {hoveredCell.x / CELLS_PER_FOOT}ft
+              </div>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: hoveredCell.y * CELL_SIZE,
+                  right: -35,
+                }}
+                className="z-[9999] bg-white rounded-xl pointer-events-none text-xs"
+              >
+                {(invertedY / CELLS_PER_FOOT).toFixed(1)}ft
+              </div>
+            </>
           )}
           {pendingZone && (
             <NameZonePopover pendingZone={pendingZone} cellSize={CELL_SIZE} onSave={savePendingZone} onCancel={cancelPendingZone} />
           )}
-          {/* Overlay for Editing/Deleting */}
           {zones.map((zone) => {
             const left = zone.start.x * CELL_SIZE;
             const top = zone.start.y * CELL_SIZE;
@@ -360,7 +431,7 @@ export default function Grid() {
             const height = (zone.end.y - zone.start.y + 1) * CELL_SIZE;
             return (
               <div key={zone.id} style={{ position: 'absolute', left, top, width, height }} className="group">
-                <div className="opacity-0 group-hover:opacity-100 absolute inset-0 flex items-center justify-center bg-black/30 transition-opacity duration-200">
+                <div className=" flex-col gap-2 opacity-70 group-hover:opacity-100 absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity duration-200 cursor-pointer">
                   <button
                     onClick={() => {
                       setEditingZoneId(zone.id);
@@ -386,8 +457,38 @@ export default function Grid() {
               </div>
             );
           })}
+
+        </div>
+
+
+        <div
+          className="text-nowrap text-center mx-auto flex  w-fit justify-center items-center text-[10px] font-semibold text-muted-foreground gap-0"
+        >
+          <ChevronLeft className="text-muted cursor-pointer my-auto text-2xl" /> <span>{wallLength}ft Floor Width</span> <ChevronRight className="text-muted cursor-pointer my-auto text-2xl" />
+
+
+        </div>
+
+
+
+
+        {isMobile && !isLandscape && (
+          <p className='text-xs text-center max-w-24 mx-auto'>Rotate Screen if cannot select screen</p>
+        )}
+      </div>
+
+      <div className='flex flex-col gap-2'>
+        <div className='flex flex-row gap-2'>
+          <Checkbox className='my-auto' /> Upper Cabinet
+        </div>
+        <div className='flex flex-row gap-2'>
+          <Checkbox className='my-auto' /> Base Cabinet
+        </div>
+        <div className='flex flex-row gap-2'>
+          <Checkbox className='my-auto' /> Wall Cabinet
         </div>
       </div>
+
     </div>
   );
 }

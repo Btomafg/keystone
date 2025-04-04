@@ -1,6 +1,7 @@
 // hooks/api/useUser.ts
 
 import { createUser, getCurrentUser, updateUser } from '@/api/user.api';
+import { API_ROUTES } from '@/constants/api.routes';
 import { User } from '@/constants/models/object.types';
 import store from '@/store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -15,7 +16,7 @@ export const useGetUser = () => {
   const userId = store.getState().auth.user?.id;
 
   const query = useQuery({
-    queryKey: [userId],
+    queryKey: [API_ROUTES.GET_USER],
     staleTime: 1000 * 60 * 5,
     queryFn: getCurrentUser,
   });

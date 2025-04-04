@@ -1,16 +1,14 @@
 'use server';
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createServerSupabaseClient } from '@/utils/supabase/server';
 
 export default async function isUserAuthenticated() {
   try {
-    const supabase = createServerActionClient({ cookies });
-    const { data, error } = await supabase.auth.getSession();
-    const session = data?.session;
-    const user = session?.user;
+    const supabase = await createServerSupabaseClient();
+    const { data, error } = await supabase.auth.getUser();
+    console.log('isUserAuthenticated', data, error);
 
-    if (user && !error) {
-      return true;
+    if (data && !error) {
+      return data;
     } else {
       return false;
     }

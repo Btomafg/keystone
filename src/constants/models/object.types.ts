@@ -100,8 +100,9 @@ length: number;
 export type Wall {
   id: number;
   name: string;
-  number: number;
+  wall_number: number;
   length: number;
+  room_id: number;
   cabinets: Cabinet[];
 }
 

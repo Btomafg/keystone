@@ -1,29 +1,89 @@
-// app/api/projects/route.ts
-import { createProject, getProjects } from '@/api/projects.api';
-import { getAPI } from '@/lib/api/api';
+import isUserAuthenticated from '@/lib/api/isUserAuthenticated';
+import { createServerSupabaseClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
-
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const api = await getAPI();
-    // You might call getProjects() directly from your imported function,
-    // which would internally call methods from `api`
-    const projects = await getProjects(api); // Update your function signatures if needed
-    return NextResponse.json({ data: projects }, { status: 200 });
-  } catch (error: any) {
-    console.error('Error in GET /api/projects:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const supabase = await createServerSupabaseClient();
+    const isAuthenticated = await isUserAuthenticated();
+
+    if (!isAuthenticated) {
+      return NextResponse.json({ success: false, message: 'User is not authenticated', type: 'error' }, { status: 401 });
+    }
+    const userId = isAuthenticated?.user?.id;
+    const { data, error } = await supabase
+      .from('Projects')
+      .select(
+        `id,
+    name,
+    description,
+    status,
+    type,
+    step,
+    rooms: Rooms_project_fkey (
+      id,
+      name,
+      type,
+      layout,
+      height,
+      walls: Walls_room_id_fkey (
+        id,
+        name,
+        wall_number,
+        length,
+        cabinets: Cabinets_wall_id_fkey (
+          id,
+          wall_id,
+          ceilingHeight,
+          constructionMethod,
+          crown,
+          doorMaterial,
+          lightRail,
+          subMaterial,
+          toeStyle,
+          length,
+          width,
+          height,
+          sqft,
+          cuft,
+          name,
+          quote,
+          createStep
+        )
+      )
+    )
+  `,
+      )
+      .eq('user_id', userId);
+
+    console.log('PROJECTS', data);
+    return NextResponse.json(data);
+  } catch (err: any) {
+    console.error(err);
+    return NextResponse.json({ success: false, message: 'Server error', type: 'error' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createServerSupabaseClient();
+    const isAuthenticated = await isUserAuthenticated();
+    if (!isAuthenticated) {
+      return NextResponse.json({ success: false, message: 'User is not authenticated', type: 'error' }, { status: 401 });
+    }
+    const userId = isAuthenticated?.user?.id;
     const body = await request.json();
-    const api = await getAPI();
-    const result = await createProject(api, body); // Pass the API object if needed
-    return NextResponse.json({ data: result }, { status: 200 });
+    console.log('BODY', body);
+    body.user_id = userId;
+    const { data, error } = await supabase.from('Projects').update(body).select('id').single();
+    console.log('PROJECTS', data, error);
+
+    if (error) {
+      return NextResponse.json({ success: false, message: error.message, type: error.code }, { status: error.status });
+    }
+
+    return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Error in POST /api/projects:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('ERROR', error);
+    return NextResponse.json({ success: false, message: error.message }, { status: error.status });
   }
 }

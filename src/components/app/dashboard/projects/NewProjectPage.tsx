@@ -4,13 +4,23 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { ProjectStatusLabels } from '@/constants/enums/project.enums';
-import { useGetLayoutOptions, useGetProjects, useGetRoomOptions } from '@/hooks/api/projects.queries';
-import { ChevronDown, MoreHorizontal, Plus } from 'lucide-react';
+import { Project } from '@/constants/models/object.types';
+import {
+  useDeleteRoom,
+  useGetLayoutOptions,
+  useGetProjects,
+  useGetRoomOptions,
+  useUpdateWall,
+} from '@/hooks/api/projects.queries';
+import { ChevronDown, MoreHorizontal } from 'lucide-react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import React from 'react';
+import NewCabinetModal from './NewCabinetModal';
 import NewRoomModal from './NewRoomModal';
 
 export default function NewProjectPage() {
@@ -23,7 +33,8 @@ export default function NewProjectPage() {
   const { data: layouts } = useGetLayoutOptions();
   const { data: roomOptions } = useGetRoomOptions();
   const { data: projects } = useGetProjects();
-  const project = projects?.find((project) => project?.id == projectId);
+
+  const project = projects?.find((project: Project) => project?.id == projectId)
 
 
   const toggleWalls = (roomId: number) => {
@@ -31,9 +42,9 @@ export default function NewProjectPage() {
   };
 
   const wallImage = (roomId: number, wallNumber: number) => {
-    const room = project?.rooms.find((room) => room.id === roomId);
+    const room = project?.rooms?.find((room) => room.id === roomId);
     const layout = layouts?.find((layout) => layout.id === room?.layout);
-    const wall = room?.walls.find((wall) => wall.wall_number === wallNumber);
+    const wall = room?.walls?.find((wall) => wall.wall_number === wallNumber);
     if (room && wall) {
       switch (wall.wall_number) {
         case 1:
@@ -42,6 +53,7 @@ export default function NewProjectPage() {
           return layout?.wall_two_image_url;
         case 3:
           return layout?.wall_three_image_url;
+
         default:
           return '';
       }
@@ -70,7 +82,7 @@ export default function NewProjectPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {project?.rooms.map((room: any) => (
+            {project?.rooms?.map((room: any) => (
               <React.Fragment key={room.id}>
                 <RoomRow room={room} isOpen={!!openWalls[room.id]} toggleWalls={toggleWalls} roomOptions={roomOptions} layouts={layouts} />
                 {openWalls[room.id] && (
@@ -106,6 +118,8 @@ const RoomRow = ({
   roomOptions: any;
   layouts: any;
 }) => {
+
+  const { mutateAsync: deleteRoom } = useDeleteRoom();
   return (
     <TableRow className={`cursor-pointer hover:bg-blue-50  ${isOpen && 'border-b-0'}`} onClick={() => toggleWalls(room.id)}>
       <TableCell className="font-bold text-lg">{room.name}</TableCell>
@@ -122,13 +136,17 @@ const RoomRow = ({
         </span>
       </TableCell>
       <TableCell>
-        <Image
-          src={layouts?.find((layout: any) => layout.id === room.layout)?.image_url || ''}
-          alt="Room Layout"
-          width={100}
-          height={100}
-          className="object-cover"
-        />
+        {room?.layout == 9 ? (
+          <div className="h-20 w-24 rounded-md bg-gray-200 flex items-center justify-center">
+            <span className="text-sm text-muted-foreground">Custom </span>
+          </div>) : (
+          <Image
+            src={layouts?.find((layout: any) => layout.id === room.layout)?.image_url || ''}
+            alt="Room Layout"
+            width={100}
+            height={100}
+            className="object-cover"
+          />)}
       </TableCell>
       <TableCell>{room?.height ? `${room?.height} ft` : 'N/A'}</TableCell>
       <TableCell>$--</TableCell>
@@ -152,8 +170,8 @@ const RoomRow = ({
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
-                e.stopPropagation();
-                // TODO: Implement delete logic here
+
+                deleteRoom(room.id);
                 console.log('Delete room', room.id);
               }}
             >
@@ -172,11 +190,16 @@ const RoomRow = ({
 
 // Component for rendering the walls section inside a room
 const WallsSection = ({ room, wallImage }: { room: any; wallImage: (roomId: number, wallNumber: number) => string }) => {
+
+  const sortedWalls = room.walls.sort((a: any, b: any) => a.wall_number - b.wall_number);
   return (
-    <div className="p-2">
-      <h4 className="font-bold text-lg mb-2">Walls</h4>
-      {room.walls && room.walls.length > 0 ? (
-        room.walls.map((wall: any) => <WallRow key={wall.id} wall={wall} roomId={room.id} wallImage={wallImage} />)
+    <div className="ms-6 p-2">
+      <div className='flex flex-row'>
+        <h4 className="font-bold text-lg mb-2">Walls</h4>
+      </div>
+
+      {sortedWalls && room.walls.length > 0 ? (
+        sortedWalls.map((wall: any) => <WallRow key={wall.id} wall={wall} room={room} wallImage={wallImage} />)
       ) : (
         <div className="text-sm text-muted-foreground">No walls available</div>
       )}
@@ -185,24 +208,57 @@ const WallsSection = ({ room, wallImage }: { room: any; wallImage: (roomId: numb
 };
 
 // Component for a single wall row
-const WallRow = ({ wall, roomId, wallImage }: { wall: any; roomId: number; wallImage: (roomId: number, wallNumber: number) => string }) => {
+const WallRow = ({ wall, room, wallImage }: { wall: any; room: any; wallImage: (roomId: number, wallNumber: number) => string }) => {
+  const { mutateAsync: updateWall, isPending } = useUpdateWall();
+  const [wallUpdateOpen, setWallUpdateOpen] = React.useState(false);
+  const [wallLength, setWallLength] = React.useState(wall.length || 0);
+  const roomId = room.id;
+  const handleWallUpdate = async () => {
+    await updateWall({ room_id: roomId, wall_number: wall.wall_number, length: wallLength });
+    setWallUpdateOpen(false);
+  };
+
+
   return (
     <div className="flex flex-col mb-4 border-t border-t-muted-foreground pt-2 px-4">
       <div className="flex justify-between">
-        <Image
-          src={wallImage(roomId, wall.wall_number) || ''}
-          alt={`Wall ${wall.wall_number}`}
-          width={100}
-          height={100}
-          className="h-20 w-24 rounded-md"
-        />
+        {wallImage(roomId, wall.wall_number) ? (
+          <Image
+            src={wallImage(roomId, wall.wall_number) || ''}
+            alt={`Wall ${wall.wall_number}`}
+            width={100}
+            height={100}
+            className="h-20 w-24 rounded-md"
+          />) : (
+          <div className="h-20 w-24 rounded-md bg-gray-200 flex items-center justify-center">
+            <span className="text-sm text-muted-foreground">Custom </span>
+          </div>
+        )}
         <div className="ml-4">
           <div className="font-semibold">Name</div>
           <div className="text-sm">{wall.name}</div>
         </div>
-        <div className="ml-4">
+        <div className="ml-4 flex flex-col">
           <div className="font-semibold">Wall {wall.wall_number}</div>
-          <div className="text-sm">Length: {wall.length} ft</div>
+          <div className="text-sm"> {wall?.length && `Length: ${wall.length}ft`}</div>
+          <Popover open={wallUpdateOpen} onOpenChange={setWallUpdateOpen}>
+            <PopoverTrigger className="text-blue-600 cursor-pointer mt-3">{
+              wall?.length ? 'Edit Length' : 'Add Wall Length'}</PopoverTrigger>
+            <PopoverContent className="w-48 ">
+              <div className=" flex flex-col p-2">
+                <h3 className="text-sm font-semibold">Wall Length</h3>
+                <Input type="number" placeholder="Wall Length" className="border p-1 mt-2 rounded w-18"
+                  maxLength={2}
+                  max={30} min={0}
+                  onChange={(e) => setWallLength(parseFloat(e.target.value))} />
+                <Button className="mt-2 w-18 ms-auto" size='xs' loading={isPending} onClick={handleWallUpdate}>Save</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+
+
+
         </div>
         <div className="ml-4">
           <div className="font-semibold">Estimated Cost</div>
@@ -210,10 +266,10 @@ const WallRow = ({ wall, roomId, wallImage }: { wall: any; roomId: number; wallI
         </div>
       </div>
       {wall.cabinets && wall.cabinets.length > 0 && <CabinetsList cabinets={wall.cabinets} />}
-      <Button className="mt-2 w-fit ms-auto">
-        Add Cabinet <Plus />
-      </Button>
-    </div>
+      <div className='flex flex-row ms-auto'>
+        <NewCabinetModal room={room} wall={wall} />
+      </div>
+    </div >
   );
 };
 
@@ -248,7 +304,7 @@ const ProjectHeader = ({ project }: { project: any }) => {
         <div className="flex flex-row justify-between">
           <div className="flex flex-col text-center w-24">
             <span className="text-sm text-muted-foreground">Rooms</span>
-            <span className="text-sm font-semibold">{project?.rooms.length}</span>
+            <span className="text-sm font-semibold">{project?.rooms?.length}</span>
           </div>
           <div className="flex flex-col text-center w-24">
             <span className="text-sm text-muted-foreground">Cabinets</span>
@@ -256,7 +312,7 @@ const ProjectHeader = ({ project }: { project: any }) => {
           </div>
           <div className="flex flex-col text-center w-24">
             <span className="text-sm text-muted-foreground">Estimate</span>
-            <span className="text-sm font-semibold">$22,000</span>
+            <span className="text-sm font-semibold">$------</span>
           </div>
         </div>
       </Card>

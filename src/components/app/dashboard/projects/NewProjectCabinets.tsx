@@ -13,6 +13,8 @@ import CabinetBuilderModal from './CabinetBuilderModal';
 interface NewProjectCabinetsProps {
     project: Project;
     onBack: () => void;
+    open?: boolean;
+    setOpen?: (open: boolean) => void;
 }
 
 export default function NewProjectCabinets({ project, onBack }: NewProjectCabinetsProps) {
@@ -24,7 +26,7 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
     const screenWidth = useScreenWidth();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingCabinetId, setEditingCabinetId] = useState<number | null>(null);
-    const [modalStep, setModalStep] = useState(0);
+    const [modalStep, setModalStep] = useState(2);
     const updateRoomName = async (roomId: string, newName: string) => {
         await updateRoom({ id: roomId, name: newName });
     };

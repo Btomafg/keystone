@@ -1,0 +1,41 @@
+export const API_ROUTES = {
+  // Auth Routes
+  SIGN_IN: '/api/auth/signin/',
+  SIGN_UP: '/api/auth/signup/',
+  SIGN_OUT: '/api/auth/signout/',
+  GET_SESSION: '/api/auth/session/',
+  VERIFY_OTP: '/api/auth/verify-otp/',
+  RESEND_OTP: '/api/auth/resend-otp/',
+  FORGOT_PASSWORD: '/api/auth/forgot-password/',
+  RESET_PASSWORD: '/api/auth/reset-password/',
+
+  // User Routes
+  GET_USER: '/api/user/',
+  UPDATE_USER: '/api/user/update/',
+
+  // project routes
+  GET_PROJECTS: '/api/projects/',
+  UPDATE_PROJECT: '/api/projects/',
+  GET_PROJECT: '/api/projects/[id]/',
+  CREATE_PROJECT: '/api/projects/create/',
+
+  // room routes
+  GET_ROOMS: '/api/projects/rooms/',
+  UPDATE_ROOM: '/api/projects/rooms/',
+  CREATE_ROOM: '/api/projects/rooms/create/',
+  DELETE_ROOM: '/api/projects/rooms/',
+  ROOM_OPTIONS: '/api/projects/rooms/options/',
+
+  //Wall routes
+  GET_WALLS: '/api/projects/walls/',
+  UPDATE_WALL: '/api/projects/walls/',
+  CREATE_WALL: '/api/projects/walls/create/',
+
+  // cabinet routes
+  GET_CABINETS: '/api/projects/cabinets/',
+  GET_CABINET_OPTIONS: '/api/projects/cabinets/options/',
+  UPDATE_CABINET: '/api/projects/cabinets/',
+  CREATE_CABINET: '/api/projects/cabinets/create/',
+  DELETE_CABINET: '/api/projects/cabinets/',
+  CABINET_OPTIONS: '/api/projects/cabinets/options/',
+};

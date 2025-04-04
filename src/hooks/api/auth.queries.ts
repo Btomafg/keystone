@@ -20,19 +20,24 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) => SupabaseAuthService.signIn(email, password),
     onError: (error: any) => {
-      toast({ title: 'Login Failed', description: error.message });
+      console.error(error);
+      toast({ title: 'Login Failed', description: error.error });
     },
     onSuccess: async (res) => {
-      store.dispatch(setToken(res.session.access_token));
-      store.dispatch(setRefreshTokenInterval(new Date().toISOString()));
-      store.dispatch(setIsAuthenticated(true));
-      store.dispatch(setUser(res.session.user));
-      if (res.type == 'email_not_confirmed') {
-        dispatch(setStep('otp'));
-      }
+      if (!res.data) {
+        toast({ title: 'Login Failed', description: res.message });
+        if (res.type == 'email_not_confirmed') {
+          dispatch(setStep('otp'));
+        }
+      } else {
+        console.log(res);
+        store.dispatch(setToken(res.data.session.access_token));
+        store.dispatch(setRefreshTokenInterval(new Date().toISOString()));
+        store.dispatch(setIsAuthenticated(true));
+        store.dispatch(setUser(res.data.session.user));
 
-      console.log(res);
-      toast({ title: 'Login Successful', description: res.message });
+        toast({ title: 'Login Successful', description: res.data.message });
+      }
     },
   });
 };

@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogOverlay } from '@/components/ui/dialog';
+import { useScreenWidth } from '@/hooks/uiHooks';
 import { DialogTrigger } from '@radix-ui/react-dialog';
-import { Plus, PlusCircleIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import NewProjectRooms from './NewProjectRooms';
 
@@ -9,7 +10,7 @@ import NewProjectRooms from './NewProjectRooms';
 interface NewRoomModalProps { }
 const NewRoomModal: React.FC<NewRoomModalProps> = (props) => {
   //HOOKS
-
+  const screenWidth = useScreenWidth();
   //STATES
   const [open, setOpen] = useState(false);
   //VARIABLES
@@ -21,9 +22,9 @@ const NewRoomModal: React.FC<NewRoomModalProps> = (props) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button onClick={() => { }} size="xs" type="submit">
-          <PlusCircleIcon className="text-white" />
-          <span className="text-white">New Room <Plus /></span>
+        <Button className='flex flex-row flex-nowrap w-32' onClick={() => { }} type="submit">
+
+          New Room <Plus />
         </Button>
       </DialogTrigger>
       <DialogOverlay className="fixed inset-0 bg-black/30" />

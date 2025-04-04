@@ -161,6 +161,7 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
     const roomDetailsSchema = z.object({
         roomName: z.string().min(1, { message: 'Room name is required' }),
         height: z.number({ required_error: 'Select a wall height' }),
+        wallCount: z.number({ required_error: 'Select a wall height' }).optional(),
     });
 
     const NewRoomStep3 = () => {
@@ -169,17 +170,18 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
             defaultValues: {
                 roomName: '',
                 height: 8,
+                wallCount: 1
             },
         });
 
         const onSubmit = (data: z.infer<typeof roomDetailsSchema>) => {
-            const roomData = {
+            let roomData = {
                 ...newRoom,
                 name: data.roomName,
                 height: data.height,
                 project: project.id,
             };
-
+            newRoom.layout == 9 && (roomData = { ...roomData, wallCount: data.wallCount });
             saveRoom(roomData);
         };
 
@@ -224,6 +226,32 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
                                     </FormItem>
                                 )}
                             />
+
+                            {newRoom.layout == 9 && (
+                                <FormField
+                                    control={form.control}
+                                    name="wallCount"
+                                    render={({ field }) => (
+                                        <FormItem >
+                                            <FormLabel>How many walls with cabinets in this room?</FormLabel>
+                                            <FormControl>
+                                                <Select value={field.value} onValueChange={(value) => field.onChange(Number(value))} defaultValue={field.value}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select wall height" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className='z-[999] cursor-pointer'>
+                                                        <SelectItem className=' cursor-pointer' value={1}>1</SelectItem>
+                                                        <SelectItem className=' cursor-pointer' value={2}>2</SelectItem>
+                                                        <SelectItem className=' cursor-pointer' value={3}>3</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            )}
+
                         </div>
                         <div className="flex justify-end mt-3">
                             <Button type="submit">Save New Room</Button>
