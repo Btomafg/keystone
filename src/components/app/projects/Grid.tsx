@@ -33,14 +33,14 @@ function Cell({ x, y, grid, zoneMap, currentSelection, onStart, onMove, onEnd })
   const cellValue = grid[x][y];
   const isInProgress = currentSelection && isInSelectionRange(x, y, currentSelection.start, currentSelection.end);
 
-  let cellClass = 'border border-slate-200 w-full h-full cursor-pointer transition-colors duration-200 ease-in-out';
+  let cellClass = 'border z-[9999] border-slate-200 w-full h-full cursor-pointer transition-colors duration-200 ease-in-out';
   if (isInProgress) {
     cellClass += ' bg-yellow-200';
   } else if (cellValue) {
     const zoneColor = zoneMap[cellValue] || 'bg-blue-200';
     cellClass += ` ${zoneColor}`;
   } else {
-    cellClass += ' bg-white hover:bg-gray-50';
+    cellClass += ' bg-white hover:bg-gray-50 ';
   }
 
   const handleStart = () => onStart(x, y);
@@ -63,9 +63,6 @@ function Cell({ x, y, grid, zoneMap, currentSelection, onStart, onMove, onEnd })
   );
 }
 
-/* -----------------------------------------------
-   DimensionPopup Component
------------------------------------------------ */
 function DimensionPopup({ mouseX, mouseY, width, height }) {
   if (width <= 0 || height <= 0) return null;
   return (
@@ -130,6 +127,9 @@ interface GridProps {
 export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProps) {
   const [roomWidthFeet, setRoomWidthFeet] = useState(wallLength || 10);
   const [roomHeightFeet, setRoomHeightFeet] = useState(roomHeight || 10);
+  const [upperHelper, setUpperHelper] = useState(false);
+  const [baseHelper, setBaseHelper] = useState(false);
+  const [wallHelper, setWallHelper] = useState(false);
   const screenSize = useScreenSize()
   const isMobile = screenSize.width < 768
   const isLandscape = screenSize.width > screenSize.height
@@ -342,8 +342,18 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
   }
   const invertedY = roomRows - hoveredCell?.y;
 
+  const baseCabinetHeightFt = 3;   // e.g. countertop level (3ft)
+  const upperCabinetHeightFt = roomHeight - 4.5;
+  const wallCabinetHeightFt = roomHeight    // e.g. top of wall cabinets (6ft)
+
+  // Calculate the Y positions (in px) for helper lines relative to the grid container.
+  const baseHelperY = (roomRows - baseCabinetHeightFt * CELLS_PER_FOOT) * CELL_SIZE;
+  const upperHelperY = (roomRows - upperCabinetHeightFt * CELLS_PER_FOOT) * CELL_SIZE;
+  const wallHelperY = (roomRows - wallCabinetHeightFt * CELLS_PER_FOOT) * CELL_SIZE;
+
   return (
     <div className="flex flex-nowrap items-center space-y-4 p-4 overflow-visible">
+
       <div
         className="text-nowrap text-center mx-auto flex flex-col w-fit justify-center items-center text-[10px] font-semibold text-muted-foreground gap-0 p-2"
       >
@@ -421,6 +431,47 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
               </div>
             </>
           )}
+          {baseHelper && (
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                bottom: 0,
+                width: roomCols * CELL_SIZE,
+                height: baseCabinetHeightFt * (CELLS_PER_FOOT * CELL_SIZE),
+
+                pointerEvents: 'none',
+              }}
+              className='bg-blue-400/15 border-blue-400 border-t-4 z-20'
+            />
+          )}
+          {upperHelper && (
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: roomCols * CELL_SIZE,
+                height: upperCabinetHeightFt * (CELLS_PER_FOOT * CELL_SIZE),
+                pointerEvents: 'none',
+              }}
+              className='bg-purple-400/15 border-purple-400 border-b-4'
+            />
+          )}
+          {wallHelper && (
+            <div
+              style={{
+                position: 'absolute',
+                left: 0,
+                bottom: 0,
+                width: roomCols * CELL_SIZE,
+                height: roomHeight * CELLS_PER_FOOT * CELL_SIZE,
+
+                pointerEvents: 'none',
+              }}
+              className='bg-green-500/15  border-green-800 border-t-4 border-b-4'
+            />
+          )}
           {pendingZone && (
             <NameZonePopover pendingZone={pendingZone} cellSize={CELL_SIZE} onSave={savePendingZone} onCancel={cancelPendingZone} />
           )}
@@ -468,7 +519,30 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
 
 
         </div>
-
+        <div className='flex flex-col gap-2 text-xs'>
+          <h3 className='font-bold'>Common Height Helpers</h3>
+          <div className='flex flex-row gap-2'>
+            <Checkbox
+              checked={upperHelper}
+              onCheckedChange={(e) => setUpperHelper(upperHelper ? false : true)}
+              className='my-auto h-4 w-4 rounded-sm data-[state=checked]:bg-purple-400'
+            /> Upper Cabinet
+          </div>
+          <div className='flex flex-row gap-2'>
+            <Checkbox
+              checked={baseHelper}
+              onCheckedChange={(e) => setBaseHelper(baseHelper ? false : true)}
+              className='my-auto h-4 w-4 rounded-sm data-[state=checked]:bg-blue-400'
+            /> Base Cabinet
+          </div>
+          <div className='flex flex-row gap-2'>
+            <Checkbox
+              checked={wallHelper}
+              onCheckedChange={(e) => setWallHelper(wallHelper ? false : true)}
+              className='my-auto h-4 w-4 rounded-sm data-[state=checked]:bg-green-500'
+            /> Wall Cabinet
+          </div>
+        </div>
 
 
 
@@ -477,17 +551,7 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
         )}
       </div>
 
-      <div className='flex flex-col gap-2'>
-        <div className='flex flex-row gap-2'>
-          <Checkbox className='my-auto' /> Upper Cabinet
-        </div>
-        <div className='flex flex-row gap-2'>
-          <Checkbox className='my-auto' /> Base Cabinet
-        </div>
-        <div className='flex flex-row gap-2'>
-          <Checkbox className='my-auto' /> Wall Cabinet
-        </div>
-      </div>
+
 
     </div>
   );
