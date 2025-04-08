@@ -13,10 +13,10 @@ const QuickCards: React.FC<QuickCardsProps> = (props) => {
 
     //VARIABLES
     const cards = [
-        { title: 'Complete Profile', description: 'Complete your profile to get personalized recommendations.', icon: '👤', class: '!bg-yellow-50', visible: true, buttonText: 'Build Profile', buttonUrl: '' },
-        { title: 'Create a Project', description: 'Start a new project to get started.', icon: '📁', class: '!bg-blue-50', visible: true, buttonText: 'Create Project', buttonUrl: APP_ROUTES.DASHBOARD.PROJECTS.NEW.path },
-        { title: 'Pay Your Invoice', description: 'Pay your invoice to keep your account in good standing.', icon: '💳', class: '!bg-green-50', visible: true, buttonText: 'Pay Invoice', buttonUrl: '/invoices' },
-        { title: 'Get Support', description: 'Contact support for any questions or issues.', icon: '🛠️', class: '!bg-purple-50', visible: true, buttonText: 'Get Support', buttonUrl: '/support' }]
+        { title: 'Complete Profile', description: 'Complete your profile to get personalized recommendations.', icon: '👤', class: '!bg-yellow-50', visible: true, buttonText: 'Build Profile', buttonUrl: '/dashboard' },
+        { title: 'Create a Project', description: 'Start a new project to get started.', icon: '📁', class: '!bg-blue-50', visible: true, buttonText: 'Create Project', buttonUrl: APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path },
+        { title: 'Pay Your Invoice', description: 'Pay your invoice to keep your account in good standing.', icon: '💳', class: '!bg-green-50', visible: true, buttonText: 'Pay Invoice', buttonUrl: '/dashboard' },
+        { title: 'Get Support', description: 'Contact support for any questions or issues.', icon: '🛠️', class: '!bg-purple-50', visible: true, buttonText: 'Get Support', buttonUrl: '/dashboard' }]
     //FUNCTIONS
 
     //EFFECTS

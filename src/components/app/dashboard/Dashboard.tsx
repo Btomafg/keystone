@@ -26,6 +26,7 @@ export default function Page() {
       <WelcomeBanner />
       <QuickCards />
 
+<h3>TESTING PURPOSES ONLY: ONLY TEST PROJECTS PAGE + NEW PROJECT FLOW</h3>
 
 
     </div>
