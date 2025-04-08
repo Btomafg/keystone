@@ -22,7 +22,7 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
     const { mutateAsync: updateCabinet } = useUpdateCabinet();
     const { mutateAsync: deleteCabinet } = useDeleteCabinet();
     const { refetch: refetchProjects } = useGetProjects();
-    const { mutateAsync: updateRoom } = useUpdateRoom();
+    const { mutateAsync: updateRoom, isPending:updatingRoom } = useUpdateRoom();
     const screenWidth = useScreenWidth();
     const [modalOpen, setModalOpen] = useState(false);
     const [editingCabinetId, setEditingCabinetId] = useState<number | null>(null);
@@ -30,22 +30,17 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
     const updateRoomName = async (roomId: string, newName: string) => {
         await updateRoom({ id: roomId, name: newName });
     };
-
+    console.log(project)
     const deleteRoom = async (roomId: string) => {
         console.log("Deleting room", roomId);
         // e.g., await deleteRoomById(roomId);
     };
 
-    const totalCost = project?.rooms?.reduce(
-        (acc, room) =>
-            acc +
-            room?.cabinets?.reduce((cabAcc, cabinet) => cabAcc + cabinet.quote, 0),
-        0
-    );
-
+   
+   
     const addCabinetToRoom = async (roomId: string) => {
         try {
-            await createCabinet({ room: roomId });
+            await createCabinet({ room: roomId, projectId: project.id });
         } catch (error) {
             console.error(error);
         }
@@ -77,7 +72,7 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
             {project?.rooms?.sort((a, b) => a.id - b.id)?.map((room, index) => (
                 <div key={room.id} className="space-y-2 border-b p-2">
 
-                    <RoomHeader room={room} updateRoomName={updateRoomName} deleteRoom={deleteRoom} />
+                    <RoomHeader room={room} updateRoomName={updateRoomName} loading={updatingRoom} deleteRoom={deleteRoom} />
 
                     <div className="overflow-x-auto">
                         <Table className="min-w-full">
@@ -114,6 +109,7 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
                             </TableBody>
                         </Table>
                     </div>
+                    
                 </div>
             ))
             }
@@ -136,10 +132,11 @@ export default function NewProjectCabinets({ project, onBack }: NewProjectCabine
 interface RoomHeaderProps {
     room: Room;
     updateRoomName: (roomId: string, newName: string) => void;
+    loading: boolean;
     deleteRoom: (roomId: string) => void;
 }
 
-function RoomHeader({ room, updateRoomName, deleteRoom }: RoomHeaderProps) {
+function RoomHeader({ room, updateRoomName,loading, deleteRoom }: RoomHeaderProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [tempName, setTempName] = useState(room.name);
 

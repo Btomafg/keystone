@@ -38,13 +38,15 @@ import { ProjectStatusLabels, ProjectTypeLabels } from "@/constants/enums/projec
 import { Project } from "@/constants/models/object.types"
 import { useGetProjects } from "@/hooks/api/projects.queries"
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { APP_ROUTES } from "@/constants/routes"
 
 export function ProjectTable() {
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
-
+    const router = useRouter()
     const { data: projects = [] } = useGetProjects()
 
     const columns: ColumnDef<Project>[] = [
@@ -104,24 +106,13 @@ export function ProjectTable() {
                 const project = row.original
 
                 return (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                <span className="sr-only">Open menu</span>
-                                <MoreHorizontal />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem
-                                onClick={() => navigator.clipboard.writeText(project.id)}
-                            >
-                                Copy Project ID
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                        variant="ghost"
+                        
+                        onClick={(e) => {
+                        router.push(`${APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path}/${project.id}`)
+                        }}
+                    >Edit Project </Button>
                 )
             },
         },

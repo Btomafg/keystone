@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     console.log(request.body);
     const body = await request.json();
     console.log('BODY', body);
-    const { data, error } = await supabase.from('Rooms').update(body).select('id').single();
+    const { data, error } = await supabase.from('Rooms').update(body).eq('id', body.id).select('id').single();
     console.log('PROJECTS', data, error);
 
     if (error) {

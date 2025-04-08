@@ -89,11 +89,13 @@ export type PaymentMethod = [
 export type Room {
   id: number;
   name: string;
-length: number;
+  length: number;
   type: RoomType;
+  height: number;
   project: string;
   walls: Wall[];
   layout: number;
+  estimate: number;
   status?: string;
 }
 
@@ -103,6 +105,7 @@ export type Wall {
   wall_number: number;
   length: number;
   room_id: number;
+  estimate: number;
   cabinets: Cabinet[];
 }
 
@@ -111,28 +114,34 @@ export type Wall {
 export type Cabinet {
   id: number;
   name: string;
-  status: string;
+  status: number;
   quote: number;
-  ceilingHeight?: string;
-  constructionMethod?: string;
-  crown?: string;
-  doorMaterial?: string;
-  lightRail?: string;
-  subMaterial?: string;
-  toeStyle?: string;
+  ceilingHeight?: number;
+  constructionMethod?: number;
+  crown?: number;
+  doorMaterial?: number;
+  lightRail?: number;
+  subMaterial?: number;
+  toeStyle?: number;
   length?: number;
   width?: number;
   height?: number;
   sqft?: number;
-  cuft?: number;
-  room?: string;
+  estimate: number;
+  room?: number;
   createStep?: number;
+  wall_id?: number;
+  grid_start_x?: number;
+  grid_start_y?: number;
+  grid_end_x?: number;
+  grid_end_y?: number;
 
 }
 
 export type Project {
   id: number;
   name: string;
+  estimate: number;
   description: string;
   step: number;
   firstCustom: boolean;
@@ -146,14 +155,14 @@ export type Project {
 }
 
 type CabinetCalculatorInput = {
-  ceilingHeight: string;
-  doorMaterial: string;
-  subMaterial: string;
-  constructionMethod: string;
-  toeStyle: string;
-  crown: string;
-  lightRail: string;
-  linearFootage: string;
+  ceilingHeight: number;
+  doorMaterial: number;
+  subMaterial: number;
+  constructionMethod: number;
+  toeStyle: number;
+  crown: number;
+  lightRail: number;
+  linearFootage: number;
 };
 
 export type BugReport = {

@@ -26,7 +26,7 @@ export const useGetProjects = () => {
     retry: false,
     queryFn: getProjects,
   });
-  console.log('PROJECTS', query);
+  
   return {
     data: query?.data as Project[],
     isSuccess: query.isSuccess,
@@ -106,7 +106,7 @@ export const useCreateCabinets = () => {
   const { toast } = useToast();
   const { refetch } = useGetProjects();
   const mutation = useMutation({
-    mutationFn: (body: Partial<Room>) => createCabinets(body),
+    mutationFn: (body: Partial<Cabinet>) => createCabinets(body),
     onSuccess: (response) => {
       refetch();
       toast({ title: 'Cabinet Created', description: 'A cabinet as been added!' });

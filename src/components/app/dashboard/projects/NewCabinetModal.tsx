@@ -10,9 +10,10 @@ import NewCabinetInputs from './NewCabinetInputs';
 interface NewCabinetModalProps {
   wall: any
   room: any
+  island?: boolean
 }
 const NewCabinetModal: React.FC<NewCabinetModalProps> = (props) => {
-  const { wall, room } = props;
+  const { wall, room, island } = props;
   //HOOKS
   const screenWidth = useScreenWidth();
   //STATES
@@ -33,13 +34,13 @@ const NewCabinetModal: React.FC<NewCabinetModalProps> = (props) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button disabled={wall?.length == null} className='flex flex-row flex-nowrap w-32' onClick={() => { }} type="submit">
-          New Cabinet <Plus />
+        <Button disabled={!island && wall?.length == null} className='flex flex-row flex-nowrap w-32' onClick={() => { }} type="submit">
+         {island ? 'Add an island' : 'New Cabinet'} <Plus />
         </Button>
       </DialogTrigger>
       <DialogOverlay className="fixed inset-0 bg-black/30" />
       <DialogContent className=" bg-white min-w-[350px] max-w-fit rounded-lg shadow-lg">
-        <NewCabinetInputs room={room} wall={wall} />
+        <NewCabinetInputs room={room} wall={wall} setOpen={setOpen} />
       </DialogContent>
     </Dialog>
   );

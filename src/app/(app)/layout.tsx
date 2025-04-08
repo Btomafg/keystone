@@ -35,7 +35,7 @@ export default function Page({ children }) {
 
 
   const DashboardRender = () => {
-    const isDynamicProject = section?.match(/^\/dashboard\/projects\/new\/[^/]+\/?$/)
+    const isDynamicProject = section?.match(/^\/dashboard\/projects\/[^/]+\/?$/)
     if (isDynamicProject) {
       return <NewProjectPage />
     }
@@ -44,9 +44,6 @@ export default function Page({ children }) {
         return <Dashboard />
       case APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path:
         return <Projects />
-      case APP_ROUTES.DASHBOARD.PROJECTS.NEW.path:
-        return <NewProjectPage />
-
       case APP_ROUTES.DASHBOARD.ORDERS.path:
         return <Orders />
       case APP_ROUTES.DASHBOARD.DOCUMENTS.path:

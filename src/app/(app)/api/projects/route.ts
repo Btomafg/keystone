@@ -18,6 +18,7 @@ export async function GET() {
     description,
     status,
     type,
+      estimate,
     step,
     rooms: Rooms_project_fkey (
       id,
@@ -25,11 +26,13 @@ export async function GET() {
       type,
       layout,
       height,
+        estimate,
       walls: Walls_room_id_fkey (
         id,
         name,
         wall_number,
         length,
+          estimate,
         cabinets: Cabinets_wall_id_fkey (
           id,
           wall_id,
@@ -44,9 +47,12 @@ export async function GET() {
           width,
           height,
           sqft,
-          cuft,
           name,
-          quote,
+            estimate,
+          grid_start_x,
+          grid_start_y,
+          grid_end_x,
+          grid_end_y,
           createStep
         )
       )

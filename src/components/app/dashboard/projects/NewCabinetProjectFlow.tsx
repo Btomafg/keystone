@@ -17,7 +17,7 @@ export default function CabinetProjectFlow() {
   const { data: projects } = useGetProjects();
 
   const project = projects?.find((p) => p.id == projectId);
-
+console.log('Project:', project);
   const searchParams = useSearchParams();
   const initialStep = parseInt(searchParams.get('step') || '1', 10);
   const [step, setStep] = useState(initialStep);

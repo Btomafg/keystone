@@ -50,9 +50,12 @@ const OptionStep: React.FC<OptionStepProps> = ({ customOptions, onOptionComplete
     ];
 
     const handleSubmit = (opt) => {
+      console.log('Selected option', opt);
         setStep(step + 1);
         setInputs({ ...inputs, [opt.type]: opt.id })
-        step === allOptions.length - 1 && onOptionComplete && onOptionComplete(inputs);
+        if (step === allOptions.length - 1) {
+            onOptionComplete && onOptionComplete({ ...inputs, [opt.type]: opt.id });
+        }
     }
 
 
@@ -65,11 +68,16 @@ const OptionStep: React.FC<OptionStepProps> = ({ customOptions, onOptionComplete
                 {allOptions[step]?.map((opt) => (
                     <Card
                         key={opt.id}
-                        className={`flex flex-col mx-auto hover:scale-105 transition hover:bg-blue-50 cursor-pointer h-32 aspect-square justify-center items-center p-3 `}
-                        onClick={(opt) => handleSubmit(opt)}
+                        className={`flex flex-col mx-auto hover:scale-105 transition hover:bg-blue-50 cursor-pointer h-32 aspect-square justify-center items-center p-3  `}
+                        onClick={() => handleSubmit(opt)}
+                    
+
+
                     >
+                
+                {opt.image_url && <img src={opt.image_url} alt={opt.name} className="w-24  h-24 rounded-xl  object-cover" />}
                         {opt.icon && opt.icon}
-                        <h3 className="text-lg font-semibold mt-2 text-center">{opt.name}</h3>
+                        <h3 className="text-lg font-semibold text-center">{opt.name}</h3>
                     </Card>
                 ))}
 

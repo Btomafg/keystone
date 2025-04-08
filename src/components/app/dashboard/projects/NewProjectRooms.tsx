@@ -4,7 +4,7 @@ import { BackgroundCard } from '@/components/ui/cards/backgroundCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateRoom, useDeleteRoom, useGetLayoutOptions, useGetProjects, useGetRoomOptions, useUpdateRoom } from '@/hooks/api/projects.queries';
+import { useCreateRoom, useDeleteRoom, useGetCustomOptions, useGetLayoutOptions, useGetProjects, useGetRoomOptions, useUpdateRoom } from '@/hooks/api/projects.queries';
 import { useScreenWidth } from '@/hooks/uiHooks';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,9 +25,11 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
     const [newRoomStep, setNewRoomStep] = React.useState(0);
     const [newRoom, setNewRoom] = React.useState<any>(null);
     const screenWidth = useScreenWidth();
-    const { mutateAsync: createRoom, isPending } = useCreateRoom();
+    const { mutateAsync: createRoom, isPending: creatingRoom } = useCreateRoom();
     const { mutateAsync: updateRoom, isPending: isUpdating } = useUpdateRoom();
     const { mutateAsync: deleteRoom, isPending: isDeleting } = useDeleteRoom();
+    const { data: customOptions } = useGetCustomOptions();
+
     const { data: projects, isLoading } = useGetProjects();
     const { data: commonRooms } = useGetRoomOptions();
     const { data: layouts } = useGetLayoutOptions();
@@ -36,11 +38,12 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
     const projectId = path.split('/')[4];
     const project = projects?.find((project) => project?.id == projectId);
     const sortedCommonRooms = commonRooms?.sort((a, b) => a.id - b.id);
-
+    const roomHeightOptions = customOptions?.filter((option) => option.type === 1).sort((a, b) => a.value - b.value);
+  
 
     const saveRoom = async (data) => {
         const res = await createRoom(data);
-        console.log('Room created:', res);
+        
         setOpen(false);
         setNewRoomStep(0);
         setNewRoom(null);
@@ -216,9 +219,10 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
                                                     <SelectValue placeholder="Select wall height" />
                                                 </SelectTrigger>
                                                 <SelectContent className='z-[999] cursor-pointer'>
-                                                    <SelectItem className=' cursor-pointer' value={8}>8ft</SelectItem>
-                                                    <SelectItem className=' cursor-pointer' value={9}>9ft</SelectItem>
-                                                    <SelectItem className=' cursor-pointer' value={10}>10ft</SelectItem>
+                                                    {roomHeightOptions?.map((option) => (
+                                                        <SelectItem key={option.id} className=' cursor-pointer' value={option.value}>{option.name}</SelectItem>
+                                                    ))}
+                                                   
                                                 </SelectContent>
                                             </Select>
                                         </FormControl>
@@ -254,7 +258,7 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
 
                         </div>
                         <div className="flex justify-end mt-3">
-                            <Button type="submit">Save New Room</Button>
+                            <Button loading={creatingRoom} type="submit">Save New Room</Button>
                         </div>
                     </form>
                 </Form>

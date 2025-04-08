@@ -119,12 +119,14 @@ function NameZonePopover({ pendingZone, cellSize, defaultName = '', onSave, onCa
 }
 
 interface GridProps {
-  wallLength?: number;
+  wall: any
   roomHeight?: number;
   onCabinetSave?: (cabinet: any) => void;
 }
 
-export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProps) {
+export default function Grid({ wall, roomHeight, onCabinetSave }: GridProps) {
+  const wallLength = wall?.length || 10; 
+ 
   const [roomWidthFeet, setRoomWidthFeet] = useState(wallLength || 10);
   const [roomHeightFeet, setRoomHeightFeet] = useState(roomHeight || 10);
   const [upperHelper, setUpperHelper] = useState(false);
@@ -158,9 +160,44 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
   const [nextZoneId, setNextZoneId] = useState(1);
   const gridRef = useRef(null);
   useEffect(() => {
-    setGrid(createEmptyGrid(roomCols, roomRows));
-    setZones([]);
-  }, [roomCols, roomRows]);
+    if (!wall || !wall.cabinets) return;
+  
+    const newGrid = createEmptyGrid(roomCols, roomRows);
+    const newZones = [];
+    let nextId = 1;
+  
+    wall.cabinets.forEach((cabinet, index) => {
+      const startX = cabinet.grid_start_x;
+      const startY = cabinet.grid_start_y;
+      const endX = cabinet.grid_end_x;
+      const endY = cabinet.grid_end_y;
+  
+      for (let i = startX; i <= endX; i++) {
+        for (let j = startY; j <= endY; j++) {
+          newGrid[i][j] = nextId;
+        }
+      }
+      console.log(newZones)
+      newZones.push({
+        start: { x: startX, y: startY },
+        end: { x: endX, y: endY },
+        name: cabinet.name || 'New Cabinet',
+        color: blueShades[index] + '/70',
+      });
+  
+      nextId++;
+    });
+  
+    setGrid(newGrid);
+    setZones(newZones);
+    setNextZoneId(nextId);
+  }, [wall, roomCols, roomRows]);
+  
+
+
+
+
+
 
   const resetGrid = () => {
     setGrid(createEmptyGrid(roomCols, roomRows));
@@ -224,6 +261,7 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
     setSelected(null);
     setLastSelected(null);
     setCurrentSelection(null);
+    
   };
 
   const handleMoveContainer = (e) => {
@@ -244,8 +282,6 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
       setMousePos({ x: e.clientX, y: e.clientY });
     }
     if (x < 0 || x > roomCols || y < 0 || y >= roomRows) return;
-    console.log(roomRows, roomCols, x, y)
-    console.log(`Hovered cell: ${x}, ${y}`);
     setHoveredCell({ x, y });
     if (!isDragging) return;
     handleMove(x, y);
@@ -262,12 +298,14 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
     }
     setGrid(newGrid);
     const color = blueShades[(nextZoneId - 1) % blueShades.length] + '/70';
-    const newZone = { id: nextZoneId, start, end, name, color };
+    const newZone = { start, end, name, color };
     const updatedZones = [...zones, newZone].sort((a, b) =>
       a.start.y !== b.start.y ? a.start.y - b.start.y : a.start.x - b.start.x
     );
     setZones(updatedZones);
-    onCabinetSave(updatedZones);
+  
+    onCabinetSave(newZone);
+    resetGrid();
     setNextZoneId(nextZoneId + 1);
     setPendingZone(null);
   };
@@ -277,7 +315,9 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
   };
 
   const saveEditedZone = (zoneId, newName) => {
+
     const updatedZones = zones.map((zone) => (zone.id === zoneId ? { ...zone, name: newName } : zone));
+    console.log(updatedZones);
     setZones(updatedZones);
     onCabinetSave(updatedZones.find((zone) => zone.id === zoneId));
     setEditingZoneId(null);
@@ -352,10 +392,10 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
   const wallHelperY = (roomRows - wallCabinetHeightFt * CELLS_PER_FOOT) * CELL_SIZE;
 
   return (
-    <div className="flex flex-nowrap items-center space-y-4 p-4 overflow-visible">
+    <div className="flex flex-nowrap mx-auto items-center space-y-4 p-4 overflow-visible">
 
       <div
-        className="text-nowrap text-center mx-auto flex flex-col w-fit justify-center items-center text-[10px] font-semibold text-muted-foreground gap-0 p-2"
+        className="text-nowrap text-center  flex flex-col w-fit justify-center items-center text-[10px] font-semibold text-muted-foreground gap-0 p-2"
       >
         <ChevronUp className="text-muted cursor-pointer my-auto text-xl h-4" />
         <span className="h-4" >{roomHeight}ft</span>
@@ -475,39 +515,56 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
           {pendingZone && (
             <NameZonePopover pendingZone={pendingZone} cellSize={CELL_SIZE} onSave={savePendingZone} onCancel={cancelPendingZone} />
           )}
-          {zones.map((zone) => {
-            const left = zone.start.x * CELL_SIZE;
-            const top = zone.start.y * CELL_SIZE;
-            const width = (zone.end.x - zone.start.x + 1) * CELL_SIZE;
-            const height = (zone.end.y - zone.start.y + 1) * CELL_SIZE;
-            return (
-              <div key={zone.id} style={{ position: 'absolute', left, top, width, height }} className="group">
-                <div className=" flex-col gap-2 opacity-70 group-hover:opacity-100 absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity duration-200 cursor-pointer">
-                  <button
-                    onClick={() => {
-                      setEditingZoneId(zone.id);
-                      setPendingZone({ start: zone.start, end: zone.end });
-                    }}
-                    className="bg-blue-500 text-white px-2 py-1 text-xs rounded mr-1"
-                  >
-                    Edit
-                  </button>
-                  <button onClick={() => removeZone(zone.id)} className="bg-red-500 text-white px-2 py-1 text-xs rounded">
-                    Delete
-                  </button>
-                </div>
-                {editingZoneId === zone.id && (
-                  <NameZonePopover
-                    pendingZone={{ start: zone.start, end: zone.end }}
-                    cellSize={CELL_SIZE}
-                    defaultName={zone.name}
-                    onSave={(newName) => saveEditedZone(zone.id, newName)}
-                    onCancel={cancelEditing}
-                  />
-                )}
-              </div>
-            );
-          })}
+        {zones.map((zone) => {
+  const left = zone.start.x * CELL_SIZE;
+  const top = zone.start.y * CELL_SIZE;
+  const width = (zone.end.x - zone.start.x + 1) * CELL_SIZE;
+  const height = (zone.end.y - zone.start.y + 1) * CELL_SIZE;
+console.log('Zone', zone)
+  const zoneColor = zone.color;
+  return (
+    <div
+      key={zone.id}
+      style={{ position: 'absolute', left, top, width, height }}
+      className={`group ${zone.color} rounded-md border border-slate-300 transition-all`}
+    >
+   
+      <div className="absolute top-1 left-1 text-xs font-semibold bg-white/80 px-1 rounded-sm pointer-events-none">
+        {zone.name}
+      </div>
+
+    
+      <div className="opacity-0 group-hover:opacity-100 absolute inset-0 flex flex-col gap-2 items-center justify-center bg-black/50 transition-opacity duration-200 cursor-pointer">
+        <button
+          onClick={() => {
+            setEditingZoneId(zone.id);
+            setPendingZone({ start: zone.start, end: zone.end });
+          }}
+          className="bg-blue-500 text-white px-2 py-1 text-xs rounded"
+        >
+          Edit
+        </button>
+        <button
+          onClick={() => removeZone(zone.id)}
+          className="bg-red-500 text-white px-2 py-1 text-xs rounded"
+        >
+          Delete
+        </button>
+      </div>
+
+      {editingZoneId === zone.id && (
+        <NameZonePopover
+          pendingZone={{ start: zone.start, end: zone.end }}
+          cellSize={CELL_SIZE}
+          defaultName={zone.name}
+          onSave={(newName) => saveEditedZone(zone.id, newName)}
+          onCancel={cancelEditing}
+        />
+      )}
+    </div>
+  );
+})}
+
 
         </div>
 
@@ -520,7 +577,7 @@ export default function Grid({ wallLength, roomHeight, onCabinetSave }: GridProp
 
         </div>
         <div className='flex flex-col gap-2 text-xs'>
-          <h3 className='font-bold'>Common Height Helpers</h3>
+          <h3 className='font-bold'>Height Helpers</h3>
           <div className='flex flex-row gap-2'>
             <Checkbox
               checked={upperHelper}
