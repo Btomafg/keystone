@@ -35,7 +35,7 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
     const { data: layouts } = useGetLayoutOptions();
     const typeLayouts = layouts?.filter((layout) => layout.room_option_id === newRoom?.type);
     const path = usePathname();
-    const projectId = path.split('/')[4];
+    const projectId = path.split('/')[3];
     const project = projects?.find((project) => project?.id == projectId);
     const sortedCommonRooms = commonRooms?.sort((a, b) => a.id - b.id);
     const roomHeightOptions = customOptions?.filter((option) => option.type === 1).sort((a, b) => a.value - b.value);
@@ -52,7 +52,7 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
     const selectRoomType = async (type: number) => {
         const newRoom = {
             type: type,
-            project: project.id,
+            project: project?.id,
         };
         setNewRoom(newRoom);
         setNewRoomStep(1);
