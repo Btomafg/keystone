@@ -33,7 +33,7 @@ export default function AuthModal() {
           </Button>
         </div>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" closable>
         <DialogHeader></DialogHeader>
 
         {step === 'login' && <AuthStepLogin />}

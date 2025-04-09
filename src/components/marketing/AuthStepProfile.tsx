@@ -8,7 +8,6 @@ import { toast } from '@/hooks/use-toast';
 import { useDispatch } from 'react-redux';
 import { setStep } from '@/store/slices/authSlice';
 import { useUpdateUserProfile } from '@/hooks/api/users.queries';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

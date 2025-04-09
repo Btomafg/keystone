@@ -22,7 +22,7 @@ import FAQs from './dashboard/faq/FAQs';
 export default function Page({ children }) {
   const router = useRouter();
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
-
+  const { data: user } = useGetUser();
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/');
@@ -72,10 +72,9 @@ export default function Page({ children }) {
   };
   return (
     <SidebarProvider>
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" user={user} />
       <SidebarInset>
         <SiteHeader />
-
         <DashboardWrapper />
       </SidebarInset>
     </SidebarProvider>

@@ -9,6 +9,9 @@ import { useGetUser } from '@/hooks/api/users.queries';
 import { useDispatch } from 'react-redux';
 import { setStep } from '@/store/slices/authSlice';
 import AuthModal from '@/components/marketing/AuthModal';
+import AuthStepProfile from '@/components/marketing/AuthStepProfile';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+
 export default function Page() {
   const router = useRouter();
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);
@@ -31,9 +34,19 @@ export default function Page() {
     }
   }, [user]);
 
+  const ProfileModal = () => {
+    return (
+      <Dialog open={authStep == 'profile' ? true : false}>
+        <DialogContent closable={false}>
+          <AuthStepProfile />
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   return (
     <div className="flex flex-1 flex-col">
-      {authStep == 'profile' && <AuthModal />}
+      <ProfileModal />
       <WelcomeBanner />
       <QuickCards />
 

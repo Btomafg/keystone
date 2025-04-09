@@ -6,8 +6,7 @@ import { Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import NewProjectRooms from './NewProjectRooms';
 
-
-interface NewRoomModalProps { }
+interface NewRoomModalProps {}
 const NewRoomModal: React.FC<NewRoomModalProps> = (props) => {
   //HOOKS
   const screenWidth = useScreenWidth();
@@ -22,13 +21,15 @@ const NewRoomModal: React.FC<NewRoomModalProps> = (props) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className='flex flex-row flex-nowrap w-32' onClick={() => { }} type="submit">
-
+        <Button className="flex flex-row flex-nowrap w-32" onClick={() => {}} type="submit">
           New Room <Plus />
         </Button>
       </DialogTrigger>
       <DialogOverlay className="fixed inset-0 bg-black/30" />
-      <DialogContent className="fixed top-1/2 left-1/2 w-full max-w-xl p-6 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg">
+      <DialogContent
+        className="fixed top-1/2 left-1/2 w-full max-w-xl p-6 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-lg"
+        closable
+      >
         <NewProjectRooms open={open} setOpen={() => setOpen(false)} />
       </DialogContent>
     </Dialog>

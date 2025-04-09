@@ -23,11 +23,16 @@ import { useGetUser } from '@/hooks/api/users.queries';
 import { useRouter } from 'next/navigation';
 import SawLoader from './ui/loader';
 
-export const NavUser: React.FC = () => {
+interface NavUserProps {
+  user?: any;
+}
+
+export const NavUser: React.FC<NavUserProps> = (props) => {
+  const { user } = props;
   const { isMobile } = useSidebar();
   const [bugOpen, setBugOpen] = useState(false);
   const { mutateAsync: logOut, isPending: loggingOut } = useLogout();
-  const { data: user } = useGetUser();
+
   const { showReportBug } = useReportBug();
   const router = useRouter();
 
@@ -111,11 +116,8 @@ export const NavUser: React.FC = () => {
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
-
             <DropdownMenuSeparator />
-
             <ReportBug open={bugOpen} setOpen={setBugOpen} />
-
             <DropdownMenuGroup>
               {otherItems.map((item, index) => (
                 <DropdownMenuItem key={index} onClick={item.onClick} className="cursor-pointer">
