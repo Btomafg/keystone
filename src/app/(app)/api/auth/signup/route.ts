@@ -10,12 +10,12 @@ export async function POST(request: Request) {
       ? `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
       : 'http://localhost:3000/auth/callback';
     const supabase = createServerActionClient({ cookies });
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: redirectTo },
     });
-
+    const { user, session } = data || {};
     if (error) {
       return NextResponse.json({ success: false, message: error.message, type: 'error' }, { status: 400 });
     }

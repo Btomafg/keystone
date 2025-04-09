@@ -1,8 +1,9 @@
-import { Bell, Bug, Building, ChevronsUpDown, LogOut, User } from "lucide-react";
-import { useState } from "react";
+'use client';
+import { Bell, Bug, Building, ChevronsUpDown, LockIcon, LogOut, User } from 'lucide-react';
+import { useState } from 'react';
 
-import ReportBug from "@/components/app/ReportBug";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ReportBug from '@/components/app/ReportBug';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,21 +12,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
+} from '@/components/ui/dropdown-menu';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 
-import { APP_ROUTES } from "@/constants/routes";
+import { APP_ROUTES } from '@/constants/routes';
 
-import { useReportBug } from "@/components/app/bug-provider";
-import { useLogout } from "@/hooks/api/auth.queries";
-import { useGetUser } from "@/hooks/api/users.queries";
-import { useRouter } from "next/navigation";
-
+import { useReportBug } from '@/components/app/bug-provider';
+import { useLogout } from '@/hooks/api/auth.queries';
+import { useGetUser } from '@/hooks/api/users.queries';
+import { useRouter } from 'next/navigation';
+import SawLoader from './ui/loader';
 
 export const NavUser: React.FC = () => {
   const { isMobile } = useSidebar();
   const [bugOpen, setBugOpen] = useState(false);
-  const { mutateAsync: logOut } = useLogout();
+  const { mutateAsync: logOut, isPending: loggingOut } = useLogout();
   const { data: user } = useGetUser();
   const { showReportBug } = useReportBug();
   const router = useRouter();
@@ -33,18 +34,18 @@ export const NavUser: React.FC = () => {
   const menuItems = [
     {
       icon: <User />,
-      label: "Profile",
-      path: APP_ROUTES.DASHBOARD.SETTINGS.SETTINGS.path,
+      label: 'Profile',
+      path: APP_ROUTES.DASHBOARD.SETTINGS.PROFILE.path,
     },
     {
-      icon: <Building />,
-      label: "Account",
-      path: APP_ROUTES.DASHBOARD.SETTINGS.ACCOUNT.path,
+      icon: <LockIcon />,
+      label: 'Security',
+      path: APP_ROUTES.DASHBOARD.SETTINGS.SECURITY.path,
     },
 
     {
       icon: <Bell />,
-      label: "Notifications",
+      label: 'Notifications',
       path: APP_ROUTES.DASHBOARD.SETTINGS.NOTIFICATIONS.path,
     },
   ];
@@ -52,30 +53,26 @@ export const NavUser: React.FC = () => {
   const otherItems = [
     {
       icon: <Bug />,
-      label: "Report a problem",
+      label: 'Report a problem',
       onClick: () => showReportBug(),
     },
     {
       icon: <LogOut />,
-      label: "Log out",
+      label: 'Log out',
       onClick: () => logOut(),
+      loading: loggingOut,
     },
   ];
 
   return (
-    <SidebarMenu >
-
-
+    <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
+            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.profile_picture_url} alt={`${user?.first_name} ${user?.last_name}`} />
-                <AvatarFallback className="rounded-lg">BT</AvatarFallback>
+                <AvatarFallback className="rounded-lg">{user?.first_name[0] + user?.last_name[0] || 'KW'}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">{`${user?.first_name} ${user?.last_name}`}</span>
@@ -86,11 +83,10 @@ export const NavUser: React.FC = () => {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56 w-[--radix-dropdown-menu-trigger-width] rounded-lg bg-white"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             align="end"
             sideOffset={4}
           >
-
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
@@ -105,7 +101,6 @@ export const NavUser: React.FC = () => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
 
-
             <DropdownMenuGroup>
               {menuItems.map((item, index) => (
                 <DropdownMenuItem key={index} onClick={() => router.push(item.path)} className="cursor-pointer">
@@ -119,21 +114,19 @@ export const NavUser: React.FC = () => {
 
             <DropdownMenuSeparator />
 
-
             <ReportBug open={bugOpen} setOpen={setBugOpen} />
-
 
             <DropdownMenuGroup>
               {otherItems.map((item, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  onClick={item.onClick}
-                  className="cursor-pointer"
-                >
-                  <div className="flex items-center gap-2">
-                    {item.icon}
-                    {item.label}
-                  </div>
+                <DropdownMenuItem key={index} onClick={item.onClick} className="cursor-pointer">
+                  {item.loading ? (
+                    <SawLoader />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      {item.icon}
+                      {item.label}
+                    </div>
+                  )}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
@@ -142,4 +135,4 @@ export const NavUser: React.FC = () => {
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+};

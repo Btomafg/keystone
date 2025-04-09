@@ -17,24 +17,28 @@ const ONE_MINUTE = 60000;
 export const useLogin = () => {
   const { toast } = useToast();
   const dispatch = useDispatch();
+  const { data: user, refetch } = useGetUser();
   return useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) => SupabaseAuthService.signIn(email, password),
+    mutationFn: async ({ email, password }: { email: string; password: string }) => await SupabaseAuthService.signIn(email, password),
     onError: (error: any) => {
       console.error(error);
       toast({ title: 'Login Failed', description: error.error });
     },
     onSuccess: async (res) => {
+      await refetch();
       if (!res.data) {
         toast({ title: 'Login Failed', description: res.message });
         if (res.type == 'email_not_confirmed') {
           dispatch(setStep('otp'));
         }
       } else {
-        console.log(res);
         store.dispatch(setToken(res.data.session.access_token));
         store.dispatch(setRefreshTokenInterval(new Date().toISOString()));
         store.dispatch(setIsAuthenticated(true));
         store.dispatch(setUser(res.data.session.user));
+        if (!user?.first_name) {
+          dispatch(setStep('profile'));
+        }
 
         toast({ title: 'Login Successful', description: res.data.message });
       }

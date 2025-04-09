@@ -7,9 +7,7 @@ import store from '@/store';
 export const getCurrentUser = async () => {
   const user = store.getState().auth.user;
   const isAuthenticated = store.getState().auth.isAuthenticated;
-  console.log('getCurrentUser', user);
   if (!user) return null;
-  console.log('getting user');
 
   try {
     const res = await fetch(API_ROUTES.GET_USER, {
@@ -17,10 +15,14 @@ export const getCurrentUser = async () => {
       headers: { 'Content-Type': 'application/json' },
     });
     const data = await res.json();
-    console.log('USER DATA', data);
+
     if (data?.code === 'PGRST116') {
       await createUser();
-      const refetch = await API.getOne('Users', 'first_name, last_name, email', 'id', user.id);
+      const res = await fetch(API_ROUTES.GET_USER, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const refetch = await res.json();
       return refetch;
     }
     return data;
@@ -31,16 +33,34 @@ export const getCurrentUser = async () => {
 
 export const createUser = async () => {
   const user = store.getState().auth.user;
-  await API.insert('Users', {
-    id: user.id,
-    email: user.email,
-  });
-  console.log('USER CREATED - REFRESHING');
-  return true;
+  try {
+    const res = await fetch(API_ROUTES.CREATE_USER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: user.id,
+        email: user.email,
+        active: true,
+      }),
+    });
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('ERROR GETTING USER', error);
+  }
 };
 
-export const updateUser = async (payload: any) => {
+export const updateUser = async (body: any) => {
   const user = store.getState().auth.user;
-  await API.update('Users', 'id', user.id, payload);
-  return true;
+  try {
+    const res = await fetch(API_ROUTES.UPDATE_USER, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('ERROR GETTING USER', error);
+  }
 };

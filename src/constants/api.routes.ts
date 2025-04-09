@@ -11,7 +11,8 @@ export const API_ROUTES = {
 
   // User Routes
   GET_USER: '/api/user/',
-  UPDATE_USER: '/api/user/update/',
+  CREATE_USER: '/api/user/',
+  UPDATE_USER: '/api/user/',
 
   // project routes
   GET_PROJECTS: '/api/projects/',

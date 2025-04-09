@@ -20,12 +20,13 @@ import { APP_ROUTES } from '@/constants/routes';
 export function NavOpenProjects() {
   const { data: projects, isLoading } = useGetProjects();
   const { isMobile } = useSidebar();
-  const items =
-    projects?.slice(0, 3).map((project) => ({
-      name: project.name,
-      url: `/dashboard/projects/${project.id}`,
-      icon: <Clipboard />,
-    })) ?? [];
+  const items = projects
+    ? projects?.slice(0, 3)?.map((project) => ({
+        name: project.name,
+        url: `/dashboard/projects/${project.id}`,
+        icon: <Clipboard />,
+      }))
+    : [];
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">

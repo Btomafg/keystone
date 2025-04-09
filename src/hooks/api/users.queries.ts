@@ -7,17 +7,11 @@ import store from '@/store';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../use-toast';
 
-const defaultUser = {
-  id: '',
-  email: '',
-};
-const dud = () => defaultUser;
 export const useGetUser = () => {
-  const userId = store.getState().auth.user?.id;
-
   const query = useQuery({
     queryKey: [API_ROUTES.GET_USER],
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
+    refetchInterval: false,
     queryFn: getCurrentUser,
   });
   return {
@@ -44,7 +38,7 @@ export const useUpdateUserProfile = () => {
   const { toast } = useToast();
   const { refetch } = useGetUser();
   const mutation = useMutation({
-    mutationFn: (body: User) => updateUser(body),
+    mutationFn: (body: Partial<User>) => updateUser(body),
     onSuccess: (response) => {
       refetch();
       toast({ title: 'User Updated', description: 'Your profile has been successfully updated.' });

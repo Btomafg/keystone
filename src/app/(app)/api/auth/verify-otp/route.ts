@@ -17,7 +17,18 @@ export async function POST(request: Request) {
     }
 
     const session = data.session;
+    const user = data.user;
+    console.log('session', session);
+    console.log('user', user);
     if (session) {
+      const { data: newUser, error: newUserError } = await supabase.from('Users').insert({
+        id: user?.id,
+        email: user?.email,
+        first_name: '',
+        last_name: '',
+        active: true,
+      });
+
       return NextResponse.json({
         success: true,
         message: 'OTP verified',
