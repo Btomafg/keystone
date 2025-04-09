@@ -50,7 +50,7 @@ export default function Page() {
       <WelcomeBanner />
       <QuickCards />
 
-      <h3>TESTING PURPOSES ONLY: ONLY TEST PROJECTS PAGE + NEW PROJECT FLOW</h3>
+      <h3>TESTING PURPOSES ONLY: ONLY TEST PROJECTS PAGE, NEW PROJECT FLOW, FAQS, PROFILE SETTINGS, BUG REPORTER</h3>
     </div>
   );
 }
