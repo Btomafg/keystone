@@ -26,7 +26,7 @@ export const useGetProjects = () => {
     retry: false,
     queryFn: getProjects,
   });
-  
+
   return {
     data: query?.data as Project[],
     isSuccess: query.isSuccess,

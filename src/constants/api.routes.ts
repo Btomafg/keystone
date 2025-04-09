@@ -38,4 +38,10 @@ export const API_ROUTES = {
   CREATE_CABINET: '/api/projects/cabinets/create/',
   DELETE_CABINET: '/api/projects/cabinets/',
   CABINET_OPTIONS: '/api/projects/cabinets/options/',
+
+  //FAQ routes
+  GET_ALL_FAQS: '/api/faqs/',
+  GET_MY_FAQ_FEEDBACK: '/api/faqs/feedback?',
+  INCREASE_SEARCH_COUNT: '/api/faqs/searchcount/',
+  FAQ_CREATE_FEEDBACK: '/api/faqs/feedback/',
 };

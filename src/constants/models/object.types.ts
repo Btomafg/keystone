@@ -144,7 +144,7 @@ export type Project {
   estimate: number;
   description: string;
   step: number;
-  firstCustom: boolean;
+  first_custom: boolean;
   street: string;
   city: string;
   state: string;

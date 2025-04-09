@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from "react";
 import QuickCards from "./dashboard/QuickCards";
 import WelcomeBanner from "./dashboard/WelcomeBanner";
+import ReportBug from "../ReportBug";
 export default function Page() {
   const router = useRouter();
   const isAuthenticated = useTypedSelector((state) => state.auth.isAuthenticated);

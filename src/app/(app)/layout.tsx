@@ -17,6 +17,7 @@ import FAQ from "./dashboard/faq/page";
 import Orders from "./dashboard/orders/page";
 import Projects from "./dashboard/projects/page";
 import Settings from "./dashboard/settings/page";
+import FAQs from "./dashboard/faq/FAQs";
 
 export default function Page({ children }) {
   const router = useRouter();
@@ -49,7 +50,7 @@ export default function Page({ children }) {
       case APP_ROUTES.DASHBOARD.DOCUMENTS.path:
         return <Documents />
       case APP_ROUTES.DASHBOARD.FAQ.path:
-        return <FAQ />
+        return <FAQs />
       case APP_ROUTES.DASHBOARD.SETTINGS.SETTINGS.path:
         return <Settings />
       default:

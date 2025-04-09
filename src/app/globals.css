@@ -31,8 +31,8 @@ body {
     --muted-foreground: #475d7a;
     --accent: #24354b;
     --accent-foreground: #e7f0ec;
-    --destructive: 2 92% 82%;
-    --destructive-foreground: 2 92% 22%;
+    --destructive: #e32a2a;
+    --destructive-foreground: #e32a2a;
     --border: #475d7a;
     --input: #9a9a9a;
     --ring: #475d7a;
