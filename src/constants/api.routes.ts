@@ -19,6 +19,7 @@ export const API_ROUTES = {
   UPDATE_PROJECT: '/api/projects/',
   GET_PROJECT: '/api/projects/[id]/',
   CREATE_PROJECT: '/api/projects/create/',
+  REVIEW_PROJECT: '/api/projects/review/',
 
   // room routes
   GET_ROOMS: '/api/projects/rooms/',

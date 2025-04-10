@@ -1,7 +1,6 @@
 import React from 'react';
-
-interface pageProps {
-}
+import Dashboard from '@/components/app/dashboard/Dashboard';
+interface pageProps {}
 const page: React.FC<pageProps> = (props) => {
   //HOOKS
 
@@ -13,11 +12,7 @@ const page: React.FC<pageProps> = (props) => {
 
   //EFFECTS
 
-  return (
-    <div>
-      /* Your JSX content here */
-    </div>
-  );
+  return <Dashboard />;
 };
 
 export default page;

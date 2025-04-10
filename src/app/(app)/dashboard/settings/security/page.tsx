@@ -1,7 +1,8 @@
+'use client';
+import Security from '@/components/app/dashboard/settings/Security';
 import React from 'react';
 
-interface pageProps {
-}
+interface pageProps {}
 const page: React.FC<pageProps> = (props) => {
   //HOOKS
 
@@ -13,11 +14,7 @@ const page: React.FC<pageProps> = (props) => {
 
   //EFFECTS
 
-  return (
-    <div>
-      /* Your JSX content here */
-    </div>
-  );
+  return <Security />;
 };
 
 export default page;

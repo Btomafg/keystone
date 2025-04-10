@@ -219,3 +219,20 @@ export const updateWall = async (body: Partial<Cabinet>) => {
   }
   return true;
 };
+
+export const reviewSubmittedProject = async (body: Partial<Project>) => {
+  try {
+    const res = await fetch(API_ROUTES.REVIEW_PROJECT, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    return data;
+  } catch (error) {
+    console.error('ERROR Reviewing Project', error);
+  }
+  return true;
+};

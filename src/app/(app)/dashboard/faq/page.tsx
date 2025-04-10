@@ -1,3 +1,10 @@
+'use client';
+import FAQs from './FAQs';
+
 export default function FAQ() {
-    return <div>FAQ Page</div>;
+  return (
+    <div>
+      <FAQs />
+    </div>
+  );
 }

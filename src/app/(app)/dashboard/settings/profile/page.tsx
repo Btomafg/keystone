@@ -1,7 +1,8 @@
+'use client';
+import Profile from '@/components/app/dashboard/settings/Profile';
 import React from 'react';
 
-interface pageProps {
-}
+interface pageProps {}
 const page: React.FC<pageProps> = (props) => {
   //HOOKS
 
@@ -13,11 +14,7 @@ const page: React.FC<pageProps> = (props) => {
 
   //EFFECTS
 
-  return (
-    <div>
-      /* Your JSX content here */
-    </div>
-  );
+  return <Profile />;
 };
 
 export default page;

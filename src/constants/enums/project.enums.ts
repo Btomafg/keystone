@@ -19,6 +19,7 @@ export enum ProjectStatus {
   Paint = 5,
   Delivery = 6,
   Install = 7,
+  Denied = 99,
 }
 
 export const ProjectStatusLabels: Record<ProjectStatus, string> = {

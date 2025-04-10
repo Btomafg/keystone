@@ -10,7 +10,9 @@ import {
   getProjects,
   getRoomOptions,
   getRoomsByProjectId,
+  reviewSubmittedProject,
   updateCabinet,
+  updateProject,
   updateRoom,
   updateWall,
 } from '@/api/projects.api';
@@ -53,7 +55,7 @@ export const useUpdateProject = () => {
   const { toast } = useToast();
 
   const mutation = useMutation({
-    mutationFn: (body: Partial<Project>) => createProject(body),
+    mutationFn: (body: Partial<Project>) => updateProject(body),
     onSuccess: (response) => {
       toast({ title: 'Project Updated', description: 'Your project has been successfully updated.' });
     },
@@ -226,6 +228,18 @@ export const useUpdateWall = () => {
     mutationFn: (body: Partial<Wall>) => updateWall(body),
     onSuccess: (response) => {
       toast({ title: 'Wall Updated' });
+      refetch();
+    },
+  });
+  return mutation;
+};
+
+export const useSubmittedProjectReview = () => {
+  const { toast } = useToast();
+  const { refetch } = useGetProjects();
+  const mutation = useMutation({
+    mutationFn: (body: Partial<Wall>) => reviewSubmittedProject(body),
+    onSuccess: (response) => {
       refetch();
     },
   });

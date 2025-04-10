@@ -19,7 +19,6 @@ export async function GET() {
     status,
     type,
       estimate,
-    step,
     rooms: Rooms_project_fkey (
       id,
       name,
@@ -80,8 +79,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log('BODY', body);
     body.user_id = userId;
-    const { data, error } = await supabase.from('Projects').update(body).select('id').single();
+    const { data, error } = await supabase.from('Projects').update(body).eq('id', body.id).select('id, step').single();
     console.log('PROJECTS', data, error);
+    if (data == null) {
+      return NextResponse.json({ success: false, message: 'Project not updated', type: 'error' }, { status: 404 });
+    }
 
     if (error) {
       return NextResponse.json({ success: false, message: error.message, type: error.code }, { status: error.status });

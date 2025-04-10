@@ -16,6 +16,7 @@ import {
   useGetLayoutOptions,
   useGetProjects,
   useGetRoomOptions,
+  useUpdateProject,
   useUpdateRoom,
   useUpdateWall,
 } from '@/hooks/api/projects.queries';
@@ -27,10 +28,11 @@ import NewCabinetModal from './NewCabinetModal';
 import NewRoomModal from './NewRoomModal';
 import { toUSD } from '@/utils/common';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 export default function NewProjectPage() {
   const path = usePathname();
-  const projectId = path.split('/')[3];
+  const projectId = parseFloat(path.split('/')[3]);
 
   // Track open walls per room by room ID.
   const [openWalls, setOpenWalls] = React.useState<Record<number, boolean>>({});
@@ -38,6 +40,7 @@ export default function NewProjectPage() {
   const { data: layouts } = useGetLayoutOptions();
   const { data: roomOptions } = useGetRoomOptions();
   const { data: projects } = useGetProjects();
+  const { mutateAsync: submitProject, isPending: submitting } = useUpdateProject();
 
   const project = projects && projects?.find((project: Project) => project?.id == projectId);
 
@@ -63,6 +66,48 @@ export default function NewProjectPage() {
       }
     }
     return '';
+  };
+
+  const SubmitDisclaimer = () => {
+    const [open, setOpen] = useState(false);
+    const handleSubmitProject = async () => {
+      try {
+        await submitProject({ id: projectId, status: 2 });
+        //setOpen(false);
+      } catch (error) {
+        console.error('Error submitting project:', error);
+      }
+    };
+    return (
+      <Dialog open={open}>
+        <DialogTrigger asChild>
+          <Button onClick={() => setOpen(true)} variant="outline" className="w-1/4 ms-auto hover:bg-green-600 hover:text-white">
+            Submit Project for Review
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="w-[400px]">
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-gray-700">
+              <strong>Disclaimer:</strong> All project estimates generated through this tool are preliminary and based solely on the
+              information you’ve provided. These are not final quotes.
+            </p>
+            <p className="text-sm text-gray-700">
+              Keystone Woodworx will carefully review each qualified submission and work with you directly to finalize a quote before any
+              work or engagement begins.
+            </p>
+            <p className="text-sm text-red-600">Are you sure you want to submit this project for review?</p>
+            <div className="flex flex-row justify-between">
+              <Button className="w-1/3 " variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button className="w-1/3 hover:bg-green-600 hover:text-white" onClick={handleSubmitProject} loading={submitting}>
+                Confirm
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   };
 
   return (
@@ -97,6 +142,7 @@ export default function NewProjectPage() {
                     roomOptions={roomOptions}
                     layouts={layouts}
                   />
+
                   {openWalls[room.id] && (
                     <TableRow>
                       <TableCell colSpan={7} className="p-0">
@@ -123,13 +169,7 @@ export default function NewProjectPage() {
         Estimated Project Cost:{' '}
         <span className="text-lg font-semibold ms-auto">{toUSD(project?.estimate) || 'Create Cabinets For Estimate'}</span>
       </div>
-      <div className="flex flex-col pt-4">
-        {project?.rooms?.length > 0 && (
-          <Button className="w-1/4 ms-auto hover:bg-green-600 hover:text-white" variant="outline">
-            Submit Project for Review
-          </Button>
-        )}
-      </div>
+      <div className="flex flex-col pt-4">{project?.rooms?.length > 0 && <SubmitDisclaimer />}</div>
     </div>
   );
 }
