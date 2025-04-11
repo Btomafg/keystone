@@ -24,7 +24,7 @@ export const API_ROUTES = {
       CREATE: '/api/admin/notes/',
     },
     VALIDATE_ADMIN: '/api/admin/validate/',
-    GET_LEADS: '/api/admin/leads/',
+
     GET_USERS: '/api/admin/users/',
     GET_USER: '/api/admin/users/[id]/',
     UPDATE_USER: '/api/admin/users/[id]/',

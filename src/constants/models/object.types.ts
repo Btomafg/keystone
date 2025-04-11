@@ -13,7 +13,7 @@ export type User = {
   is_active: boolean;
   last_name: string;
   phone: string;
-  profile_picture_url: string;
+  profile_img_url: string;
   mfa: boolean;
   receive_email: boolean;
   receive_promotional: boolean;

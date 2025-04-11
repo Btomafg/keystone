@@ -7,9 +7,9 @@ import { useToast } from '../use-toast';
 import { validateAdmin } from '@/api/admin/admin.api';
 import { logoutAdmin, setAdminSession } from '@/store/slices/authSlice';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getAdminNotes } from '@/api/admin/admin.leads.api';
 import { usePathname } from 'next/navigation';
-import { deleteLeads, getAdminLeads } from '@/api/admin/admin.notes.api';
+import { deleteLeads, getAdminLeads } from '@/api/admin/admin.leads.api';
+import { createNote, deleteNote, getAdminNotes } from '@/api/admin/admin.notes.api';
 
 export const useValidateAdmin = () => {
   const { toast } = useToast();
@@ -41,7 +41,7 @@ export const useValidateAdmin = () => {
 export const useAdminGetLeads = () => {
   const admin_key = store.getState().auth.admin_session_key;
   const query = useQuery({
-    queryKey: [API_ROUTES.ADMIN.LEADS.GET, admin_key],
+    queryKey: [API_ROUTES.ADMIN.LEADS.GET],
     enabled: !!admin_key,
     staleTime: 1000 * 60 * 5,
     queryFn: () => getAdminLeads(admin_key),
@@ -96,4 +96,34 @@ export const useAdminGetNotes = () => {
     isError: query.isError,
     refetch: query.refetch,
   };
+};
+
+export const useAdminCreateNote = () => {
+  const { refetch } = useAdminGetNotes();
+  const { toast } = useToast();
+  const mutation = useMutation({
+    mutationFn: (body: any) => createNote(body),
+    onError: (error) => {},
+    onSuccess: (response) => {
+      refetch();
+      toast({ title: 'Note Created', description: response?.message });
+      console.log('Create Note Response:', response);
+    },
+  });
+  return mutation;
+};
+
+export const useAdminDeleteNote = () => {
+  const { refetch } = useAdminGetNotes();
+  const { toast } = useToast();
+  const mutation = useMutation({
+    mutationFn: (body: any) => deleteNote(body),
+    onError: (error) => {},
+    onSuccess: (response) => {
+      refetch();
+      toast({ title: 'Note Deleted', description: response?.message });
+      console.log('Delete Note Response:', response);
+    },
+  });
+  return mutation;
 };
