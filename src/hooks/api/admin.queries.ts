@@ -7,7 +7,9 @@ import { useToast } from '../use-toast';
 import { validateAdmin } from '@/api/admin/admin.api';
 import { logoutAdmin, setAdminSession } from '@/store/slices/authSlice';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { deleteLeads, getAdminLeads } from '@/api/admin/admin.leads.api';
+import { getAdminNotes } from '@/api/admin/admin.leads.api';
+import { usePathname } from 'next/navigation';
+import { deleteLeads, getAdminLeads } from '@/api/admin/admin.notes.api';
 
 export const useValidateAdmin = () => {
   const { toast } = useToast();
@@ -39,7 +41,7 @@ export const useValidateAdmin = () => {
 export const useAdminGetLeads = () => {
   const admin_key = store.getState().auth.admin_session_key;
   const query = useQuery({
-    queryKey: [API_ROUTES.ADMIN.GET_LEADS, admin_key],
+    queryKey: [API_ROUTES.ADMIN.LEADS.GET, admin_key],
     enabled: !!admin_key,
     staleTime: 1000 * 60 * 5,
     queryFn: () => getAdminLeads(admin_key),
@@ -67,4 +69,31 @@ export const useAdminDeleteLeads = () => {
     },
   });
   return mutation;
+};
+
+export const useAdminGetNotes = () => {
+  const admin_key = store.getState().auth.admin_session_key;
+  const pathName = usePathname();
+  const type = pathName.split('/')[2];
+  const id = pathName.split('/')[3];
+  const body = {
+    admin_key: admin_key,
+    type: type,
+    id: id,
+  };
+
+  const query = useQuery({
+    queryKey: [API_ROUTES.ADMIN.NOTES.GET],
+    enabled: !!admin_key,
+    staleTime: 1000 * 60 * 5,
+    queryFn: () => getAdminNotes(body),
+    retry: false,
+  });
+  return {
+    data: query?.data as Lead | [],
+    isSuccess: query.isSuccess,
+    isLoading: query.isFetching,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
 };

@@ -1,9 +1,9 @@
 import { API_ROUTES } from '@/constants/api.routes';
 import store from '@/store';
 
-export const getAdminNotes = async (body) => {
-  const params = new URLSearchParams(body);
-  const url = `${API_ROUTES.ADMIN.NOTES.GET}?${params.toString()}`;
+export const getAdminLeads = async (body) => {
+  const params = new URLSearchParams({ admin_key: body });
+  const url = `${API_ROUTES.ADMIN.GET_LEADS}?${params.toString()}`;
 
   try {
     const res = await fetch(url, {
@@ -13,14 +13,14 @@ export const getAdminNotes = async (body) => {
       },
     });
     const data = await res.json();
-    return data?.data;
+    return data;
   } catch (error) {
     console.error('ERROR GETTING LEADS', error);
     return [];
   }
 };
 
-export const deleteNotes = async (body) => {
+export const deleteLeads = async (body) => {
   const admin_key = store.getState().auth.admin_session_key;
 
   const params = new URLSearchParams({ admin_key: admin_key });

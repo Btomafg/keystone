@@ -22,6 +22,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
 import { useAdminDeleteLeads } from '@/hooks/api/admin.queries';
 import { set } from 'date-fns';
+import { useRouter } from 'next/navigation';
+import { APP_ROUTES } from '@/constants/routes';
 
 interface AdminLeadsTableProps {
   leads: any[];
@@ -33,14 +35,14 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState([]);
-  console.log('Row Selection:', rowSelection);
+  const router = useRouter();
   const [globalFilter, setGlobalFilter] = React.useState('');
   const { mutateAsync: deleteLead, isPending: deletingLeading } = useAdminDeleteLeads();
 
   const handleDelete = async (lead: any, multi: boolean) => {
     try {
       const multiLeads = table.getSelectedRowModel().rows.map((row) => row.original.id);
-      console.log('Deleting leads:', multiLeads);
+
       await deleteLead({ leads: multi ? multiLeads : [lead] });
       setRowSelection([]);
     } catch (error) {
@@ -64,22 +66,22 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
       enableHiding: false,
     },
     {
-      accessorKey: 'first_name',
+      id: 'name',
+
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          First Name <ArrowUpDown className="ml-2 h-4 w-4" />
+          Name <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue('first_name')}</div>,
-    },
-    {
-      accessorKey: 'last_name',
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Last Name <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => <div>{row.getValue('last_name')}</div>,
+      cell: ({ row }) => {
+        const lead = row.original;
+        return (
+          <div
+            className="text-blue-500 hover:cursor-pointer hover:text-blue-400"
+            onClick={() => router.push(`${APP_ROUTES.ADMIN.LEADS.path}/${lead.id}`)}
+          >{`${lead.first_name} ${lead.last_name}`}</div>
+        );
+      },
     },
     {
       accessorKey: 'email',
@@ -127,7 +129,7 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
       enableHiding: false,
       cell: ({ row }) => {
         const lead = row.original;
-        console.log('Lead:', lead);
+
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -197,7 +199,7 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
         )}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className=" my-auto">
+            <Button variant="outline" className=" my-auto ms-auto">
               Columns <ChevronDown />
             </Button>
           </DropdownMenuTrigger>

@@ -17,6 +17,12 @@ export const API_ROUTES = {
       UPDATE: '/api/admin/leads/',
       CREATE: '/api/admin/leads/',
     },
+    NOTES: {
+      GET: '/api/admin/notes/',
+      DELETE: '/api/admin/notes/',
+      UPDATE: '/api/admin/notes/',
+      CREATE: '/api/admin/notes/',
+    },
     VALIDATE_ADMIN: '/api/admin/validate/',
     GET_LEADS: '/api/admin/leads/',
     GET_USERS: '/api/admin/users/',

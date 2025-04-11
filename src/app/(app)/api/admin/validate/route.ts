@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
     const { data: adminKey, error: adminKeyError } = await supabase
       .from('Users')
-      .update({ admin_session_key: uuidv4(), admin_session_expires_at: new Date(Date.now() + 60 * 60 * 1000) })
+      .update({ admin_session_key: uuidv4(), admin_session_expires_at: new Date(Date.now() + 60 * 60 * 2000) })
       .eq('id', userId)
       .select('admin_session_key, admin_session_expires_at')
       .single();
