@@ -36,5 +36,15 @@ export const APP_ROUTES = {
       NOTIFICATIONS: { title: 'Notifications', path: '/dashboard/settings/notifications/' },
     },
   },
+  ADMIN: {
+    HOME: { title: 'Admin Home', path: '/admin/' },
+    LEADS: { title: 'Leads', path: '/admin/leads/' },
+    PROJECTS: { title: 'Projects', path: '/admin/projects/' },
+    USERS: { title: 'Users', path: '/admin/users/' },
+    SETTINGS: { title: 'Settings', path: '/admin/settings/' },
+    FAQ: { title: 'FAQ', path: '/admin/faq/' },
+    DOCUMENTS: { title: 'Documents', path: '/admin/documents/' },
+    ORDERS: { title: 'Orders', path: '/admin/orders/' },
+  },
   NOT_FOUND: { title: 'Page Not Found', path: '/404' },
 };

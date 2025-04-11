@@ -6,7 +6,7 @@ export const validateAdmin = async (body: any) => {
   if (!user) return null;
   body.id = user.id;
   try {
-    const res = await fetch(API_ROUTES.VALIDATE_ADMIN, {
+    const res = await fetch(API_ROUTES.ADMIN.VALIDATE_ADMIN, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

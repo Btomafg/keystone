@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,8 @@ import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { Card } from './ui/card';
 import { useDispatch } from 'react-redux';
 import { logoutAdmin } from '@/store/slices/authSlice';
+import { usePathname, useRouter } from 'next/navigation';
+import { APP_ROUTES } from '@/constants/routes';
 
 const AdminPinPopover = () => {
   const [open, setOpen] = useState(false);
@@ -14,9 +16,12 @@ const AdminPinPopover = () => {
   const { mutateAsync: handleValidateAdmin, isPending } = useValidateAdmin();
   const admin = useTypedSelector((state) => state.auth.is_admin);
   const admin_session_key = useTypedSelector((state) => state.auth.admin_session_key);
+  const path = usePathname();
   const dispatch = useDispatch();
+  const router = useRouter();
   const handleSubmit = async () => {
     await handleValidateAdmin({ admin_pin: pinInput });
+
     setPinInput('');
     setOpen(false);
   };
@@ -25,6 +30,16 @@ const AdminPinPopover = () => {
     setPinInput('');
     setOpen(false);
   };
+  const handleAdminLogout = () => {
+    dispatch(logoutAdmin());
+    router.push(APP_ROUTES.DASHBOARD.HOME.path);
+  };
+
+  useEffect(() => {
+    if (admin && admin_session_key && path.startsWith('/dashboard')) {
+      router.push(APP_ROUTES.ADMIN.HOME.path);
+    }
+  }, [admin, admin_session_key, path, router]);
 
   return (
     <div
@@ -36,7 +51,7 @@ const AdminPinPopover = () => {
         <div className="flex flex-col items-center gap-2">
           <span className="text-sm text-muted font-bold text-red-600">Viewing as Admin</span>
 
-          <Button variant="outline" className="hover:bg-primary hover:text-white" onClick={() => dispatch(logoutAdmin())}>
+          <Button variant="outline" className="hover:bg-primary hover:text-white" onClick={handleAdminLogout}>
             View as User
           </Button>
         </div>

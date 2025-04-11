@@ -176,3 +176,17 @@ export type BugReport = {
   created_at: string;
   updated_at: string;
 };
+
+
+export type Lead = {
+  id: string;
+  created_at: string;
+  updated_at: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  nessage: string;
+  status: string;
+  agent: string;
+}

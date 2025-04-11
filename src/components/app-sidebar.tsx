@@ -1,20 +1,6 @@
 'use client';
 import Logo from '@/assets/images/logo/KW-LOGO.webp';
-import {
-  CameraIcon,
-  ClipboardListIcon,
-  DatabaseIcon,
-  FileCodeIcon,
-  FileIcon,
-  FileTextIcon,
-  FolderIcon,
-  HelpCircle,
-  HelpCircleIcon,
-  LayoutDashboardIcon,
-  SearchIcon,
-  SettingsIcon,
-  UsersIcon,
-} from 'lucide-react';
+import { ClipboardListIcon, FolderIcon, HelpCircle, LayoutDashboardIcon, SettingsIcon, UsersIcon } from 'lucide-react';
 import * as React from 'react';
 import { NavOpenProjects } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
@@ -24,9 +10,6 @@ import { APP_ROUTES } from '@/constants/routes';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Toggle } from './ui/toggle';
-import { AdminSwitch, Switch } from './ui/switch';
-import { Popover } from './ui/popover';
 import AdminPinPopover from './AdminPinPopover';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 
@@ -68,13 +51,23 @@ const data = {
 
 const adminItems = [
   {
+    title: 'Leads',
+    url: APP_ROUTES.ADMIN.LEADS.path,
+    icon: UsersIcon,
+  },
+  {
+    title: 'Projects',
+    url: APP_ROUTES.ADMIN.PROJECTS.path,
+    icon: FolderIcon,
+  },
+  {
     title: 'Users',
-    url: APP_ROUTES.DASHBOARD.HOME.path,
+    url: APP_ROUTES.ADMIN.USERS.path,
     icon: UsersIcon,
   },
   {
     title: 'Settings',
-    url: APP_ROUTES.DASHBOARD.HOME.path,
+    url: APP_ROUTES.ADMIN.SETTINGS.path,
     icon: SettingsIcon,
   },
 ];

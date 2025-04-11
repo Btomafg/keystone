@@ -1,17 +1,18 @@
-// hooks/api/useUser.ts
-
-import { createUser, getCurrentUser, updateUser } from '@/api/user.api';
+// Created by: Brandon Thomas
+'use client';
 import { API_ROUTES } from '@/constants/api.routes';
-import { User } from '@/constants/models/object.types';
+import { Lead, User } from '@/constants/models/object.types';
 import store from '@/store';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '../use-toast';
-import { validateAdmin } from '@/api/admin.api';
+import { validateAdmin } from '@/api/admin/admin.api';
 import { logoutAdmin, setAdminSession } from '@/store/slices/authSlice';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { deleteLeads, getAdminLeads } from '@/api/admin/admin.leads.api';
 
 export const useValidateAdmin = () => {
   const { toast } = useToast();
   const dispatch = store.dispatch;
+
   const mutation = useMutation({
     mutationFn: (body: Partial<User>) => validateAdmin(body),
     onSuccess: (response) => {
@@ -23,12 +24,46 @@ export const useValidateAdmin = () => {
             admin_session_expires_at: response?.data?.key?.admin_session_expires_at,
           }),
         );
+
         toast({ title: 'Admin Validated', description: 'Your Admin Session is Active' });
       } else {
         dispatch(logoutAdmin());
 
         toast({ title: 'Admin Validation Failed', description: response?.message });
       }
+    },
+  });
+  return mutation;
+};
+
+export const useAdminGetLeads = () => {
+  const admin_key = store.getState().auth.admin_session_key;
+  const query = useQuery({
+    queryKey: [API_ROUTES.ADMIN.GET_LEADS, admin_key],
+    enabled: !!admin_key,
+    staleTime: 1000 * 60 * 5,
+    queryFn: () => getAdminLeads(admin_key),
+    retry: false,
+  });
+  return {
+    data: query?.data as Lead | [],
+    isSuccess: query.isSuccess,
+    isLoading: query.isFetching,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
+};
+
+export const useAdminDeleteLeads = () => {
+  const { refetch } = useAdminGetLeads();
+  const { toast } = useToast();
+  const mutation = useMutation({
+    mutationFn: (body: any) => deleteLeads(body),
+    onError: (error) => {},
+    onSuccess: (response) => {
+      refetch();
+      toast({ title: 'Leads Deleted', description: response?.message });
+      console.log('Delete Leads Response:', response);
     },
   });
   return mutation;

@@ -10,7 +10,21 @@ export const API_ROUTES = {
   RESET_PASSWORD: '/api/auth/reset-password/',
 
   // Admin Routes
-  VALIDATE_ADMIN: '/api/admin/validate/',
+  ADMIN: {
+    LEADS: {
+      GET: '/api/admin/leads/',
+      DELETE: '/api/admin/leads/',
+      UPDATE: '/api/admin/leads/',
+      CREATE: '/api/admin/leads/',
+    },
+    VALIDATE_ADMIN: '/api/admin/validate/',
+    GET_LEADS: '/api/admin/leads/',
+    GET_USERS: '/api/admin/users/',
+    GET_USER: '/api/admin/users/[id]/',
+    UPDATE_USER: '/api/admin/users/[id]/',
+    DELETE_USER: '/api/admin/users/[id]/',
+    CREATE_USER: '/api/admin/users/',
+  },
 
   // User Routes
   GET_USER: '/api/user/',
