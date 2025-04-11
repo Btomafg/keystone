@@ -3,6 +3,9 @@ import { ProjectStatus, ProjectType, RoomType } from "../enums/project.enums";
 export type User = {
   id: string;
   created_at: string;
+  is_admin: boolean;
+  admin_pin: string | null;
+  
   title: string;
   date_of_birth: string | null;
   email: string;

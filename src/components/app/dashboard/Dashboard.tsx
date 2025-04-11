@@ -28,15 +28,9 @@ export default function Page() {
   const section = path.split('/')[1];
   const subSection = path.split('/')[3];
 
-  useEffect(() => {
-    if (user && !user?.first_name) {
-      dispatch(setStep('profile'));
-    }
-  }, [user]);
-
   const ProfileModal = () => {
     return (
-      <Dialog open={authStep == 'profile' ? true : false}>
+      <Dialog open={user && !user?.first_name}>
         <DialogContent closable={false}>
           <AuthStepProfile />
         </DialogContent>

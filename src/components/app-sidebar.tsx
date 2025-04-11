@@ -24,6 +24,11 @@ import { APP_ROUTES } from '@/constants/routes';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Toggle } from './ui/toggle';
+import { AdminSwitch, Switch } from './ui/switch';
+import { Popover } from './ui/popover';
+import AdminPinPopover from './AdminPinPopover';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
 
 const data = {
   user: {
@@ -61,7 +66,24 @@ const data = {
   ],
 };
 
+const adminItems = [
+  {
+    title: 'Users',
+    url: APP_ROUTES.DASHBOARD.HOME.path,
+    icon: UsersIcon,
+  },
+  {
+    title: 'Settings',
+    url: APP_ROUTES.DASHBOARD.HOME.path,
+    icon: SettingsIcon,
+  },
+];
+
 export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar>) {
+  const admin = useTypedSelector((state) => state.auth.is_admin);
+  const adminSessionKey = useTypedSelector((state) => state.auth.admin_session_key);
+  const adminMode = admin && adminSessionKey ? true : false;
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -70,9 +92,10 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={adminMode ? adminItems : data.navMain} />
         <NavOpenProjects />
         {/*  <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
+        {user?.is_admin && <AdminPinPopover />}
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

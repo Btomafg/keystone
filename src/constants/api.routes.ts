@@ -9,6 +9,9 @@ export const API_ROUTES = {
   FORGOT_PASSWORD: '/api/auth/forgot-password/',
   RESET_PASSWORD: '/api/auth/reset-password/',
 
+  // Admin Routes
+  VALIDATE_ADMIN: '/api/admin/validate/',
+
   // User Routes
   GET_USER: '/api/user/',
   CREATE_USER: '/api/user/',

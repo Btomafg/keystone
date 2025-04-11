@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { set } from 'date-fns';
 
 type AuthStep = 'none' | 'login' | 'otp' | 'profile';
 
@@ -9,6 +10,9 @@ interface AuthState {
   token: string;
   refreshTokenInterval: string | null;
   user: Record<string, any> | null; // If you want a strict type, replace `Record<string, any>` with a `User` type from Supabase
+  is_admin: boolean;
+  admin_session_key: string | null;
+  admin_session_expires_at: string | null;
 }
 
 const initialState: AuthState = {
@@ -18,6 +22,9 @@ const initialState: AuthState = {
   token: '',
   refreshTokenInterval: null,
   user: null,
+  is_admin: false,
+  admin_session_key: null,
+  admin_session_expires_at: null,
 };
 
 const authSlice = createSlice({
@@ -42,6 +49,16 @@ const authSlice = createSlice({
     setUser: (state, action: PayloadAction<Record<string, any>>) => {
       state.user = action.payload;
     },
+    setAdminSession: (state, action: PayloadAction<{ admin_session_key: string; admin_session_expires_at: string }>) => {
+      state.admin_session_key = action.payload.admin_session_key;
+      state.admin_session_expires_at = action.payload.admin_session_expires_at;
+      state.is_admin = true;
+    },
+    logoutAdmin: (state) => {
+      state.admin_session_key = null;
+      state.admin_session_expires_at = null;
+      state.is_admin = false;
+    },
     logout: (state) => {
       state.email = '';
       state.token = '';
@@ -49,10 +66,14 @@ const authSlice = createSlice({
       state.step = 'none';
       state.isAuthenticated = false;
       state.user = null;
+      state.is_admin = false;
+      state.admin_session_key = null;
+      state.admin_session_expires_at = null;
     },
   },
 });
 
-export const { setStep, setEmail, setIsAuthenticated, setToken, setRefreshTokenInterval, setUser, logout } = authSlice.actions;
+export const { setStep, setEmail, setIsAuthenticated, setToken, logoutAdmin, setRefreshTokenInterval, setUser, setAdminSession, logout } =
+  authSlice.actions;
 
 export default authSlice.reducer;
