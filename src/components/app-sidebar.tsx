@@ -51,6 +51,11 @@ const data = {
 
 const adminItems = [
   {
+    title: 'Dashboard',
+    url: APP_ROUTES.ADMIN.DASHBOARD.path,
+    icon: LayoutDashboardIcon,
+  },
+  {
     title: 'Leads',
     url: APP_ROUTES.ADMIN.LEADS.path,
     icon: UsersIcon,

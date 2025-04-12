@@ -10,6 +10,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { usePathname } from 'next/navigation';
 import { deleteLeads, getAdminLeads } from '@/api/admin/admin.leads.api';
 import { createNote, deleteNote, getAdminNotes } from '@/api/admin/admin.notes.api';
+import { getAdminUsers, manageAdminUsers, updateAdminUser } from '@/api/admin/admin.users.api';
 
 export const useValidateAdmin = () => {
   const { toast } = useToast();
@@ -122,6 +123,53 @@ export const useAdminDeleteNote = () => {
     onSuccess: (response) => {
       refetch();
       toast({ title: 'Note Deleted', description: response?.message });
+      console.log('Delete Note Response:', response);
+    },
+  });
+  return mutation;
+};
+
+export const useAdminGetUsers = () => {
+  const admin_key = store.getState().auth.admin_session_key;
+  const query = useQuery({
+    queryKey: [API_ROUTES.ADMIN.USERS.GET],
+    enabled: !!admin_key,
+    staleTime: 1000 * 60 * 5,
+    queryFn: () => getAdminUsers({ admin_key: admin_key }),
+    retry: false,
+  });
+  return {
+    data: query?.data as Lead | [],
+    isSuccess: query.isSuccess,
+    isLoading: query.isFetching,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
+};
+export const useAdminUpdateUser = () => {
+  const { refetch } = useAdminGetUsers();
+  const { toast } = useToast();
+  const mutation = useMutation({
+    mutationFn: (body: any) => updateAdminUser(body),
+    onError: (error) => {},
+    onSuccess: (response) => {
+      refetch();
+      toast({ title: 'User Updated', description: response?.message });
+      console.log('Delete Note Response:', response);
+    },
+  });
+  return mutation;
+};
+
+export const useAdminManageUsers = () => {
+  const { refetch } = useAdminGetUsers();
+  const { toast } = useToast();
+  const mutation = useMutation({
+    mutationFn: (body: any) => manageAdminUsers(body),
+    onError: (error) => {},
+    onSuccess: (response) => {
+      refetch();
+      toast({ title: 'User Updated', description: response?.message });
       console.log('Delete Note Response:', response);
     },
   });

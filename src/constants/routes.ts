@@ -37,7 +37,7 @@ export const APP_ROUTES = {
     },
   },
   ADMIN: {
-    HOME: { title: 'Admin Home', path: '/admin/' },
+    DASHBOARD: { title: 'Admin Dashboard', path: '/admin/' },
     LEADS: { title: 'Leads', path: '/admin/leads/' },
     PROJECTS: { title: 'Projects', path: '/admin/projects/' },
     USERS: { title: 'Users', path: '/admin/users/' },

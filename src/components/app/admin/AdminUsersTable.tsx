@@ -20,36 +20,23 @@ import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMe
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowUpDown, ChevronDown, MoreHorizontal, RefreshCwIcon } from 'lucide-react';
-import { useAdminDeleteLeads } from '@/hooks/api/admin.queries';
-import { set } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { APP_ROUTES } from '@/constants/routes';
+import { IoRefreshCircle } from 'react-icons/io5';
 
-interface AdminLeadsTableProps {
-  leads: any[];
+interface AdminUsersTableProps {
+  users: any[];
   loading: boolean;
   refetch?: () => void;
 }
 
-export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading, refetch }) => {
+export const AdminUsersTable: React.FC<AdminUsersTableProps> = ({ users, loading, refetch }) => {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState([]);
-  const router = useRouter();
   const [globalFilter, setGlobalFilter] = React.useState('');
-  const { mutateAsync: deleteLead, isPending: deletingLeading } = useAdminDeleteLeads();
-
-  const handleDelete = async (lead: any, multi: boolean) => {
-    try {
-      const multiLeads = table.getSelectedRowModel().rows.map((row) => row.original.id);
-
-      await deleteLead({ leads: multi ? multiLeads : [lead] });
-      setRowSelection([]);
-    } catch (error) {
-      console.error('Error deleting lead:', error);
-    }
-  };
+  const router = useRouter();
+  console.log('users', users);
   const columns: ColumnDef<any>[] = [
     {
       id: 'select',
@@ -68,29 +55,23 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
     },
     {
       id: 'name',
-
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
           Name <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
       cell: ({ row }) => {
-        const lead = row.original;
+        const user = row.original;
         return (
-          <div
-            className="text-blue-500 hover:cursor-pointer hover:text-blue-400"
-            onClick={() => router.push(`${APP_ROUTES.ADMIN.LEADS.path}/${lead.id}`)}
-          >{`${lead.first_name} ${lead.last_name}`}</div>
+          <div className="text-blue-500 hover:underline cursor-pointer" onClick={() => router.push(`/admin/users/${user.id}`)}>
+            {user.first_name} {user.last_name}
+          </div>
         );
       },
     },
     {
       accessorKey: 'email',
-      header: ({ column }) => (
-        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Email <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
+      header: 'Email',
       cell: ({ row }) => <div>{row.getValue('email')}</div>,
     },
     {
@@ -99,14 +80,18 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
       cell: ({ row }) => <div>{row.getValue('phone')}</div>,
     },
     {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => <div>{row.getValue('status')}</div>,
+      accessorKey: 'is_admin',
+      header: 'Admin',
+      cell: ({ row }) => (
+        <span className={row.getValue('is_admin') ? 'text-green-600' : 'text-muted'}>{row.getValue('is_admin') ? 'Yes' : 'No'}</span>
+      ),
     },
     {
-      accessorKey: 'message',
-      header: 'Message',
-      cell: ({ row }) => <div className="max-w-[300px] truncate">{row.getValue('message')}</div>,
+      accessorKey: 'active',
+      header: 'Active',
+      cell: ({ row }) => (
+        <span className={row.getValue('active') ? 'text-green-600' : 'text-muted'}>{row.getValue('active') ? 'Yes' : 'No'}</span>
+      ),
     },
     {
       accessorKey: 'created_at',
@@ -120,8 +105,6 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
           year: 'numeric',
           month: 'short',
           day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
         }),
     },
     {
@@ -129,21 +112,22 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
       header: 'Actions',
       enableHiding: false,
       cell: ({ row }) => {
-        const lead = row.original;
+        const user = row.original;
 
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuCheckboxItem onClick={() => console.log('Viewing', lead)}>View Details</DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem onClick={() => console.log('Assign agent', lead)}>Assign Agent</DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem onClick={() => handleDelete(lead.id, false)} className="text-red-600">
-                Delete Lead
+              <DropdownMenuCheckboxItem onClick={() => router.push(`/admin/users/${user.id}`)}>View Details</DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem onClick={() => console.log('Toggle active:', user.id)}>
+                {user.active ? 'Deactivate' : 'Activate'}
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem onClick={() => console.log('Delete user:', user.id)} className="text-red-600">
+                Delete User
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -153,7 +137,7 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
   ];
 
   const table = useReactTable({
-    data: leads,
+    data: users,
     columns,
     state: {
       sorting,
@@ -177,32 +161,18 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
   });
 
   return (
-    <div className="w-full ">
-      <div className="flex flex-row gap-4 py-4">
+    <div className="w-full">
+      <div className="flex items-center gap-4 py-4">
         <Input
-          placeholder="Search leads..."
+          placeholder="Search users..."
           value={globalFilter ?? ''}
           onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-sm "
-        />
-
-        {table.getSelectedRowModel().rows.length > 0 && (
-          <div className="py-2 flex justify-end ms-auto w-fit">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => handleDelete(rowSelection, true)}
-              disabled={deletingLeading}
-              loading={deletingLeading}
-            >
-              Delete Selected
-            </Button>
-          </div>
-        )}
+          className="max-w-sm"
+        />{' '}
         <div className="flex flex-row ms-auto gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className=" my-auto ms-auto">
+              <Button variant="outline" className="ml-auto">
                 Columns <ChevronDown />
               </Button>
             </DropdownMenuTrigger>
@@ -243,14 +213,14 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
           </TableHeader>
           <TableBody className="align-top">
             {loading ? (
-              <TableRow className="">
+              <TableRow>
                 <TableCell colSpan={columns.length} className="text-center">
-                  Loading leads...
+                  Loading users...
                 </TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className="align-top">
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
@@ -258,8 +228,8 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No leads found.
+                <TableCell colSpan={columns.length} className="text-center">
+                  No users found.
                 </TableCell>
               </TableRow>
             )}
@@ -268,7 +238,7 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, loading
       </div>
 
       <div className="flex items-center justify-between py-4">
-        <div className="text-sm text-muted-foreground">{table.getFilteredRowModel().rows.length} total lead(s)</div>
+        <div className="text-sm text-muted-foreground">{table.getFilteredRowModel().rows.length} total user(s)</div>
         <div className="space-x-2">
           <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
             Previous

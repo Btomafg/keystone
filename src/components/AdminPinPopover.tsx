@@ -37,7 +37,7 @@ const AdminPinPopover = () => {
 
   useEffect(() => {
     if (admin && admin_session_key && path.startsWith('/dashboard')) {
-      router.push(APP_ROUTES.ADMIN.HOME.path);
+      router.push(APP_ROUTES.ADMIN.DASHBOARD.path);
     }
   }, [admin, admin_session_key, path, router]);
 

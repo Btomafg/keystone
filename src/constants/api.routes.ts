@@ -1,3 +1,5 @@
+import { POST } from '@/app/(app)/api/faqs/route';
+
 export const API_ROUTES = {
   // Auth Routes
   SIGN_IN: '/api/auth/signin/',
@@ -22,6 +24,13 @@ export const API_ROUTES = {
       DELETE: '/api/admin/notes/',
       UPDATE: '/api/admin/notes/',
       CREATE: '/api/admin/notes/',
+    },
+    USERS: {
+      GET: '/api/admin/users/',
+      POST: '/api/admin/users/',
+      DELETE: '/api/admin/users/',
+      UPDATE: '/api/admin/users/',
+      MANAGE: '/api/admin/users/manage/',
     },
     VALIDATE_ADMIN: '/api/admin/validate/',
 

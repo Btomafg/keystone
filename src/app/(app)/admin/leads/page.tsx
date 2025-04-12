@@ -5,11 +5,11 @@ import React from 'react';
 interface pageProps {}
 const page: React.FC<pageProps> = (props) => {
   //HOOKS
-  const { data: leads = [], isLoading } = useAdminGetLeads();
+  const { data: leads = [], isLoading, refetch } = useAdminGetLeads();
   console.log('leads', leads);
   //EFFECTS
 
-  return <AdminLeadsTable leads={leads} loading={isLoading} />;
+  return <AdminLeadsTable leads={leads} loading={isLoading} refetch={refetch} />;
 };
 
 export default page;
