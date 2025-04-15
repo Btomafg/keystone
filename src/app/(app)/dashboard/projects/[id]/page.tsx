@@ -1,15 +1,12 @@
 'use client';
-import NewProjectPage from '@/components/app/dashboard/projects/new/NewProjectPage';
-import Projects from '../page';
-import { useGetProjects } from '@/hooks/api/projects.queries';
-import { Project } from '@/constants/models/object.types';
-import { usePathname } from 'next/navigation';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import React, { useEffect, useState } from 'react';
-import { MultiStepLoader as Loader } from '@/components/ui/multi-step-loader';
-import { IoCloseCircle } from 'react-icons/io5';
-import ProjectReviewLoader from '@/components/app/dashboard/projects/ProjectReviewLoader';
 import ProjectDenied from '@/components/app/dashboard/projects/ProjectDenied';
+import ProjectReviewLoader from '@/components/app/dashboard/projects/ProjectReviewLoader';
+import NewProjectPage from '@/components/app/dashboard/projects/new/NewProjectPage';
+import ProjectDetailsPage from '@/components/app/dashboard/projects/new/ProjectReview';
+import { Project } from '@/constants/models/object.types';
+import { useGetProjects } from '@/hooks/api/projects.queries';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function ProjectPage() {
   const path = usePathname();
@@ -38,7 +35,7 @@ export default function ProjectPage() {
       case 1:
         return <ProjectReviewLoader />;
       case 2:
-        return 'dd';
+        return <ProjectDetailsPage project={project} />;
       case 99:
         return <ProjectDenied reason="out_of_area" />;
     }
