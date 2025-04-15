@@ -7,37 +7,40 @@ import { useGetCabinetTypes, useGetProjects } from '@/hooks/api/projects.queries
 
 import { ChevronLeft } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 export default function Projects() {
   const path = usePathname();
   const projectId = parseFloat(path.split('/')[3]);
   const { data: cabinetTypes, isLoading } = useGetCabinetTypes();
-
   const { data: projects } = useGetProjects();
+  const [backOpen, setBackOpen] = useState(false);
 
   const project = projects && projects?.find((project: Project) => project?.id == projectId);
   return (
     <div className="container max-w-lg mx-auto">
-      <div className="flex flex-row items-center justify-between">
-        <Popover>
+      <div className="flex flex-row items-center mb-4 text-blue-500">
+        <Popover open={backOpen} onOpenChange={setBackOpen}>
           <PopoverTrigger asChild>
-            <ChevronLeft className="text-2xl cursor-pointer" />
+            <div className="flex gap-2 cursor-pointer">
+              <ChevronLeft className="text-2xl cursor-pointer my-auto" />
+              <h1 className="text-sm font-bold my-auto">Back to Project</h1>
+            </div>
           </PopoverTrigger>
           <PopoverContent className="bg-white">
             <div className="flex flex-col text-xs">
               You may lose unsaved changes if you leave this page without saving. Continue?
               <div className="flex flex-row justify-between gap-2 mt-4">
-                <Button size="xs" variant="outline">
+                <Button size="xs" variant="outline" onClick={() => setBackOpen(false)}>
                   Cancel
                 </Button>
-                <Button size="xs" onClick={() => window.history.back()}>
+                <Button className="bg-red-400 hover:bg-red-500" size="xs" onClick={() => window.history.back()}>
                   Continue
                 </Button>
               </div>
             </div>
           </PopoverContent>
         </Popover>
-        <h1 className="text-2xl font-bold mb-4">Cabinets</h1>
       </div>
       <NewCabinetInputs room={project?.rooms[0]} wall={project?.rooms[0]?.walls[0]} setOpen={() => {}} />
     </div>
