@@ -1,13 +1,12 @@
 // pages/projects/[id]/edit.tsx
 'use client';
 import { Card } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import SawLoader from '@/components/ui/loader';
 import { CabinetOptionType, CabinetOptionTypeLabels } from '@/constants/enums/project.enums';
 import { Cabinet } from '@/constants/models/object.types';
 import { useDeleteCabinet, useGetCustomOptions } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
-import { MoreHorizontal } from 'lucide-react';
+import { Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 
 const CabinetsList = ({ cabinets }: { cabinets: Cabinet[] }) => {
@@ -76,30 +75,11 @@ const CabinetRow = ({ cabinet }: { cabinet: Cabinet }) => {
         </div>
 
         <div className="mx-auto flex flex-col gap-1 w-fit">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button onClick={(e) => e.stopPropagation()} className="p-2 hover:bg-gray-100 rounded">
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              >
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete(cabinet);
-                }}
-              >
-                {deletingCabinets ? <SawLoader /> : <p>Delete</p>}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {deletingCabinets ? (
+            <SawLoader />
+          ) : (
+            <Trash2Icon className="w-5 h-5 text-red-500 hover:scale-125 my-auto" onClick={() => handleDelete(cabinet)} />
+          )}
         </div>
       </div>
       <div className={`flex flex-row gap-2 mt-2 ${rowOpen ? 'block' : 'hidden'}`}>

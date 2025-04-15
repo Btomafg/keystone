@@ -1,6 +1,7 @@
 import favicon from '@/app/favicon.ico';
 import ProgressCircle from '@/components/ui/scrollCircle';
-import LayoutChildren from '@/lib/layoutChildren';
+import { Toaster } from '@/components/ui/toaster';
+import { LayoutChildren } from '@/lib/layoutChildren';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
@@ -50,6 +51,7 @@ export default function RootLayout({ children }) {
           <ProgressCircle />
           <LayoutChildren>{children}</LayoutChildren>
         </div>
+        <Toaster />
       </body>
     </html>
   );

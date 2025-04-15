@@ -5,7 +5,6 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { usePathname } from 'next/navigation';
 
-import { Toaster } from '@/components/ui/toaster';
 import { useGetUser } from '@/hooks/api/users.queries';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -34,7 +33,6 @@ export default function Page({ children }) {
     <SidebarProvider>
       <AppSidebar variant="inset" user={user} />
       <SidebarInset>
-        <Toaster />
         <SiteHeader />
         <DashboardWrapper />
       </SidebarInset>
