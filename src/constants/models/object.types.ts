@@ -132,6 +132,7 @@ export type Cabinet {
   estimate: number;
   room?: number;
   createStep?: number;
+  type?: number;
   wall_id?: number;
   grid_start_x?: number;
   grid_start_y?: number;

@@ -51,6 +51,7 @@ export const WallRow = ({ wall, room, wallImage }: { wall: any; room: any; wallI
   const router = useRouter();
   const pathname = usePathname();
   console.log('pathname', pathname);
+  const wallId = wall.id;
   const [editWallOpen, setEditWallOpen] = React.useState(false);
   const [editedWallName, setEditedWallName] = React.useState(wall.name);
   const [editedWallLength, setEditedWallLength] = React.useState(wall.length || 0);
@@ -182,8 +183,9 @@ export const WallRow = ({ wall, room, wallImage }: { wall: any; room: any; wallI
                 variant="outline"
                 className="w-full mt-2"
                 onClick={() => {
-                  router.push(`${pathname}cabinets/`);
+                  router.push(`${pathname}/room/${roomId}/wall/${wallId}/cabinets/`);
                 }}
+                disabled={!wall?.length}
               >
                 Add & Edit Cabinets
               </Button>

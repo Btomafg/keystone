@@ -1,27 +1,32 @@
-import { CabinetOptionType } from '@/constants/enums/project.enums';
-import { Cabinet } from '@/constants/models/object.types';
-import { useCreateCabinets, useGetCabinetTypes, useGetCustomOptions, useGetRoomOptions } from '@/hooks/api/projects.queries';
+import { Project } from '@/constants/models/object.types';
+import { APP_ROUTES } from '@/constants/routes';
+import {
+  useCreateCabinets,
+  useGetCabinetTypes,
+  useGetCustomOptions,
+  useGetProjects,
+  useGetRoomOptions,
+} from '@/hooks/api/projects.queries';
 import { useScreenWidth } from '@/hooks/uiHooks';
-import React, { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import { IoChevronBack } from 'react-icons/io5';
 import { default as CabinetGrid } from '../../../projects/Grid';
-import OptionReview from '../CabinetBuilderModal/OptionReview';
-import OptionStep from '../CabinetBuilderModal/OptionStep';
 
-interface NewCabinetInputsProps {
-  room: any;
-  wall: any;
-  setOpen: (open: boolean) => void;
-}
+interface NewCabinetInputsProps {}
 const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
-  const { wall, room, setOpen } = props;
   const { data: customOptions } = useGetCustomOptions();
-  const [spacePhotos, setSpacePhotos] = useState<File[]>([]);
-  const [inspirationPhotos, setInspirationPhotos] = useState<File[]>([]);
-
+  const path = usePathname();
+  const { data: projects } = useGetProjects();
+  const projectId = parseFloat(path.split('/')[3]);
+  const roomId = parseFloat(path.split('/')[5]);
+  const wallId = parseFloat(path.split('/')[7]);
+  const project = projects && projects?.find((project: Project) => project?.id == projectId);
+  const room = project?.rooms && project?.rooms.find((room) => room.id == roomId);
+  const wall = room?.walls && room?.walls.find((wall) => wall.id == wallId);
   const wallLength = wall?.length;
   const roomHeight = room?.height;
-
+  const router = useRouter();
   //HOOKS
   const screenWidth = useScreenWidth();
   const { mutateAsync: createCabinet, isPending: createLoading } = useCreateCabinets();
@@ -33,60 +38,48 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
 
   const roomTypeCabinetOptions = roomTypeOptions?.cabinet_types;
   const filteredCabinetTypes = cabinetTypes?.filter((cabinetType) => roomTypeCabinetOptions?.includes(cabinetType.id));
-  console.log('Filtered Cabinet Types', filteredCabinetTypes);
+  const cabinets = wall?.cabinets || [];
+  useEffect(() => {
+    if (!projectId || !roomId || !wallId) {
+      router.back();
+    }
+  }, [projectId, roomId, wallId]);
 
   //STATES
 
   const [newCabinetStep, setNewCabinetStep] = useState(0);
-  const [newCabinetData, setNewCabinetData] = useState<Partial<Cabinet>>({});
-  const [selectedOptions, setSelectedOptions] = useState<Partial<Cabinet>>({});
+
   //VARIABLES
 
   //FUNCTIONS
-  const onBack = () => {
-    if (newCabinetStep > 0) {
-      setNewCabinetStep(newCabinetStep - 1);
-    } else {
-      setOpen(false);
-    }
-  };
-  const onOptionComplete = (data) => {
-    setSelectedOptions({ ...selectedOptions, ...data });
-    setNewCabinetStep(newCabinetStep + 1);
-  };
 
-  const onCabinetSave = (data) => {
-    setNewCabinetData(data);
-    setNewCabinetStep(newCabinetStep + 1);
-  };
-
-  const onReviewComplete = async () => {
+  const onCabinetSave = async (data) => {
     const cabinetData = {
-      name: newCabinetData.name,
-      wall_id: wall.id,
-      constructionMethod: selectedOptions[CabinetOptionType.ConstructionMethod],
-      crown: selectedOptions[CabinetOptionType.Crown],
-      doorMaterial: selectedOptions[CabinetOptionType.DoorMaterial],
-      lightRail: selectedOptions[CabinetOptionType.LightRail],
-      subMaterial: selectedOptions[CabinetOptionType.SubMaterial],
-      toeStyle: selectedOptions[CabinetOptionType.ToeStyle],
-      length: (newCabinetData.end.x - newCabinetData.start.x) * 2,
-      grid_start_x: newCabinetData.start.x,
-      grid_start_y: newCabinetData.start.y,
-      grid_end_x: newCabinetData.end.x,
-      grid_end_y: newCabinetData.end.y,
+      project_id: projectId,
+      room_data: {
+        id: room.id,
+        name: room.name,
+        type: room.type,
+        height: roomHeight,
+        length: wallLength,
+        construction_method: room.construction_method,
+        crown: room.crown,
+        door_material: room.door_material,
+        light_rail: room.light_rail,
+        sub_material: room.sub_material,
+        toe_style: room.toe_style,
+      },
+      cabinets: data.map((cabinet) => {
+        if (typeof cabinet.id !== 'number' && cabinet?.id?.includes('new')) {
+          cabinet.id = undefined;
+        }
+        return cabinet;
+      }),
     };
 
-    try {
-      const response = await createCabinet(cabinetData);
-      //console.log('Cabinet created', response);
-      setOpen(false);
-      setNewCabinetStep(0);
-      setNewCabinetData({});
-      setSelectedOptions({});
-    } catch (error) {
-      console.error('Error creating cabinet', error);
-    }
+    console.log('Cabinet Data:', cabinetData);
+    const response = await createCabinet(cabinetData);
+    router.push(`${APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path}${projectId}`);
   };
 
   const NewCabinetStep1 = () => {
@@ -94,31 +87,14 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
       <div className="mx-auto">
         <CabinetGrid
           cabinetTypes={filteredCabinetTypes}
-          onCabinetSave={(e) => console.log(e)}
+          onCabinetSave={onCabinetSave}
           onCabinetUpdate={(e) => console.log(e)}
           room={room}
           wall={wall}
+          cabinets={cabinets}
           loading={loadingCabinetTypes}
+          submitLoading={createLoading}
           onCabinetDelete={() => console.log('delete')}
-        />
-      </div>
-    );
-  };
-  const NewCabinetStep2 = () => {
-    return (
-      <div>
-        <OptionStep customOptions={customOptions} onOptionComplete={onOptionComplete} />
-      </div>
-    );
-  };
-  const NewCabinetStep3 = () => {
-    return (
-      <div>
-        <OptionReview
-          customOptions={customOptions}
-          selectedOptions={selectedOptions}
-          onOptionComplete={onReviewComplete}
-          loading={createLoading}
         />
       </div>
     );
@@ -130,8 +106,6 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
       description: `Select the cabinets you want to add to your project. You can adjust the size and position of each cabinet.`,
       content: <NewCabinetStep1 />,
     },
-    { title: 'Customize your cabinets', description: '', content: <NewCabinetStep2 /> },
-    { title: 'Review your selected options', description: '', content: <NewCabinetStep3 /> },
   ];
 
   return (

@@ -2,7 +2,7 @@ import {
   createCabinets,
   createProject,
   createRoom,
-  deleteCabinet,
+  deleteCabinets,
   deleteRoom,
   getCabinetById,
   getCabinetTypes,
@@ -109,7 +109,7 @@ export const useCreateCabinets = () => {
   const { toast } = useToast();
   const { refetch } = useGetProjects();
   const mutation = useMutation({
-    mutationFn: (body: Partial<Cabinet>) => createCabinets(body),
+    mutationFn: (body: Partial<Cabinet>[]) => createCabinets(body),
     onSuccess: (response) => {
       refetch();
       toast({ title: 'Cabinet Created', description: 'A cabinet as been added!' });
@@ -209,7 +209,7 @@ export const useDeleteCabinet = () => {
   const { toast } = useToast();
   const { refetch } = useGetProjects();
   const mutation = useMutation({
-    mutationFn: (cabinetId: string) => deleteCabinet(cabinetId),
+    mutationFn: (cabinetIds: string[]) => deleteCabinets(cabinetIds),
     onSuccess: (response) => {
       refetch();
       toast({ title: 'Room Deleted' });

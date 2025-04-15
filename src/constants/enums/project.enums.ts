@@ -75,3 +75,18 @@ export const CabinetOptionTypeLabels: Record<CabinetOptionType, string> = {
   [CabinetOptionType.Crown]: 'Crown',
   [CabinetOptionType.LightRail]: 'Light Rail',
 };
+
+export enum CabinetType {
+  Base = 1,
+  Wall = 2,
+  Tall = 3,
+  Vanity = 4,
+  Island = 5,
+}
+export const CabinetTypeLabels: Record<CabinetType, string> = {
+  [CabinetType.Base]: 'Base Cabinet',
+  [CabinetType.Wall]: 'Wall Cabinet',
+  [CabinetType.Tall]: 'Tall Cabinet',
+  [CabinetType.Vanity]: 'Vanity',
+  [CabinetType.Island]: 'Island',
+};

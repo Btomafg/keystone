@@ -165,12 +165,19 @@ export const updateCabinet = async (body: Partial<Cabinet>) => {
   }
   return true;
 };
-export const deleteCabinet = async (cabinetId) => {
+export const deleteCabinets = async (cabinetIds) => {
   try {
-    const res = await API.delete('Cabinets', 'id', cabinetId);
-    return res;
+    const res = await fetch(API_ROUTES.DELETE_CABINET, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cabinetIds),
+    });
+
+    const data = await res.json();
+
+    return data;
   } catch (error) {
-    console.error('ERROR DELETING Cabinet', error);
+    console.error('ERROR DELETING ROOM', error);
   }
   return true;
 };

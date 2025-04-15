@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SawLoader from '@/components/ui/loader';
-import { Room, Wall } from '@/constants/models/object.types';
+import { Cabinet, Room, Wall } from '@/constants/models/object.types';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { useScreenSize } from '@/utils/common';
@@ -26,14 +26,15 @@ interface CabinetType {
 }
 
 interface CabinetZone {
-  id: number;
+  id: string | number; // Use string for new zones
   name: string;
-  type: string; // Keep original type name
+  type: number; // Keep original type name
   start: { x: number; y: number }; // Grid cell coords
   end: { x: number; y: number }; // Grid cell coords
   color: string;
   isSelected?: boolean;
-  typeInfo: CabinetType; // Make non-optional if always present after creation
+  typeInfo: CabinetType;
+  wall_id: number;
 }
 
 interface GridProps {
@@ -41,41 +42,59 @@ interface GridProps {
   wall: Wall;
   room: Room;
   loading?: boolean;
+  submitLoading?: boolean;
+  cabinets: Cabinet[];
   onCabinetSave: (cabinet: CabinetZone) => void; // Fired on creation
   onCabinetUpdate: (cabinet: CabinetZone) => void; // Fired on move, resize, rename
   onCabinetDelete: (cabinetId: number) => void; // Fired on deletion
 }
 
-// ... (Keep constants: CELLS_PER_FOOT, CELL_SIZE) ...
-const CELLS_PER_FOOT = 2; // 2 cells = 1 foot = 12 inches. 1 cell = 6 inches.
-const CELL_SIZE = 24; // Pixels per cell
+export default function CabinetGrid({
+  cabinetTypes,
+  wall,
+  room,
+  loading,
+  submitLoading,
+  cabinets,
+  onCabinetSave,
+  onCabinetUpdate,
+  onCabinetDelete,
+}: GridProps) {
+  const screenSize = useScreenSize();
+  const isMobile = screenSize.width < 768;
 
-// ... (Keep helpers: feetToCells, cellsToFeet, formatFeet, formatDim) ...
-const feetToCells = (feet: number): number => Math.round(feet * CELLS_PER_FOOT);
-const cellsToFeet = (cells: number): number => cells / CELLS_PER_FOOT;
-const formatFeet = (feet: number): string => {
-  const totalInches = Math.round(feet * 12);
-  const ft = Math.floor(totalInches / 12);
-  const inches = totalInches % 12;
-  return `${ft}' ${inches}"`; // Always show inches for clarity
-};
-const formatDim = (cells: number): string => {
-  const feet = cellsToFeet(cells);
-  const totalInches = Math.round(feet * 12);
-  const ft = Math.floor(totalInches / 12);
-  const inches = totalInches % 12;
-  if (ft > 0 && inches > 0) return `${ft}'${inches}"`;
-  if (ft > 0) return `${ft}'`;
-  return `${inches}"`;
-};
+  const CELLS_PER_FOOT = 2;
+  const calcCellSize = (wallLength: number) => {
+    if (isMobile) {
+      return wallLength < 10 ? 24 : wallLength < 25 ? 20 : 8; // Adjust cell size based on wall length
+    } else {
+      return wallLength < 10 ? 22 : wallLength < 25 ? 18 : 15; // Adjust cell size based on wall length
+    }
+  };
 
-export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabinetSave, onCabinetUpdate, onCabinetDelete }: GridProps) {
-  // ... (Keep state variables and refs as they were) ...
+  const CELL_SIZE = calcCellSize(wall?.length || 10); // Default to 10 feet if wall is not provided
+
+  const feetToCells = (feet: number): number => Math.round(feet * CELLS_PER_FOOT);
+  const cellsToFeet = (cells: number): number => cells / CELLS_PER_FOOT;
+  const formatFeet = (feet: number): string => {
+    const totalInches = Math.round(feet * 12);
+    const ft = Math.floor(totalInches / 12);
+    const inches = totalInches % 12;
+    return `${ft}' ${inches}"`; // Always show inches for clarity
+  };
+  const formatDim = (cells: number): string => {
+    const feet = cellsToFeet(cells);
+    const totalInches = Math.round(feet * 12);
+    const ft = Math.floor(totalInches / 12);
+    const inches = totalInches % 12;
+    if (ft > 0 && inches > 0) return `${ft}'${inches}"`;
+    if (ft > 0) return `${ft}'`;
+    return `${inches}"`;
+  };
   const wallWidthFeet = wall?.length || 10;
   const roomHeightFeet = room?.height || 10;
   const { toast } = useToast();
-  const screenSize = useScreenSize();
-  const isMobile = screenSize.width < 768;
+
   const roomCols = feetToCells(wallWidthFeet);
   const roomRows = feetToCells(roomHeightFeet);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -92,14 +111,77 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
   const [currentEditName, setCurrentEditName] = useState<string>('');
   const editInputRef = useRef<HTMLInputElement>(null);
   const [noRoomError, setNoRoomError] = useState(false);
+  console.log(cabinets);
+  useEffect(() => {
+    // Define a default fallback type in case lookup fails
+    const fallbackType: CabinetType = {
+      id: 0,
+      name: 'Unknown',
+      min_height: 1,
+      max_height: null,
+      min_width: 1,
+      max_width: null,
+      base_y_lock: 0,
+      color: '#cccccc', //
+      active: false,
+    };
 
-  // ... (Keep useMemo for selectedZone) ...
+    if (cabinets && cabinets.length > 0 && cabinetTypes) {
+      const initialZones = cabinets
+        .map((cabinet) => {
+          const id = cabinet?.id;
+          const typeId = cabinet?.type;
+          const name = cabinet?.name ?? 'Unnamed Cabinet';
+          const startX = cabinet?.grid_start_x ?? 0;
+          const startY = cabinet?.grid_start_y ?? 0;
+          const endX = cabinet?.grid_end_x ?? startX;
+          const endY = cabinet?.grid_end_y ?? startY;
+          const wallId = cabinet?.wall_id;
+
+          const foundTypeInfo = cabinetTypes.find((type) => type.id == typeId);
+          const typeInfo = foundTypeInfo ?? fallbackType;
+          const color = typeInfo.color;
+
+          if (wallId === undefined || wallId === null) {
+            console.warn(`Cabinet with ID ${id} is missing a wall_id. Skipping.`);
+            return null;
+          }
+
+          if (typeId === undefined || typeId === null) {
+            console.warn(`Cabinet with ID ${id} is missing a type ID. Using fallback type.`);
+          } else if (!foundTypeInfo) {
+            console.warn(`Cabinet type with ID ${typeId} (for Cabinet ${id}) not found in cabinetTypes. Using fallback type.`);
+          }
+
+          return {
+            id: id,
+            name: name,
+            type: typeInfo.id,
+            start: { x: startX, y: startY },
+            end: { x: endX, y: endY },
+            color: color,
+            isSelected: false,
+            typeInfo: typeInfo,
+            wall_id: wallId,
+          };
+        })
+        .filter((zone) => zone !== null) as CabinetZone[];
+
+      setZones(initialZones);
+
+      const maxId = initialZones.reduce((max, zone) => Math.max(max, zone.id), 0);
+      setNextZoneId(maxId + 1);
+    } else {
+      setZones([]);
+      setNextZoneId(1);
+    }
+  }, [cabinets, cabinetTypes]);
+
   const selectedZone = useMemo(() => {
     if (selectedZoneId === null) return null;
     return zones.find((z) => z.id === selectedZoneId) || null;
   }, [selectedZoneId, zones]);
 
-  // ... (Keep checkCollision) ...
   const checkCollision = useCallback(
     (targetZone: CabinetZone, ignoreId?: number): boolean => {
       return zones.some((z) => {
@@ -112,7 +194,6 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
     [zones],
   );
 
-  // ... (Keep autoPlaceCabinet) ...
   const autoPlaceCabinet = (type: CabinetType) => {
     const widthCells = feetToCells(type.min_width);
     const heightCells = feetToCells(type.min_height);
@@ -123,23 +204,25 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
       return;
     }
     let placed = false;
+
     for (let x = 0; x <= roomCols - widthCells; x++) {
       const potentialZone: Omit<CabinetZone, 'id'> = {
         name: type.name,
-        type: type.name,
+        type: type.id,
         start: { x: x, y: startY },
         end: { x: x + widthCells - 1, y: endY },
-        color: type.color ? `bg-${type.color}-400` : 'bg-gray-400',
+        color: type.color,
         isSelected: true,
         typeInfo: type,
+        wall_id: wall.id,
       };
       const tempCheckZone = { ...potentialZone, id: -1 };
       if (!checkCollision(tempCheckZone)) {
-        const newZone: CabinetZone = { ...potentialZone, id: nextZoneId };
+        const newZone: CabinetZone = { ...potentialZone, id: `new-${nextZoneId}` };
         setZones((prev) => [...prev.map((z) => ({ ...z, isSelected: false })), newZone]);
         setSelectedZoneId(newZone.id);
         setNextZoneId(nextZoneId + 1);
-        onCabinetSave(newZone);
+
         placed = true;
         break;
       }
@@ -405,9 +488,9 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
   return (
     // ... (Keep the JSX structure exactly as you provided in the previous message) ...
     // Including the main div, left panel, right panel, grid, zone mapping, resize handles etc.
-    <div className="flex flex-col md:flex-row gap-4 p-4 items-start">
+    <div className="flex flex-wrap space-x-4 gap-4 p-4 items-center">
       {/* Left Panel: Cabinet Types & Info */}
-      <div className="w-full md:w-64 flex-shrink-0 flex flex-col gap-4">
+      <div className="w-full md:w-64 flex-shrink-0 flex flex-col gap-4 mb-auto">
         {/* Cabinet Type Selection */}
         <div className="flex flex-row flex-wrap justify-center gap-3">
           <h3 className="w-full text-sm font-medium text-center mb-1">Add Cabinet</h3>
@@ -455,7 +538,6 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
                       value={currentEditName}
                       onChange={handleNameChange}
                       onKeyDown={handleNameInputKeyDown}
-                      onBlur={cancelNameChange}
                       className="h-6 px-1 text-xs flex-grow"
                       maxLength={50}
                     />
@@ -527,7 +609,7 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
       </div>
 
       {/* Right Panel: Grid */}
-      <div className="flex flex-col items-center flex-grow w-full overflow-x-auto">
+      <div className="flex flex-col items-center flex-grow w-fit overflow-x-auto">
         <p className="text-xs text-slate-600 mb-2">Grid Scale: Each square = {formatDim(1)} (6 inches)</p>
         <div className="flex flex-row items-center gap-2">
           <div
@@ -536,7 +618,6 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
             style={{ gridTemplateColumns: `repeat(${roomCols}, ${CELL_SIZE}px)`, gridTemplateRows: `repeat(${roomRows}, ${CELL_SIZE}px)` }}
             onClick={deselectAll}
           >
-            {/* Grid Background Cells */}
             {[...Array(roomCols * roomRows)].map((_, index) => (
               <div key={index} className="border-[.5px] border-slate-200 w-full h-full" />
             ))}
@@ -563,9 +644,9 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
                     width: widthPx,
                     height: heightPx,
                     zIndex: isSelected || isInteracting ? 10 : 1,
+                    backgroundColor: zone.color,
                   }}
                   className={cn(
-                    zone.color,
                     'border border-slate-800/50 flex items-center justify-center text-center relative group transition-shadow duration-150',
                     'select-none',
                     isSelected && 'ring-2 ring-offset-1 ring-blue-600 shadow-lg',
@@ -588,7 +669,9 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
                 >
                   {/* Context on Cabinet Block */}
                   <div className="flex flex-col items-center justify-center p-1 pointer-events-none">
-                    <span className="font-medium text-white text-shadow-sm text-xs leading-tight truncate w-full px-1">{zone.name}</span>
+                    <span className="font-medium text-white text-shadow-sm text-[10px] leading-tight truncate w-full px-1 line-clamp-1">
+                      {zone.name}
+                    </span>
                     <span className="text-[10px] text-white/80 text-shadow-sm leading-tight mt-0.5">
                       {widthDim}W x {heightDim}H
                     </span>
@@ -654,12 +737,15 @@ export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabin
           Click cabinet type to add. Click placed cabinet to select. Drag to move. Use handles to resize. Double-click name in panel to
           edit.
         </span>
-        {/*  {isMobile && (
+        {isMobile && (
           <div className="text-xs text-orange-600 text-center mt-2 flex items-center gap-1 justify-center">
             {' '}
             <AlertCircle size={14} /> Rotate screen for better experience.{' '}
           </div>
-        )} */}
+        )}
+        <Button className="ms-auto mt-4" onClick={() => onCabinetSave(zones)} loading={submitLoading} disabled={submitLoading}>
+          Save and Continue
+        </Button>
       </div>
     </div>
   );

@@ -46,6 +46,7 @@ export async function GET() {
           height,
           sqft,
           name,
+          type,
           estimate,
           grid_start_x,
           grid_start_y,

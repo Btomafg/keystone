@@ -39,8 +39,6 @@ export default function RootLayout({ children }) {
       </head>
       <body className={`${plus_jakarta_sans.variable} `}>
         <div id="page-wapper" className="!relative ">
-          {/* ------ body line start */}
-
           <div className="w-full h-full fixed -z-[1] top-0 left-0 page-lines">
             <div className="container relative h-full">
               <span className="absolute left-3 top-0 h-full w-[1px] bg-secondary_rgba"></span>

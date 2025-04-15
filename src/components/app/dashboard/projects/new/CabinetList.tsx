@@ -2,11 +2,12 @@
 'use client';
 import { Card } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import SawLoader from '@/components/ui/loader';
 import { CabinetOptionType, CabinetOptionTypeLabels } from '@/constants/enums/project.enums';
 import { Cabinet } from '@/constants/models/object.types';
-import { useGetCustomOptions } from '@/hooks/api/projects.queries';
+import { useDeleteCabinet, useGetCustomOptions } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
-import { ChevronUp, MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { useState } from 'react';
 
 const CabinetsList = ({ cabinets }: { cabinets: Cabinet[] }) => {
@@ -28,6 +29,11 @@ const CabinetRow = ({ cabinet }: { cabinet: Cabinet }) => {
   const [name, setName] = useState(cabinet.name);
   const [isSaving, setIsSaving] = useState(false);
   const [rowOpen, setRowOpen] = useState(false);
+  const { mutateAsync: deleteCabinet, isPending: deletingCabinets } = useDeleteCabinet();
+  const handleDelete = async (cabinet) => {
+    await deleteCabinet([cabinet.id]);
+    setRowOpen(false);
+  };
   const handleSave = async () => {
     setIsSaving(true);
     // TODO: hook into updateCabinet mutation
@@ -45,12 +51,6 @@ const CabinetRow = ({ cabinet }: { cabinet: Cabinet }) => {
   const lightRailOptions = customOptions?.filter((opt) => opt.type === CabinetOptionType.LightRail);
 
   let cabinetOptions = [];
-  cabinet?.doorMaterial && cabinetOptions.push(doorMaterialOptions?.find((opt) => opt.id == cabinet.doorMaterial));
-  cabinet?.subMaterial && cabinetOptions.push(subMaterialOptions?.find((opt) => opt.id == cabinet.subMaterial));
-  cabinet?.constructionMethod && cabinetOptions.push(constructionMethodOptions?.find((opt) => opt.id == cabinet.constructionMethod));
-  cabinet?.toeStyle && cabinetOptions.push(toeStyleOptions?.find((opt) => opt.id == cabinet.toeStyle));
-  cabinet?.crown && cabinetOptions.push(crownOptions?.find((opt) => opt.id == cabinet.crown));
-  cabinet?.lightRail && cabinetOptions.push(lightRailOptions?.find((opt) => opt.id == cabinet.lightRail));
 
   return (
     <div
@@ -93,16 +93,13 @@ const CabinetRow = ({ cabinet }: { cabinet: Cabinet }) => {
               <DropdownMenuItem
                 onClick={(e) => {
                   e.stopPropagation();
-                  //deleteWall({ room_id: roomId, wall_number: wall.wall_number });
+                  handleDelete(cabinet);
                 }}
               >
-                Delete
+                {deletingCabinets ? <SawLoader /> : <p>Delete</p>}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
-        <div className="mx-auto flex flex-col gap-1 w-fit">
-          <ChevronUp className={`w-6 h-6 transition-transform  my-auto align-middle ${rowOpen && 'rotate-180'}`} />
         </div>
       </div>
       <div className={`flex flex-row gap-2 mt-2 ${rowOpen ? 'block' : 'hidden'}`}>

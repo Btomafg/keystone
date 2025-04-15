@@ -7,8 +7,8 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components
 import { Project } from '@/constants/models/object.types';
 import { useGetLayoutOptions, useGetProjects, useGetRoomOptions, useUpdateProject } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
-import { usePathname } from 'next/navigation';
-import React, { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import NewProjectHeader from './NewProjectHeader';
 import NewRoomModal from './NewRoomModal';
 import NewRoomRow from './NewRoomRow';
@@ -17,7 +17,7 @@ import { WallsSection } from './NewWalls';
 export default function NewProjectPage() {
   const path = usePathname();
   const projectId = parseFloat(path.split('/')[3]);
-
+  const router = useRouter();
   // Track open walls per room by room ID.
   const [openWalls, setOpenWalls] = React.useState<Record<number, boolean>>({});
 
@@ -28,6 +28,11 @@ export default function NewProjectPage() {
 
   const project = projects && projects?.find((project: Project) => project?.id == projectId);
 
+  useEffect(() => {
+    if (!projectId) {
+      router.back();
+    }
+  }, [projectId]);
   const toggleWalls = (roomId: number) => {
     setOpenWalls((prev) => ({ ...prev, [roomId]: !prev[roomId] }));
   };

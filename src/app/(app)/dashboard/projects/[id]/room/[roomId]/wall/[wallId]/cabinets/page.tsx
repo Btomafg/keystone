@@ -6,17 +6,28 @@ import { Project } from '@/constants/models/object.types';
 import { useGetCabinetTypes, useGetProjects } from '@/hooks/api/projects.queries';
 
 import { ChevronLeft } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function Projects() {
   const path = usePathname();
   const projectId = parseFloat(path.split('/')[3]);
+  const roomId = parseFloat(path.split('/')[5]);
+  const wallId = parseFloat(path.split('/')[7]);
+  const router = useRouter();
   const { data: cabinetTypes, isLoading } = useGetCabinetTypes();
   const { data: projects } = useGetProjects();
   const [backOpen, setBackOpen] = useState(false);
 
   const project = projects && projects?.find((project: Project) => project?.id == projectId);
+  const room = project?.rooms && project?.rooms.find((room) => room.id == roomId);
+  const wall = room?.walls && room?.walls.find((wall) => wall.id == wallId);
+  useEffect(() => {
+    if (!projectId || !roomId) {
+      router.back();
+    }
+  }, [projectId, roomId]);
+
   return (
     <div className="container max-w-lg mx-auto">
       <div className="flex flex-row items-center mb-4 text-blue-500">
@@ -42,7 +53,7 @@ export default function Projects() {
           </PopoverContent>
         </Popover>
       </div>
-      <NewCabinetInputs room={project?.rooms[0]} wall={project?.rooms[0]?.walls[0]} setOpen={() => {}} />
+      <NewCabinetInputs />
     </div>
   );
 }

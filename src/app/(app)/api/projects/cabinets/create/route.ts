@@ -18,64 +18,85 @@ export async function POST(request: Request) {
     const { data: options, error: optionsError } = await supabase.from('CustomOptions').select('*').eq('active', true);
 
     type Body = {
-      name: string;
-      wall_id: number;
-      constructionMethod: number;
-      crown: number;
-      doorMaterial: number;
-      lightRail: number;
-      subMaterial: number;
-      toeStyle: number;
-      length: number;
-      grid_start_x: number;
-      grid_start_y: number;
-      grid_end_x: number;
-      grid_end_y: number;
+      project_id: number;
+      room_data: {
+        id: number;
+        name: string;
+        type: number;
+        height: number;
+        length: number;
+        construction_method: number;
+        crown: number;
+        door_material: number;
+        light_rail: number;
+        sub_material: number;
+        toe_style: number;
+      };
+      cabinets: [
+        {
+          id?: string | number;
+          name: string;
+          type: string;
+          start: { x: number; y: number };
+          end: { x: number; y: number };
+          color: string;
+          isSelected: boolean;
+          typeInfo: {
+            id: number;
+            name: string;
+            min_height: number | null;
+            max_height: number | null;
+            min_width: number | null;
+            max_width: number | null;
+            base_y_lock: number | null;
+            img_url: string;
+            color?: string;
+          };
+        },
+      ];
     };
+    console.log(body.cabinets);
+    let cabinetIds: number[] = [];
+    for (const cabinet of body.cabinets) {
+      // 1 square = .5ft
+      const length = (cabinet.end.x - cabinet.start.x + 1) * 0.5;
+      const height = (cabinet.end.y - cabinet.start.y + 1) * 0.5;
 
-    // 1 square = .5ft
-    const length = (body.grid_end_x - body.grid_start_x + 1) * 0.5;
-    const height = (body.grid_end_y - body.grid_start_y + 1) * 0.5;
+      const lxh = length * height;
+      const constructionMethodPrice = (options?.find((option) => option.id === body.room_data.construction_method)?.value || 0) * lxh;
+      const crownPrice = (options?.find((option) => option.id === body.room_data.crown)?.value || 0) * lxh;
+      const doorMaterialPrice = (options?.find((option) => option.id === body.room_data.door_material)?.value || 0) * lxh;
+      const lightRailPrice = (options?.find((option) => option.id === body.room_data.light_rail)?.value || 0) * lxh;
+      const subMaterialPrice = (options?.find((option) => option.id === body.room_data.sub_material)?.value || 0) * lxh;
+      const toeStylePrice = (options?.find((option) => option.id === body.room_data.toe_style)?.value || 0) * lxh;
+      const totalPrice = constructionMethodPrice + crownPrice + doorMaterialPrice + lightRailPrice + subMaterialPrice + toeStylePrice;
+      console.log('Total Price:', totalPrice);
+      const cabinetData = {
+        ceilingHeight: body.room_data.height,
+        estimate: totalPrice,
+        length,
+        height,
+        sqft: length * height,
+        name: cabinet.name,
+        type: cabinet.type,
+        wall_id: cabinet.wall_id,
+        grid_start_x: cabinet.start.x,
+        grid_start_y: cabinet.start.y,
+        grid_end_x: cabinet.end.x,
+        grid_end_y: cabinet.end.y,
+      };
+      if (cabinet.id) {
+        cabinetData.id = cabinet.id;
+      }
+      console.log(cabinetData);
+      const { data, error } = await supabase.from('Cabinets').upsert(cabinetData).select('id').single();
+      if (data) {
+        cabinetIds.push(data.id);
+      }
+      console.log('Cabinet created:', data, error);
+    }
 
-    const lxh = length * height;
-    const constructionMethodPrice = (options?.find((option) => option.id === body.constructionMethod)?.value || 0) * lxh;
-    const crownPrice = (options?.find((option) => option.id === body.crown)?.value || 0) * lxh;
-    const doorMaterialPrice = (options?.find((option) => option.id === body.doorMaterial)?.value || 0) * lxh;
-    const lightRailPrice = (options?.find((option) => option.id === body.lightRail)?.value || 0) * lxh;
-    const subMaterialPrice = (options?.find((option) => option.id === body.subMaterial)?.value || 0) * lxh;
-    const toeStylePrice = (options?.find((option) => option.id === body.toeStyle)?.value || 0) * lxh;
-    const totalPrice = constructionMethodPrice + crownPrice + doorMaterialPrice + lightRailPrice + subMaterialPrice + toeStylePrice;
-
-    const cabinetData = {
-      ...body,
-      estimate: totalPrice,
-      length,
-      height,
-      sqft: length * height,
-    };
-
-    const { data, error } = await supabase.from('Cabinets').insert(cabinetData).select('id').single();
-
-    const { data: getProjectId, error: getProjectIdError } = await supabase
-      .from('Cabinets')
-      .select(
-        `
-    id,
-    wall:Cabinets_wall_id_fkey (
-      id,
-      room:Walls_room_id_fkey (
-        id,
-        project:Rooms_project_fkey (
-          id
-        )
-      )
-    )
-  `,
-      )
-      .eq('id', data.id)
-      .single();
-
-    const projectId = getProjectId?.wall?.room?.project?.id;
+    const projectId = body.project_id;
 
     const { data: project, error: projectError } = await supabase
       .from('Projects')
@@ -102,13 +123,6 @@ rooms: Rooms_project_fkey (
     cabinets: Cabinets_wall_id_fkey (
       id,
       wall_id,
-      ceilingHeight,
-      constructionMethod,
-      crown,
-      doorMaterial,
-      lightRail,
-      subMaterial,
-      toeStyle,
       length,
       width,
       height,
