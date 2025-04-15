@@ -1,5 +1,4 @@
 'use client';
-import CabinetGrid from '@/components/app/projects/Grid';
 import { useGetCabinetTypes } from '@/hooks/api/projects.queries';
 
 export default function Orders() {
@@ -38,10 +37,5 @@ export default function Orders() {
 
   const { data: cabinetTypes, isLoading } = useGetCabinetTypes();
   console.log('Cabinet Types', cabinetTypes);
-  return (
-    <div>
-      ORDERS PAGE
-      <CabinetGrid cabinetTypes={cabinetTypes} onCabinetSave={() => console.log('save')} />
-    </div>
-  );
+  return <div>ORDERS PAGE</div>;
 }
