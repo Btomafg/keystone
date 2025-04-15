@@ -18,6 +18,12 @@ export async function POST(request: Request) {
       layout: body.layout,
       name: body.name,
       height: body.height,
+      construction_method: body.construction_method,
+      crown: body.crown,
+      door_material: body.door_material,
+      light_rail: body.light_rail,
+      sub_material: body.sub_material,
+      toe_style: body.toe_style,
     };
     let wallCount;
     const { data, error } = await supabase.from('Rooms').insert(newRoom).select('id').single();
@@ -39,7 +45,7 @@ export async function POST(request: Request) {
       await supabase.from('Walls').insert(wallData);
     }
 
-    console.log('PROJECTS', data, error);
+    console.log('ROOM', data, error);
 
     if (error) {
       return NextResponse.json({ success: false, message: error.message, type: error.code }, { status: error?.status });

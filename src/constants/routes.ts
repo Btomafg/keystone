@@ -21,6 +21,7 @@ export const APP_ROUTES = {
     HOME: { title: 'Dashboard Home', path: '/dashboard/' },
     PROJECTS: {
       PROJECTS: { title: 'My Projects', path: '/dashboard/projects/' },
+      CABINETS: { title: 'Edit Cabinets', path: '/dashboard/projects/[id]/cabinets/' },
       NEW: { title: 'New Project', path: '/dashboard/projects/new/' },
       VIEW: { title: 'View Project', path: '/dashboard/projects/view/' },
     },

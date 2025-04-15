@@ -1,14 +1,12 @@
-import { useCreateCabinets, useGetCustomOptions } from '@/hooks/api/projects.queries';
+import { CabinetOptionType } from '@/constants/enums/project.enums';
+import { Cabinet } from '@/constants/models/object.types';
+import { useCreateCabinets, useGetCabinetTypes, useGetCustomOptions, useGetRoomOptions } from '@/hooks/api/projects.queries';
 import { useScreenWidth } from '@/hooks/uiHooks';
 import React, { useState } from 'react';
 import { IoChevronBack } from 'react-icons/io5';
-import Grid from '../../../projects/Grid';
-import OptionStep from '../CabinetBuilderModal/OptionStep';
-import UploadPhotosStep from '../CabinetBuilderModal/UploadPhotosStep';
+import { default as CabinetGrid } from '../../../projects/Grid';
 import OptionReview from '../CabinetBuilderModal/OptionReview';
-import { Cabinet } from '@/constants/models/object.types';
-import { set } from 'date-fns';
-import { CabinetOptionType } from '@/constants/enums/project.enums';
+import OptionStep from '../CabinetBuilderModal/OptionStep';
 
 interface NewCabinetInputsProps {
   room: any;
@@ -27,6 +25,16 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
   //HOOKS
   const screenWidth = useScreenWidth();
   const { mutateAsync: createCabinet, isPending: createLoading } = useCreateCabinets();
+  const { data: cabinetTypes, isLoading: loadingCabinetTypes } = useGetCabinetTypes();
+  const { data: roomOptions } = useGetRoomOptions();
+  const roomType = room?.type;
+
+  const roomTypeOptions = roomOptions?.find((option) => option.id == roomType);
+
+  const roomTypeCabinetOptions = roomTypeOptions?.cabinet_types;
+  const filteredCabinetTypes = cabinetTypes?.filter((cabinetType) => roomTypeCabinetOptions?.includes(cabinetType.id));
+  console.log('Filtered Cabinet Types', filteredCabinetTypes);
+
   //STATES
 
   const [newCabinetStep, setNewCabinetStep] = useState(0);
@@ -84,7 +92,15 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
   const NewCabinetStep1 = () => {
     return (
       <div className="mx-auto">
-        <Grid roomHeight={roomHeight} wall={wall} onCabinetSave={onCabinetSave} />
+        <CabinetGrid
+          cabinetTypes={filteredCabinetTypes}
+          onCabinetSave={(e) => console.log(e)}
+          onCabinetUpdate={(e) => console.log(e)}
+          room={room}
+          wall={wall}
+          loading={loadingCabinetTypes}
+          onCabinetDelete={() => console.log('delete')}
+        />
       </div>
     );
   };
@@ -110,8 +126,8 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
 
   const stepData = [
     {
-      title: 'Add a new cabinet section',
-      description: `Please draw where your cabinets will be placed on ${wall.name}. `,
+      title: 'Add & Edit Cabinets',
+      description: `Select the cabinets you want to add to your project. You can adjust the size and position of each cabinet.`,
       content: <NewCabinetStep1 />,
     },
     { title: 'Customize your cabinets', description: '', content: <NewCabinetStep2 /> },

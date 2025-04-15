@@ -146,6 +146,7 @@ module.exports = {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'text-line-animation': 'dash 4s linear forwards, filling 4s ease-in forwards',
+        'pulse-slow': 'pulse 3s infinite',
       },
     },
   },

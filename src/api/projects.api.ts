@@ -188,7 +188,19 @@ export const getCustomOptions = async () => {
     console.error('ERROR GETTING CustomOptions', error);
   }
 };
+export const getCabinetTypes = async () => {
+  try {
+    const res = await fetch(API_ROUTES.GET_CABINET_TYPES, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const data = await res.json();
 
+    return data;
+  } catch (error) {
+    console.error('ERROR GETTING CustomOptions', error);
+  }
+};
 export const getLayoutOptions = async () => {
   try {
     const res = await API.getAll(

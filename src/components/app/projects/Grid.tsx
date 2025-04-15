@@ -1,615 +1,666 @@
-'use client';;
+// components/CabinetGrid.tsx
+'use client';
+
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import SawLoader from '@/components/ui/loader';
+import { Room, Wall } from '@/constants/models/object.types';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import { useScreenSize } from '@/utils/common';
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { AlertCircle, Check, Pencil, Trash2, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-const CELLS_PER_FOOT = 2; // each foot equals 2 cells (0.5ft increments)
-
-function isInSelectionRange(x, y, start, end) {
-  return x >= start.x && x <= end.x && y >= start.y && y <= end.y;
+// ... (Keep interfaces: CabinetType, CabinetZone, GridProps) ...
+interface CabinetType {
+  id: number;
+  name: string;
+  min_height: number; // Assuming feet
+  max_height: number | null; // Assuming feet
+  min_width: number; // Assuming feet
+  max_width: number | null; // Assuming feet
+  base_y_lock: number; // Assuming feet from floor
+  color: string;
+  img_url?: string;
+  active: boolean;
 }
 
-const blueShades = [
-  'bg-blue-100',
-  'bg-blue-200',
-  'bg-blue-300',
-  'bg-blue-400',
-  'bg-blue-500',
-  'bg-blue-600',
-  'bg-blue-700',
-  'bg-blue-800',
-  'bg-blue-900',
-];
-
-/* -----------------------------------------------
-   Cell Component
------------------------------------------------ */
-function Cell({ x, y, grid, zoneMap, currentSelection, onStart, onMove, onEnd }) {
-  if (x < 0 || x >= grid.length) return null;
-  if (y < 0 || y >= grid[x].length) return null;
-  const cellValue = grid[x][y];
-  const isInProgress = currentSelection && isInSelectionRange(x, y, currentSelection.start, currentSelection.end);
-
-  let cellClass = 'border z-[9999] border-slate-200 w-full h-full cursor-pointer transition-colors duration-200 ease-in-out';
-  if (isInProgress) {
-    cellClass += ' bg-yellow-200';
-  } else if (cellValue) {
-    const zoneColor = zoneMap[cellValue] || 'bg-blue-200';
-    cellClass += ` ${zoneColor}`;
-  } else {
-    cellClass += ' bg-white hover:bg-gray-50 ';
-  }
-
-  const handleStart = () => onStart(x, y);
-  const handleMove = () => onMove(x, y);
-  const handleEnd = () => onEnd();
-
-  return (
-    <div
-      className={cellClass}
-      onMouseDown={handleStart}
-      onMouseEnter={handleMove}
-      onMouseUp={handleEnd}
-      onTouchStart={handleStart}
-      onTouchMove={(e) => {
-        e.preventDefault();
-        handleMove();
-      }}
-      onTouchEnd={handleEnd}
-    />
-  );
-}
-
-function DimensionPopup({ mouseX, mouseY, width, height }) {
-  if (width <= 0 || height <= 0) return null;
-  return (
-    <div
-      style={{ position: 'absolute', top: mouseY - 30, left: mouseX + 6 }}
-      className="z-[9999] bg-popover w-fit text-nowrap text-popover-foreground border border-slate-200 p-2 rounded-md shadow-md pointer-events-none text-sm"
-    >
-      <p className='font-bold'>New Cabinet Dimensions</p>
-      <p>{width / CELLS_PER_FOOT}ft × {height / CELLS_PER_FOOT}ft</p>
-
-    </div>
-  );
-}
-
-
-
-function NameZonePopover({ pendingZone, cellSize, defaultName = '', onSave, onCancel }) {
-  const [zoneName, setZoneName] = useState(defaultName);
-  const { start, end } = pendingZone;
-  const zoneWidth = (end.x - start.x + 1) * cellSize;
-  const zoneHeight = (end.y - start.y + 1) * cellSize;
-  const left = start.x * cellSize + zoneWidth / 2;
-  const top = start.y * cellSize - 10; // show slightly above
-
-  return (
-    <div
-      style={{
-        position: 'absolute',
-        left,
-        top,
-        transform: 'translate(-50%, -100%)',
-        zIndex: 9999,
-      }}
-      className="bg-white border border-gray-300 p-4 rounded shadow-md w-48"
-    >
-      <div className="mb-2 text-sm font-semibold">{defaultName ? 'Edit Section Name:' : 'Name this cabinet section:'}</div>
-      <Input
-        type="text"
-        value={zoneName}
-        onChange={(e) => setZoneName(e.target.value)}
-        className="border p-1 rounded w-full mb-2"
-        placeholder="Section name..."
-      />
-      <div className="flex justify-end space-x-2">
-        <Button size='xs' variant='outline' onClick={onCancel} className="text-sm">
-          Cancel
-        </Button>
-        <Button size='xs' onClick={() => onSave(zoneName)} className=" text-sm">
-          Save
-        </Button>
-      </div>
-    </div>
-  );
+interface CabinetZone {
+  id: number;
+  name: string;
+  type: string; // Keep original type name
+  start: { x: number; y: number }; // Grid cell coords
+  end: { x: number; y: number }; // Grid cell coords
+  color: string;
+  isSelected?: boolean;
+  typeInfo: CabinetType; // Make non-optional if always present after creation
 }
 
 interface GridProps {
-  wall: any
-  roomHeight?: number;
-  onCabinetSave?: (cabinet: any) => void;
+  cabinetTypes: CabinetType[];
+  wall: Wall;
+  room: Room;
+  loading?: boolean;
+  onCabinetSave: (cabinet: CabinetZone) => void; // Fired on creation
+  onCabinetUpdate: (cabinet: CabinetZone) => void; // Fired on move, resize, rename
+  onCabinetDelete: (cabinetId: number) => void; // Fired on deletion
 }
 
-export default function Grid({ wall, roomHeight, onCabinetSave }: GridProps) {
-  const wallLength = wall?.length || 10; 
- 
-  const [roomWidthFeet, setRoomWidthFeet] = useState(wallLength || 10);
-  const [roomHeightFeet, setRoomHeightFeet] = useState(roomHeight || 10);
-  const [upperHelper, setUpperHelper] = useState(false);
-  const [baseHelper, setBaseHelper] = useState(false);
-  const [wallHelper, setWallHelper] = useState(false);
-  const screenSize = useScreenSize()
-  const isMobile = screenSize.width < 768
-  const isLandscape = screenSize.width > screenSize.height
-  const roomCols = roomWidthFeet * CELLS_PER_FOOT;
-  const roomRows = roomHeightFeet * CELLS_PER_FOOT;
-  const [hoveredCell, setHoveredCell] = useState<{ x: number; y: number } | null>(null);
+// ... (Keep constants: CELLS_PER_FOOT, CELL_SIZE) ...
+const CELLS_PER_FOOT = 2; // 2 cells = 1 foot = 12 inches. 1 cell = 6 inches.
+const CELL_SIZE = 24; // Pixels per cell
 
-  const maxGridWidth = 600;
-  const maxGridHeight = 300;
-  const cellSizeByWidth = Math.floor(maxGridWidth / roomCols);
-  const cellSizeByHeight = Math.floor(maxGridHeight / roomRows);
-  const dynamicCellSize = Math.min(cellSizeByWidth, cellSizeByHeight);
-  const CELL_SIZE = dynamicCellSize < 8 ? 8 : dynamicCellSize;
+// ... (Keep helpers: feetToCells, cellsToFeet, formatFeet, formatDim) ...
+const feetToCells = (feet: number): number => Math.round(feet * CELLS_PER_FOOT);
+const cellsToFeet = (cells: number): number => cells / CELLS_PER_FOOT;
+const formatFeet = (feet: number): string => {
+  const totalInches = Math.round(feet * 12);
+  const ft = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+  return `${ft}' ${inches}"`; // Always show inches for clarity
+};
+const formatDim = (cells: number): string => {
+  const feet = cellsToFeet(cells);
+  const totalInches = Math.round(feet * 12);
+  const ft = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+  if (ft > 0 && inches > 0) return `${ft}'${inches}"`;
+  if (ft > 0) return `${ft}'`;
+  return `${inches}"`;
+};
 
-  const createEmptyGrid = (cols, rows) => Array.from({ length: cols }, () => Array(rows).fill(false));
-  const [grid, setGrid] = useState(createEmptyGrid(roomCols, roomRows));
-  const [zones, setZones] = useState([]);
-
-  const [selected, setSelected] = useState(null);
-  const [lastSelected, setLastSelected] = useState(null);
-  const [currentSelection, setCurrentSelection] = useState(null);
-  const [pendingZone, setPendingZone] = useState(null);
-  const [editingZoneId, setEditingZoneId] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+export default function CabinetGrid({ cabinetTypes, wall, room, loading, onCabinetSave, onCabinetUpdate, onCabinetDelete }: GridProps) {
+  // ... (Keep state variables and refs as they were) ...
+  const wallWidthFeet = wall?.length || 10;
+  const roomHeightFeet = room?.height || 10;
+  const { toast } = useToast();
+  const screenSize = useScreenSize();
+  const isMobile = screenSize.width < 768;
+  const roomCols = feetToCells(wallWidthFeet);
+  const roomRows = feetToCells(roomHeightFeet);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [zones, setZones] = useState<CabinetZone[]>([]);
   const [nextZoneId, setNextZoneId] = useState(1);
-  const gridRef = useRef(null);
-  useEffect(() => {
-    if (!wall || !wall.cabinets) return;
-  
-    const newGrid = createEmptyGrid(roomCols, roomRows);
-    const newZones = [];
-    let nextId = 1;
-  
-    wall.cabinets.forEach((cabinet, index) => {
-      const startX = cabinet.grid_start_x;
-      const startY = cabinet.grid_start_y;
-      const endX = cabinet.grid_end_x;
-      const endY = cabinet.grid_end_y;
-  
-      for (let i = startX; i <= endX; i++) {
-        for (let j = startY; j <= endY; j++) {
-          newGrid[i][j] = nextId;
-        }
-      }
-      console.log(newZones)
-      newZones.push({
-        start: { x: startX, y: startY },
-        end: { x: endX, y: endY },
-        name: cabinet.name || 'New Cabinet',
-        color: blueShades[index] + '/70',
+  const [selectedZoneId, setSelectedZoneId] = useState<number | null>(null);
+  const [interactionState, setInteractionState] = useState<'idle' | 'dragging' | 'resizing'>('idle');
+  const [activeZoneId, setActiveZoneId] = useState<number | null>(null);
+  const [resizeDirection, setResizeDirection] = useState<'horizontal' | 'vertical' | null>(null);
+  const [interactionStartPos, setInteractionStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [elementStartPos, setElementStartPos] = useState<{ x: number; y: number } | null>(null);
+  const [elementStartSize, setElementStartSize] = useState<{ widthCells: number; heightCells: number } | null>(null);
+  const [editingNameZoneId, setEditingNameZoneId] = useState<number | null>(null);
+  const [currentEditName, setCurrentEditName] = useState<string>('');
+  const editInputRef = useRef<HTMLInputElement>(null);
+  const [noRoomError, setNoRoomError] = useState(false);
+
+  // ... (Keep useMemo for selectedZone) ...
+  const selectedZone = useMemo(() => {
+    if (selectedZoneId === null) return null;
+    return zones.find((z) => z.id === selectedZoneId) || null;
+  }, [selectedZoneId, zones]);
+
+  // ... (Keep checkCollision) ...
+  const checkCollision = useCallback(
+    (targetZone: CabinetZone, ignoreId?: number): boolean => {
+      return zones.some((z) => {
+        if (z.id === ignoreId) return false;
+        return (
+          targetZone.start.x <= z.end.x && targetZone.end.x >= z.start.x && targetZone.start.y <= z.end.y && targetZone.end.y >= z.start.y
+        );
       });
-  
-      nextId++;
-    });
-  
-    setGrid(newGrid);
-    setZones(newZones);
-    setNextZoneId(nextId);
-  }, [wall, roomCols, roomRows]);
-  
+    },
+    [zones],
+  );
 
-
-
-
-
-
-  const resetGrid = () => {
-    setGrid(createEmptyGrid(roomCols, roomRows));
-    setZones([]);
-    setSelected(null);
-    setLastSelected(null);
-    setCurrentSelection(null);
-    setPendingZone(null);
-    setEditingZoneId(null);
-    setIsDragging(false);
-  };
-  const getCellFromTouch = (touch) => {
-    const rect = gridRef.current?.getBoundingClientRect();
-    if (!rect) return null;
-
-    const offsetX = touch.clientX - rect.left;
-    const offsetY = touch.clientY - rect.top;
-
-    const x = Math.floor(offsetX / CELL_SIZE);
-    const y = Math.floor(offsetY / CELL_SIZE);
-
-    if (x < 0 || x >= roomCols || y < 0 || y >= roomRows) return null;
-
-    return { x, y };
-  };
-
-  const handleStart = (x, y) => {
-    if (grid[x][y]) return;
-    setSelected({ x, y });
-    setIsDragging(true);
-  };
-
-  const handleMove = (x, y) => {
-    if (!selected) return;
-    const minX = Math.min(selected.x, x);
-    const maxX = Math.max(selected.x, x);
-    const minY = Math.min(selected.y, y);
-    const maxY = Math.max(selected.y, y);
-    for (let i = minX; i <= maxX; i++) {
-      for (let j = minY; j <= maxY; j++) {
-        if (grid[i][j]) return;
-      }
-    }
-    setLastSelected({ x, y });
-    setCurrentSelection({ start: { x: minX, y: minY }, end: { x: maxX, y: maxY }, current: true });
-  };
-
-  const handleEnd = () => {
-    setIsDragging(false);
-    if (!selected || !lastSelected) {
-      setSelected(null);
-      setLastSelected(null);
-      setCurrentSelection(null);
+  // ... (Keep autoPlaceCabinet) ...
+  const autoPlaceCabinet = (type: CabinetType) => {
+    const widthCells = feetToCells(type.min_width);
+    const heightCells = feetToCells(type.min_height);
+    const startY = roomRows - feetToCells(type.base_y_lock) - heightCells;
+    const endY = startY + heightCells - 1;
+    if (startY < 0 || endY >= roomRows) {
+      console.warn(`Cabinet "${type.name}" cannot be placed due to height constraints.`);
       return;
     }
-    const minX = Math.min(selected.x, lastSelected.x);
-    const maxX = Math.max(selected.x, lastSelected.x);
-    const minY = Math.min(selected.y, lastSelected.y);
-    const maxY = Math.max(selected.y, lastSelected.y);
-    setPendingZone({ start: { x: minX, y: minY }, end: { x: maxX, y: maxY } });
-    setSelected(null);
-    setLastSelected(null);
-    setCurrentSelection(null);
-    
-  };
-
-  const handleMoveContainer = (e) => {
-
-    let x, y;
-
-    if (e.touches) {
-      const touch = e.touches[0];
-      const coords = getCellFromTouch(touch);
-      if (!coords) return;
-      x = coords.x;
-      y = coords.y;
-      setMousePos({ x: touch.clientX, y: touch.clientY });
-    } else {
-      const rect = gridRef.current?.getBoundingClientRect();
-      x = Math.floor((e.clientX - rect.left) / CELL_SIZE);
-      y = Math.floor((e.clientY - rect.top) / CELL_SIZE);
-      setMousePos({ x: e.clientX, y: e.clientY });
-    }
-    if (x < 0 || x > roomCols || y < 0 || y >= roomRows) return;
-    setHoveredCell({ x, y });
-    if (!isDragging) return;
-    handleMove(x, y);
-  };
-
-
-  const savePendingZone = (name) => {
-    const newGrid = grid.map((col) => [...col]);
-    const { start, end } = pendingZone;
-    for (let i = start.x; i <= end.x; i++) {
-      for (let j = start.y; j <= end.y; j++) {
-        newGrid[i][j] = nextZoneId;
+    let placed = false;
+    for (let x = 0; x <= roomCols - widthCells; x++) {
+      const potentialZone: Omit<CabinetZone, 'id'> = {
+        name: type.name,
+        type: type.name,
+        start: { x: x, y: startY },
+        end: { x: x + widthCells - 1, y: endY },
+        color: type.color ? `bg-${type.color}-400` : 'bg-gray-400',
+        isSelected: true,
+        typeInfo: type,
+      };
+      const tempCheckZone = { ...potentialZone, id: -1 };
+      if (!checkCollision(tempCheckZone)) {
+        const newZone: CabinetZone = { ...potentialZone, id: nextZoneId };
+        setZones((prev) => [...prev.map((z) => ({ ...z, isSelected: false })), newZone]);
+        setSelectedZoneId(newZone.id);
+        setNextZoneId(nextZoneId + 1);
+        onCabinetSave(newZone);
+        placed = true;
+        break;
       }
     }
-    setGrid(newGrid);
-    const color = blueShades[(nextZoneId - 1) % blueShades.length] + '/70';
-    const newZone = { start, end, name, color };
-    const updatedZones = [...zones, newZone].sort((a, b) =>
-      a.start.y !== b.start.y ? a.start.y - b.start.y : a.start.x - b.start.x
-    );
-    setZones(updatedZones);
-  
-    onCabinetSave(newZone);
-    resetGrid();
-    setNextZoneId(nextZoneId + 1);
-    setPendingZone(null);
-  };
-
-  const cancelPendingZone = () => {
-    setPendingZone(null);
-  };
-
-  const saveEditedZone = (zoneId, newName) => {
-
-    const updatedZones = zones.map((zone) => (zone.id === zoneId ? { ...zone, name: newName } : zone));
-    console.log(updatedZones);
-    setZones(updatedZones);
-    onCabinetSave(updatedZones.find((zone) => zone.id === zoneId));
-    setEditingZoneId(null);
-  };
-
-  const cancelEditing = () => {
-    setEditingZoneId(null);
-  };
-
-  const removeZone = (zoneId) => {
-    const zoneToRemove = zones.find((zone) => zone.id === zoneId);
-    if (!zoneToRemove) return;
-    const newGrid = grid.map((col) => [...col]);
-    for (let i = zoneToRemove.start.x; i <= zoneToRemove.end.x; i++) {
-      for (let j = zoneToRemove.start.y; j <= zoneToRemove.end.y; j++) {
-        newGrid[i][j] = false;
-      }
+    if (!placed) {
+      setNoRoomError(true);
+      console.warn(`No space found to place cabinet "${type.name}".`);
     }
-    const updatedZones = zones.filter((zone) => zone.id !== zoneId);
-    setGrid(newGrid);
-    setZones(updatedZones);
   };
-
-  const zoneMap = useMemo(() => {
-    const map = {};
-    zones.forEach((zone) => {
-      map[zone.id] = zone.color;
-    });
-    return map;
-  }, [zones]);
-
-  const totalCells = roomCols * roomRows;
-  const cells = Array.from({ length: totalCells }, (_, index) => {
-    const x = index % roomCols;
-    const y = Math.floor(index / roomCols);
-    return (
-      <div style={{ width: CELL_SIZE, height: CELL_SIZE }}>
-        <Cell
-          key={index}
-          x={x}
-          y={y}
-          grid={grid}
-          zoneMap={zoneMap}
-          currentSelection={currentSelection}
-          onStart={handleStart}
-          onMove={handleMove}
-          onEnd={handleEnd}
-        />
-      </div>
-    );
-  });
-
-  let dragWidth = 0;
-  let dragHeight = 0;
-  if (selected && lastSelected) {
-    const minX = Math.min(selected.x, lastSelected.x);
-    const maxX = Math.max(selected.x, lastSelected.x);
-    const minY = Math.min(selected.y, lastSelected.y);
-    const maxY = Math.max(selected.y, lastSelected.y);
-    dragWidth = maxX - minX + 1;
-    dragHeight = maxY - minY + 1;
-  }
-  const invertedY = roomRows - hoveredCell?.y;
-
-  const baseCabinetHeightFt = 3;   // e.g. countertop level (3ft)
-  const upperCabinetHeightFt = roomHeight - 4.5;
-  const wallCabinetHeightFt = roomHeight    // e.g. top of wall cabinets (6ft)
-
-  // Calculate the Y positions (in px) for helper lines relative to the grid container.
-  const baseHelperY = (roomRows - baseCabinetHeightFt * CELLS_PER_FOOT) * CELL_SIZE;
-  const upperHelperY = (roomRows - upperCabinetHeightFt * CELLS_PER_FOOT) * CELL_SIZE;
-  const wallHelperY = (roomRows - wallCabinetHeightFt * CELLS_PER_FOOT) * CELL_SIZE;
-
-  return (
-    <div className="flex flex-nowrap mx-auto items-center space-y-4 p-4 overflow-visible">
-
-      <div
-        className="text-nowrap text-center  flex flex-col w-fit justify-center items-center text-[10px] font-semibold text-muted-foreground gap-0 p-2"
-      >
-        <ChevronUp className="text-muted cursor-pointer my-auto text-xl h-4" />
-        <span className="h-4" >{roomHeight}ft</span>
-        <span className="h-4">Wall</span>
-        <span className="h-4">Height</span>
-        <ChevronDown className="text-muted cursor-pointer my-auto text-xl h-4 mt-3" />
-
-
-
-
-      </div>
-      <div className="flex flex-col relative max-w-[800px] overflow-visible">
-
-        <div
-          ref={gridRef}
-          key={`grid-${roomCols}-${roomRows}`}
-          className="grid border border-gray-300 relative "
-          style={{
-            gridTemplateColumns: `repeat(${roomCols}, ${CELL_SIZE}px)`,
-            gridTemplateRows: `repeat(${roomRows}, ${CELL_SIZE}px)`,
-          }}
-          onMouseMove={handleMoveContainer}
-          onTouchMove={handleMoveContainer}
-        >
-          {cells}
-          {isDragging && currentSelection && (
-            <DimensionPopup
-              mouseX={mousePos.x - gridRef.current?.getBoundingClientRect()?.left ?? 0}
-              mouseY={mousePos.y - gridRef.current?.getBoundingClientRect()?.top ?? 0}
-              width={dragWidth}
-              height={dragHeight}
-            />
-          )}
-          {hoveredCell && !isDragging && !pendingZone && editingZoneId === null && (
-            <>
-
-              <div
-                className="absolute bg-blue-500/30 pointer-events-none"
-                style={{
-                  left: hoveredCell.x * CELL_SIZE,
-                  top: 0,
-                  width: 1,
-                  height: roomRows * CELL_SIZE,
-                }}
-              />
-
-
-              <div
-                className="absolute bg-blue-500/30 pointer-events-none"
-                style={{
-                  top: hoveredCell.y * CELL_SIZE,
-                  left: 0,
-                  height: 1,
-                  width: roomCols * CELL_SIZE,
-                }}
-              />
-              <div
-                style={{ position: 'absolute', top: -18, left: hoveredCell.x * CELL_SIZE, }}
-                className="z-[9999] bg-white rounded-xl  pointer-events-none text-xs"
-              >
-
-                {hoveredCell.x / CELLS_PER_FOOT}ft
-              </div>
-              <div
-                style={{
-                  position: 'absolute',
-                  top: hoveredCell.y * CELL_SIZE,
-                  right: -35,
-                }}
-                className="z-[9999] bg-white rounded-xl pointer-events-none text-xs"
-              >
-                {(invertedY / CELLS_PER_FOOT).toFixed(1)}ft
-              </div>
-            </>
-          )}
-          {baseHelper && (
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                bottom: 0,
-                width: roomCols * CELL_SIZE,
-                height: baseCabinetHeightFt * (CELLS_PER_FOOT * CELL_SIZE),
-
-                pointerEvents: 'none',
-              }}
-              className='bg-blue-400/15 border-blue-400 border-t-4 z-20'
-            />
-          )}
-          {upperHelper && (
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: roomCols * CELL_SIZE,
-                height: upperCabinetHeightFt * (CELLS_PER_FOOT * CELL_SIZE),
-                pointerEvents: 'none',
-              }}
-              className='bg-purple-400/15 border-purple-400 border-b-4'
-            />
-          )}
-          {wallHelper && (
-            <div
-              style={{
-                position: 'absolute',
-                left: 0,
-                bottom: 0,
-                width: roomCols * CELL_SIZE,
-                height: roomHeight * CELLS_PER_FOOT * CELL_SIZE,
-
-                pointerEvents: 'none',
-              }}
-              className='bg-green-500/15  border-green-800 border-t-4 border-b-4'
-            />
-          )}
-          {pendingZone && (
-            <NameZonePopover pendingZone={pendingZone} cellSize={CELL_SIZE} onSave={savePendingZone} onCancel={cancelPendingZone} />
-          )}
-        {zones.map((zone) => {
-  const left = zone.start.x * CELL_SIZE;
-  const top = zone.start.y * CELL_SIZE;
-  const width = (zone.end.x - zone.start.x + 1) * CELL_SIZE;
-  const height = (zone.end.y - zone.start.y + 1) * CELL_SIZE;
-console.log('Zone', zone)
-  const zoneColor = zone.color;
-  return (
-    <div
-      key={zone.id}
-      style={{ position: 'absolute', left, top, width, height }}
-      className={`group ${zone.color} rounded-md border border-slate-300 transition-all`}
-    >
-   
-      <div className="absolute top-1 left-1 text-xs font-semibold bg-white/80 px-1 rounded-sm pointer-events-none">
-        {zone.name}
-      </div>
-
-    
-      <div className="opacity-0 group-hover:opacity-100 absolute inset-0 flex flex-col gap-2 items-center justify-center bg-black/50 transition-opacity duration-200 cursor-pointer">
-        <button
-          onClick={() => {
-            setEditingZoneId(zone.id);
-            setPendingZone({ start: zone.start, end: zone.end });
-          }}
-          className="bg-blue-500 text-white px-2 py-1 text-xs rounded"
-        >
-          Edit
-        </button>
-        <button
-          onClick={() => removeZone(zone.id)}
-          className="bg-red-500 text-white px-2 py-1 text-xs rounded"
-        >
-          Delete
-        </button>
-      </div>
-
-      {editingZoneId === zone.id && (
-        <NameZonePopover
-          pendingZone={{ start: zone.start, end: zone.end }}
-          cellSize={CELL_SIZE}
-          defaultName={zone.name}
-          onSave={(newName) => saveEditedZone(zone.id, newName)}
-          onCancel={cancelEditing}
-        />
-      )}
-    </div>
+  useEffect(() => {
+    if (noRoomError) {
+      setTimeout(() => {
+        setNoRoomError(false);
+      }, 3000); // Show the toast for 3 seconds
+    }
+  }, [noRoomError]);
+  // ... (Keep selection functions: deselectAll, selectZone) ...
+  const deselectAll = useCallback(() => {
+    if (interactionState !== 'idle') return;
+    setSelectedZoneId(null);
+    setEditingNameZoneId(null);
+  }, [interactionState]);
+  const selectZone = useCallback(
+    (zoneId: number) => {
+      if (interactionState !== 'idle') return;
+      setZones((prev) => prev.map((z) => ({ ...z, isSelected: z.id === zoneId })));
+      setSelectedZoneId(zoneId);
+      setEditingNameZoneId(null);
+    },
+    [interactionState],
   );
-})}
 
+  // ... (Keep handleDeleteSelected) ...
+  const handleDeleteSelected = () => {
+    if (selectedZoneId === null) return;
+    setZones((prev) => prev.filter((z) => z.id !== selectedZoneId));
+    onCabinetDelete(selectedZoneId);
+    setSelectedZoneId(null);
+  };
 
+  // ... (Keep name editing functions) ...
+  const startEditingName = () => {
+    if (!selectedZone || interactionState !== 'idle') return;
+    setEditingNameZoneId(selectedZone.id);
+    setCurrentEditName(selectedZone.name);
+  };
+  useEffect(() => {
+    if (editingNameZoneId !== null && editInputRef.current) {
+      editInputRef.current.focus();
+      editInputRef.current.select();
+    }
+  }, [editingNameZoneId]);
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCurrentEditName(e.target.value);
+  };
+  const saveNameChange = () => {
+    if (editingNameZoneId === null || !selectedZone) return;
+    if (currentEditName.trim() === '') {
+      setEditingNameZoneId(null);
+      return;
+    }
+    const updatedZone = { ...selectedZone, name: currentEditName };
+    setZones((prev) => prev.map((z) => (z.id === editingNameZoneId ? updatedZone : z)));
+    onCabinetUpdate(updatedZone);
+    setEditingNameZoneId(null);
+  };
+  const cancelNameChange = () => {
+    setEditingNameZoneId(null);
+    setCurrentEditName('');
+  };
+  const handleNameInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      saveNameChange();
+    } else if (e.key === 'Escape') {
+      cancelNameChange();
+    }
+  };
+
+  // --- Unified Interaction Handling ---
+
+  // ... (Keep getEventCoords helper) ...
+  const getEventCoords = (e: MouseEvent | TouchEvent): { x: number; y: number } | null => {
+    if ('touches' in e) {
+      if (e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    } else {
+      return { x: e.clientX, y: e.clientY };
+    }
+    return null;
+  };
+
+  // ... (Keep handleInteractionStart - wrapped in useCallback) ...
+  const handleInteractionStart = useCallback(
+    (e: React.MouseEvent | React.TouchEvent, zoneId: number) => {
+      if (interactionState !== 'idle' || editingNameZoneId === zoneId) return;
+      const zone = zones.find((z) => z.id === zoneId);
+      if (!zone) return;
+      if (selectedZoneId !== zoneId) {
+        selectZone(zoneId);
+      }
+      const startCoords = getEventCoords(e.nativeEvent);
+      if (!startCoords) return;
+      const target = e.target as HTMLElement;
+      const isResizeHandle = target.closest('[data-resize]');
+      const resizeDir = isResizeHandle?.getAttribute('data-resize') as 'horizontal' | 'vertical' | null;
+      setActiveZoneId(zoneId);
+      setInteractionStartPos(startCoords);
+      if (resizeDir) {
+        setInteractionState('resizing');
+        setResizeDirection(resizeDir);
+        setElementStartSize({ widthCells: zone.end.x - zone.start.x + 1, heightCells: zone.end.y - zone.start.y + 1 });
+        setElementStartPos(null);
+      } else {
+        setInteractionState('dragging');
+        setResizeDirection(null);
+        setElementStartPos({ x: zone.start.x, y: zone.start.y });
+        setElementStartSize(null);
+      }
+    },
+    [interactionState, editingNameZoneId, zones, selectedZoneId, selectZone],
+  );
+
+  // ... (Keep handleInteractionMove - wrapped in useCallback) ...
+  const handleInteractionMove = useCallback(
+    (e: MouseEvent | TouchEvent) => {
+      if (interactionState === 'idle' || !activeZoneId || !interactionStartPos) return;
+      const currentCoords = getEventCoords(e);
+      if (!currentCoords) return;
+      if ('touches' in e && (interactionState === 'dragging' || interactionState === 'resizing')) {
+        e.preventDefault();
+      }
+      const deltaX = currentCoords.x - interactionStartPos.x;
+      const deltaY = currentCoords.y - interactionStartPos.y;
+      setZones((prevZones) =>
+        prevZones.map((zone) => {
+          if (zone.id !== activeZoneId) return zone;
+          let newZone = { ...zone, start: { ...zone.start }, end: { ...zone.end } }; // Deep copy
+          const typeInfo = zone.typeInfo;
+          if (interactionState === 'resizing' && resizeDirection && elementStartSize) {
+            if (resizeDirection === 'horizontal') {
+              const newGridWidth = Math.round(deltaX / CELL_SIZE);
+              let targetWidthCells = elementStartSize.widthCells + newGridWidth;
+              const minWidthCells = feetToCells(typeInfo.min_width);
+              const maxWidthCells = typeInfo.max_width ? feetToCells(typeInfo.max_width) : roomCols;
+              targetWidthCells = Math.max(minWidthCells, targetWidthCells);
+              targetWidthCells = Math.min(maxWidthCells, targetWidthCells);
+              targetWidthCells = Math.min(targetWidthCells, roomCols - zone.start.x);
+              newZone.end.x = zone.start.x + targetWidthCells - 1;
+            } else if (resizeDirection === 'vertical') {
+              const newGridHeight = Math.round(-deltaY / CELL_SIZE);
+              let targetHeightCells = elementStartSize.heightCells + newGridHeight;
+              const minHeightCells = feetToCells(typeInfo.min_height);
+              const maxHeightCells = typeInfo.max_height ? feetToCells(typeInfo.max_height) : roomRows;
+              targetHeightCells = Math.max(minHeightCells, targetHeightCells);
+              targetHeightCells = Math.min(maxHeightCells, targetHeightCells);
+              const newStartY = zone.end.y - targetHeightCells + 1;
+              targetHeightCells = Math.min(targetHeightCells, zone.end.y + 1);
+              newZone.start.y = zone.end.y - targetHeightCells + 1;
+            }
+            if (checkCollision(newZone, zone.id)) {
+              return zone; /* Revert */
+            }
+          } else if (interactionState === 'dragging' && elementStartPos) {
+            const gridDeltaX = Math.round(deltaX / CELL_SIZE);
+            let newStartX = elementStartPos.x + gridDeltaX;
+            const currentWidthCells = zone.end.x - zone.start.x;
+            newStartX = Math.max(0, newStartX);
+            newStartX = Math.min(roomCols - currentWidthCells - 1, newStartX);
+            const newEndX = newStartX + currentWidthCells;
+            const potentialZone = { ...newZone, start: { ...newZone.start, x: newStartX }, end: { ...newZone.end, x: newEndX } };
+            if (checkCollision(potentialZone, zone.id)) {
+              return zone; /* Revert */
+            }
+            newZone = potentialZone;
+          }
+          return newZone;
+        }),
+      );
+    },
+    [
+      interactionState,
+      activeZoneId,
+      interactionStartPos,
+      resizeDirection,
+      elementStartPos,
+      elementStartSize,
+      roomCols,
+      roomRows,
+      checkCollision,
+    ],
+  );
+
+  // ***** CHANGE 1: REMOVE useCallback from handleInteractionEnd *****
+  const handleInteractionEnd = () => {
+    // Add console logs for debugging
+    console.log(`DEBUG: handleInteractionEnd called! State: ${interactionState}, Active Zone: ${activeZoneId}`);
+
+    if (interactionState === 'idle' || !activeZoneId) {
+      console.log('DEBUG: handleInteractionEnd - Aborting (already idle or no active zone)');
+      return;
+    }
+
+    const finalZone = zones.find((z) => z.id === activeZoneId);
+
+    // Check if an update actually occurred and notify parent
+    if (finalZone) {
+      if (interactionState === 'dragging' && elementStartPos) {
+        if (finalZone.start.x !== elementStartPos.x || finalZone.start.y !== elementStartPos.y) {
+          console.log('DEBUG: handleInteractionEnd - Dragging finished with changes');
+          onCabinetUpdate(finalZone);
+        }
+      } else if (interactionState === 'resizing' && elementStartSize) {
+        const finalWidth = finalZone.end.x - finalZone.start.x + 1;
+        const finalHeight = finalZone.end.y - finalZone.start.y + 1;
+        if (finalWidth !== elementStartSize.widthCells || finalHeight !== elementStartSize.heightCells) {
+          console.log('DEBUG: handleInteractionEnd - Resizing finished with changes');
+          onCabinetUpdate(finalZone);
+        }
+      }
+    }
+
+    console.log('DEBUG: handleInteractionEnd - Resetting state to idle...');
+    // Reset interaction states - THIS IS THE CRITICAL PART
+    setInteractionState('idle');
+    setActiveZoneId(null);
+    setResizeDirection(null);
+    setInteractionStartPos(null);
+    setElementStartPos(null);
+    setElementStartSize(null);
+  };
+  // ***** NO useCallback wrapper above *****
+
+  // Attach global listeners for move/end when interaction starts
+  useEffect(() => {
+    const moveHandler = (e: Event) => handleInteractionMove(e as unknown as MouseEvent | TouchEvent);
+    // *** Use the function directly here ***
+    const endHandler = (e: Event) => handleInteractionEnd();
+
+    if (interactionState !== 'idle') {
+      console.log('DEBUG: ATTACHING global listeners, state:', interactionState);
+      window.addEventListener('mousemove', moveHandler, { passive: false });
+      window.addEventListener('touchmove', moveHandler, { passive: false });
+      window.addEventListener('mouseup', endHandler);
+      window.addEventListener('touchend', endHandler);
+      window.addEventListener('mouseleave', endHandler);
+      window.addEventListener('touchcancel', endHandler);
+
+      return () => {
+        console.log('DEBUG: REMOVING global listeners, state:', interactionState);
+        window.removeEventListener('mousemove', moveHandler);
+        window.removeEventListener('touchmove', moveHandler);
+        window.removeEventListener('mouseup', endHandler);
+        window.removeEventListener('touchend', endHandler);
+        window.removeEventListener('mouseleave', endHandler);
+        window.removeEventListener('touchcancel', endHandler);
+      };
+    }
+    // ***** CHANGE 2: Add handleInteractionEnd to dependency array *****
+  }, [interactionState, handleInteractionMove, handleInteractionEnd]);
+
+  // --- Render ---
+  return (
+    // ... (Keep the JSX structure exactly as you provided in the previous message) ...
+    // Including the main div, left panel, right panel, grid, zone mapping, resize handles etc.
+    <div className="flex flex-col md:flex-row gap-4 p-4 items-start">
+      {/* Left Panel: Cabinet Types & Info */}
+      <div className="w-full md:w-64 flex-shrink-0 flex flex-col gap-4">
+        {/* Cabinet Type Selection */}
+        <div className="flex flex-row flex-wrap justify-center gap-3">
+          <h3 className="w-full text-sm font-medium text-center mb-1">Add Cabinet</h3>
+          {loading ? (
+            <SawLoader />
+          ) : (
+            cabinetTypes?.map((type) => (
+              <div key={type.id} className="w-[70px] group" title={`Add ${type.name}`}>
+                <div
+                  onClick={() => autoPlaceCabinet(type)}
+                  className={cn(
+                    /* styles */ 'cursor-pointer overflow-hidden relative rounded-md shadow-md aspect-square mx-auto flex flex-col justify-end p-1.5 bg-cover bg-center hover:shadow-lg transition-shadow bg-slate-200',
+                  )}
+                  style={type.img_url ? { backgroundImage: `url(${type.img_url})` } : {}}
+                >
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors duration-200"></div>
+                  <div className="relative z-10 text-content text-center">
+                    <p className="font-medium text-[11px] text-white leading-tight line-clamp-2">{type.name}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+          {noRoomError && (
+            <div className=" flex items-center justify-center text-xs p-2 bg-red-500 text-white rounded-md shadow-md mt-2">
+              <AlertCircle size={12} className="mr-1" /> No space available for this cabinet.
+            </div>
+          )}
         </div>
-
-
-        <div
-          className="text-nowrap text-center mx-auto flex  w-fit justify-center items-center text-[10px] font-semibold text-muted-foreground gap-0"
-        >
-          <ChevronLeft className="text-muted cursor-pointer my-auto text-2xl" /> <span>{wallLength}ft Floor Width</span> <ChevronRight className="text-muted cursor-pointer my-auto text-2xl" />
-
-
+        {/* Selected Cabinet Info Panel */}
+        <div className="mt-4 border rounded-md p-3 bg-slate-50 min-h-[100px] w-[300px] mx-auto">
+          <h3 className="text-sm font-medium text-center mb-2">Selected Cabinet</h3>
+          {selectedZone ? (
+            <div className="space-y-2 text-xs">
+              {/* Name Display/Edit */}
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold flex-shrink-0">Name:</span>
+                {editingNameZoneId === selectedZone.id ? (
+                  <div className="flex items-center gap-1 flex-grow min-w-0">
+                    {' '}
+                    {/* Added min-w-0 */}
+                    <Input
+                      ref={editInputRef}
+                      type="text"
+                      value={currentEditName}
+                      onChange={handleNameChange}
+                      onKeyDown={handleNameInputKeyDown}
+                      onBlur={cancelNameChange}
+                      className="h-6 px-1 text-xs flex-grow"
+                      maxLength={50}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-green-600 hover:bg-green-100 flex-shrink-0"
+                      onClick={saveNameChange}
+                      title="Save name"
+                    >
+                      {' '}
+                      <Check size={14} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-red-600 hover:bg-red-100 flex-shrink-0"
+                      onClick={cancelNameChange}
+                      title="Cancel edit"
+                    >
+                      {' '}
+                      <X size={14} />
+                    </Button>
+                  </div>
+                ) : (
+                  <div
+                    className="flex items-center gap-1 cursor-pointer group min-w-0"
+                    onClick={startEditingName}
+                    title="Click to edit name"
+                  >
+                    {' '}
+                    {/* Added min-w-0 */}
+                    <span className="truncate font-medium">{selectedZone.name}</span>
+                    <Pencil size={12} className="text-slate-500 group-hover:text-blue-600 flex-shrink-0" />
+                  </div>
+                )}
+              </div>
+              {/* Dimensions & Details */}
+              <div>
+                <span className="font-semibold">Type:</span> {selectedZone.typeInfo.name}
+              </div>
+              <div>
+                <span className="font-semibold">Width:</span> {formatFeet(cellsToFeet(selectedZone.end.x - selectedZone.start.x + 1))}
+              </div>
+              <div>
+                <span className="font-semibold">Height:</span> {formatFeet(cellsToFeet(selectedZone.end.y - selectedZone.start.y + 1))}
+              </div>
+              <div>
+                <span className="font-semibold">Base Offset:</span> {formatFeet(selectedZone.typeInfo.base_y_lock)} from floor
+              </div>
+              {/* Constraints Info */}
+              <div className="text-[10px] text-slate-500 pt-1 border-t mt-2">
+                Min W: {formatDim(feetToCells(selectedZone.typeInfo.min_width))} {/* Use formatDim */}
+                {selectedZone.typeInfo.max_width ? `, Max W: ${formatDim(feetToCells(selectedZone.typeInfo.max_width))}` : ''} <br />
+                Min H: {formatDim(feetToCells(selectedZone.typeInfo.min_height))}
+                {selectedZone.typeInfo.max_height ? `, Max H: ${formatDim(feetToCells(selectedZone.typeInfo.max_height))}` : ''}
+              </div>
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-2 border-t mt-2">
+                <Button variant="destructive" size="sm" onClick={handleDeleteSelected} title="Delete selected cabinet">
+                  <Trash2 size={14} className="mr-1" /> Delete
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500 text-center italic mt-4">Click on a cabinet in the grid to see details.</p>
+          )}
         </div>
-        <div className='flex flex-col gap-2 text-xs'>
-          <h3 className='font-bold'>Height Helpers</h3>
-          <div className='flex flex-row gap-2'>
-            <Checkbox
-              checked={upperHelper}
-              onCheckedChange={(e) => setUpperHelper(upperHelper ? false : true)}
-              className='my-auto h-4 w-4 rounded-sm data-[state=checked]:bg-purple-400'
-            /> Upper Cabinet
-          </div>
-          <div className='flex flex-row gap-2'>
-            <Checkbox
-              checked={baseHelper}
-              onCheckedChange={(e) => setBaseHelper(baseHelper ? false : true)}
-              className='my-auto h-4 w-4 rounded-sm data-[state=checked]:bg-blue-400'
-            /> Base Cabinet
-          </div>
-          <div className='flex flex-row gap-2'>
-            <Checkbox
-              checked={wallHelper}
-              onCheckedChange={(e) => setWallHelper(wallHelper ? false : true)}
-              className='my-auto h-4 w-4 rounded-sm data-[state=checked]:bg-green-500'
-            /> Wall Cabinet
-          </div>
-        </div>
-
-
-
-        {isMobile && !isLandscape && (
-          <p className='text-xs text-center max-w-24 mx-auto'>Rotate Screen if cannot select screen</p>
-        )}
       </div>
 
+      {/* Right Panel: Grid */}
+      <div className="flex flex-col items-center flex-grow w-full overflow-x-auto">
+        <p className="text-xs text-slate-600 mb-2">Grid Scale: Each square = {formatDim(1)} (6 inches)</p>
+        <div className="flex flex-row items-center gap-2">
+          <div
+            ref={gridRef}
+            className="relative border border-slate-400 grid w-fit mx-auto bg-slate-50 shadow-inner overflow-hidden touch-none"
+            style={{ gridTemplateColumns: `repeat(${roomCols}, ${CELL_SIZE}px)`, gridTemplateRows: `repeat(${roomRows}, ${CELL_SIZE}px)` }}
+            onClick={deselectAll}
+          >
+            {/* Grid Background Cells */}
+            {[...Array(roomCols * roomRows)].map((_, index) => (
+              <div key={index} className="border-[.5px] border-slate-200 w-full h-full" />
+            ))}
 
+            {/* Placed Cabinets (Zones) */}
+            {zones.map((zone) => {
+              const widthPx = (zone.end.x - zone.start.x + 1) * CELL_SIZE;
+              const heightPx = (zone.end.y - zone.start.y + 1) * CELL_SIZE;
+              const isSelected = selectedZoneId === zone.id;
+              const isInteracting = activeZoneId === zone.id;
+              const canResizeHorizontally = isSelected;
+              const canResizeVertically =
+                isSelected && (zone.typeInfo?.max_height === null || zone.typeInfo?.max_height > zone.typeInfo?.min_height);
+              const widthDim = formatDim(zone.end.x - zone.start.x + 1);
+              const heightDim = formatDim(zone.end.y - zone.start.y + 1);
 
+              return (
+                <div
+                  key={zone.id}
+                  style={{
+                    position: 'absolute',
+                    left: zone.start.x * CELL_SIZE,
+                    top: zone.start.y * CELL_SIZE,
+                    width: widthPx,
+                    height: heightPx,
+                    zIndex: isSelected || isInteracting ? 10 : 1,
+                  }}
+                  className={cn(
+                    zone.color,
+                    'border border-slate-800/50 flex items-center justify-center text-center relative group transition-shadow duration-150',
+                    'select-none',
+                    isSelected && 'ring-2 ring-offset-1 ring-blue-600 shadow-lg',
+                    interactionState === 'dragging' && isInteracting && 'cursor-grabbing shadow-xl opacity-90',
+                    interactionState !== 'dragging' && 'cursor-grab',
+                    interactionState === 'resizing' && isInteracting && 'opacity-90',
+                    'pointer-events-auto',
+                    'touch-none',
+                  )}
+                  onMouseDown={(e) => handleInteractionStart(e, zone.id)}
+                  onTouchStart={(e) => handleInteractionStart(e, zone.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectZone(zone.id);
+                  }}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    startEditingName();
+                  }}
+                >
+                  {/* Context on Cabinet Block */}
+                  <div className="flex flex-col items-center justify-center p-1 pointer-events-none">
+                    <span className="font-medium text-white text-shadow-sm text-xs leading-tight truncate w-full px-1">{zone.name}</span>
+                    <span className="text-[10px] text-white/80 text-shadow-sm leading-tight mt-0.5">
+                      {widthDim}W x {heightDim}H
+                    </span>
+                  </div>
+
+                  {/* Resize Handles (Larger Interaction Area) */}
+                  {canResizeHorizontally && (
+                    <div
+                      data-resize="horizontal"
+                      className="absolute -right-2 top-[-4px] bottom-[-4px] w-4 flex items-center justify-end cursor-ew-resize group/handle z-20"
+                      title="Resize width"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleInteractionStart(e, zone.id);
+                      }}
+                      onTouchStart={(e) => {
+                        e.stopPropagation();
+                        handleInteractionStart(e, zone.id);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="w-1.5 h-8 bg-blue-600 rounded-full opacity-50 group-hover/handle:opacity-100 pointer-events-none" />
+                    </div>
+                  )}
+                  {canResizeVertically && (
+                    <div
+                      data-resize="vertical"
+                      className="absolute -top-2 left-[-4px] right-[-4px] h-4 flex items-center justify-center cursor-ns-resize group/handle z-20"
+                      title="Resize height"
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleInteractionStart(e, zone.id);
+                      }}
+                      onTouchStart={(e) => {
+                        e.stopPropagation();
+                        handleInteractionStart(e, zone.id);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="h-1.5 w-8 bg-blue-600 rounded-full opacity-50 group-hover/handle:opacity-100 pointer-events-none" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div
+            className="text-xs text-slate-600 self-center px-1 [writing-mode:vertical-rl] transform rotate-180 whitespace-nowrap"
+            title={`Room Height: ${formatFeet(roomHeightFeet)}`}
+          >
+            {' '}
+            {/* Added Tooltip */}
+            {formatFeet(roomHeightFeet)} H
+          </div>
+        </div>
+        <div className="text-xs text-slate-600 mt-1" title={`Wall Width: ${formatFeet(wallWidthFeet)}`}>
+          {' '}
+          {/* Added Tooltip */}
+          {formatFeet(wallWidthFeet)} W
+        </div>
+        {/* Instructions & Mobile warning */}
+        <span className="text-xs text-slate-600 mt-3 text-center px-4">
+          Click cabinet type to add. Click placed cabinet to select. Drag to move. Use handles to resize. Double-click name in panel to
+          edit.
+        </span>
+        {/*  {isMobile && (
+          <div className="text-xs text-orange-600 text-center mt-2 flex items-center gap-1 justify-center">
+            {' '}
+            <AlertCircle size={14} /> Rotate screen for better experience.{' '}
+          </div>
+        )} */}
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import {
   deleteCabinet,
   deleteRoom,
   getCabinetById,
+  getCabinetTypes,
   getCustomOptions,
   getLayoutOptions,
   getProjects,
@@ -188,7 +189,22 @@ export const useGetCustomOptions = () => {
     refetch: query.refetch,
   };
 };
+export const useGetCabinetTypes = () => {
+  const query = useQuery({
+    queryKey: [API_ROUTES.GET_CABINET_TYPES],
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+    queryFn: getCabinetTypes,
+  });
 
+  return {
+    data: query?.data as any[],
+    isSuccess: query.isSuccess,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
+};
 export const useDeleteCabinet = () => {
   const { toast } = useToast();
   const { refetch } = useGetProjects();

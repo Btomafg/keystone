@@ -1,5 +1,3 @@
-import { POST } from '@/app/(app)/api/faqs/route';
-
 export const API_ROUTES = {
   // Auth Routes
   SIGN_IN: '/api/auth/signin/',
@@ -68,6 +66,7 @@ export const API_ROUTES = {
   // cabinet routes
   GET_CABINETS: '/api/projects/cabinets/',
   GET_CABINET_OPTIONS: '/api/projects/cabinets/options/',
+  GET_CABINET_TYPES: '/api/projects/cabinets/types/',
   UPDATE_CABINET: '/api/projects/cabinets/',
   CREATE_CABINET: '/api/projects/cabinets/create/',
   DELETE_CABINET: '/api/projects/cabinets/',

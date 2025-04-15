@@ -100,6 +100,12 @@ export type Room {
   layout: number;
   estimate: number;
   status?: string;
+  construction_method?: number;
+  crown?: number;
+  door_material?: number;
+  light_rail?: number;
+  sub_material?: number;
+  toe_style?: number;
 }
 
 export type Wall {
@@ -119,13 +125,6 @@ export type Cabinet {
   name: string;
   status: number;
   quote: number;
-  ceilingHeight?: number;
-  constructionMethod?: number;
-  crown?: number;
-  doorMaterial?: number;
-  lightRail?: number;
-  subMaterial?: number;
-  toeStyle?: number;
   length?: number;
   width?: number;
   height?: number;
@@ -138,8 +137,20 @@ export type Cabinet {
   grid_start_y?: number;
   grid_end_x?: number;
   grid_end_y?: number;
-
 }
+export type CabinetType = {
+  id: number;
+  name: string;
+  description: string;
+  min_height: number;
+  max_height: number;
+  min_width: number;
+  max_width: number | null;
+  base_y_lock: number;
+  color: string;
+  active: boolean;
+  img_url: string;
+};
 
 export type Project {
   id: number;

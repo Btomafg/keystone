@@ -1,23 +1,14 @@
 'use client';
 import { AppSidebar } from '@/components/app-sidebar';
-import Dashboard from '@/components/app/dashboard/Dashboard';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { usePathname } from 'next/navigation';
 
-import NewProjectPage from '@/components/app/dashboard/projects/NewProjectPage';
-import { APP_ROUTES } from '@/constants/routes';
-import { useGetProjects } from '@/hooks/api/projects.queries';
+import { Toaster } from '@/components/ui/toaster';
 import { useGetUser } from '@/hooks/api/users.queries';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import Documents from './dashboard/documents/page';
-import FAQ from './dashboard/faq/page';
-import Orders from './dashboard/orders/page';
-import Projects from './dashboard/projects/page';
-import Settings from './dashboard/settings/layout';
-import FAQs from './dashboard/faq/FAQs';
 
 export default function Page({ children }) {
   const router = useRouter();
@@ -43,6 +34,7 @@ export default function Page({ children }) {
     <SidebarProvider>
       <AppSidebar variant="inset" user={user} />
       <SidebarInset>
+        <Toaster />
         <SiteHeader />
         <DashboardWrapper />
       </SidebarInset>

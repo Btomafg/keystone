@@ -34,7 +34,7 @@ const NewCabinetModal: React.FC<NewCabinetModalProps> = (props) => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button disabled={!island && wall?.length == null} className="flex flex-row flex-nowrap w-32" onClick={() => {}} type="submit">
-          {island ? 'Add an island' : 'New Cabinet'} <Plus />
+          New Cabinet <Plus />
         </Button>
       </DialogTrigger>
       <DialogOverlay className="fixed inset-0 bg-black/30" />
