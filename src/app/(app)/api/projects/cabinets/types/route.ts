@@ -12,7 +12,7 @@ export async function GET() {
     const userId = isAuthenticated?.user?.id;
     const { data, error } = await supabase
       .from('CabinetTypes')
-      .select('id, name, min_height, max_height, min_width, max_width, base_y_lock,img_url, color')
+      .select('id, name, min_height, max_height, min_width, max_width, base_y_lock,img_url, color, active')
       .eq('active', true);
 
     console.log('Cabinet Options', data);

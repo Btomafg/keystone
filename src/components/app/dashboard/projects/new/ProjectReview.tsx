@@ -13,7 +13,6 @@ import { toUSD } from '@/utils/common';
 import {
   Check,
   CircleDollarSign,
-  Clock,
   Download,
   File as FileIcon,
   FileText,
@@ -23,6 +22,8 @@ import {
   MessageCircleQuestion,
 } from 'lucide-react'; // Added Clock, FileIcon, Download
 import React from 'react';
+import ProjectDrawingReview from '../details/ProjectDrawingReview';
+import ProjectScheduleConsultation from '../details/ProjectScheduleConsultation';
 
 // --- Updated Data Types (Matching API + Files) ---
 
@@ -82,9 +83,8 @@ const projectSteps = [
   'Consultation',
   'Design',
   'Drawing Review',
+  'Sign Agreement',
   'Manufacturing',
-  'Painting',
-  'Assembly',
   'Shipped',
 ];
 
@@ -159,7 +159,8 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
 
   // --- Determine if Scheduling CTA should be shown ---
   // !!! ADJUST condition based on your actual status IDs for 'Review' or 'Consultation' !!!
-  const showScheduleButton = project.status === 1 || project.status === 2; // Example: Show for status 1 (Review) or 2 (Consultation)
+  const showScheduleButton = project.status === 1 || project.status === 2;
+  const showDrawingReview = project.status === 4 || project.status == 5; // Example: Show for status 1 (Review) or 2 (Consultation)
 
   // Get files from project data (or prop if passed separately)
   const files = project.files || [];
@@ -243,22 +244,14 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
         </Card>
 
         {/* --- Conditional Scheduling CTA --- */}
-        {showScheduleButton && (
-          <Card className="bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
-            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <CardTitle className="text-lg text-blue-800 dark:text-blue-200 flex items-center gap-2">
-                  <Clock className="h-5 w-5" /> Ready for Consultation?
-                </CardTitle>
-                <CardDescription className="text-blue-700 dark:text-blue-300 mt-1">
-                  Your project is ready for the next step. Schedule your consultation call.
-                </CardDescription>
-              </div>
-              <Button size="lg" onClick={handleScheduleConsultation} className="bg-blue-600 hover:bg-blue-700 text-white flex-shrink-0">
-                Schedule Consultation
-              </Button>
-            </CardHeader>
-          </Card>
+        {showScheduleButton && <ProjectScheduleConsultation />}
+        {showDrawingReview && (
+          <ProjectDrawingReview
+            reviewStatus="approved"
+            onApprove={() => console.log('approve')}
+            onRequestRevisions={() => console.log('revisions')}
+            projectId={project.id}
+          />
         )}
 
         {/* --- Main Content Tabs (Rooms & Files) --- */}

@@ -10,10 +10,10 @@ import { useEffect, useState } from 'react';
 
 export default function ProjectPage() {
   const path = usePathname();
-  const projectId = path.split('/')[3];
+  const projectId = parseFloat(path.split('/')[3]);
   const { data: projects } = useGetProjects();
   const project = projects && projects?.find((project: Project) => project?.id == projectId);
-  const [projectStatus, setProjectStatus] = useState(project?.status || 0);
+  const [projectStatus, setProjectStatus] = useState(project?.status);
   console.log('projectStatus', projectStatus);
 
   const timeout = async () => {
@@ -26,9 +26,10 @@ export default function ProjectPage() {
       console.log('Send to review function');
       timeout();
     }
-  }, [projectStatus]);
+    setProjectStatus(project?.status || 0);
+  }, [projectId, path]);
 
-  const StatusManager = () => {
+  const statusManager = () => {
     switch (projectStatus) {
       case 0:
         return <NewProjectPage />;
@@ -36,14 +37,19 @@ export default function ProjectPage() {
         return <ProjectReviewLoader />;
       case 2:
         return <ProjectDetailsPage project={project} />;
+      case 3:
+        return <ProjectDetailsPage project={project} />;
+      case 4:
+        return <ProjectDetailsPage project={project} />;
+      case 5:
+        return <ProjectDetailsPage project={project} />;
+      case 6:
+        return <ProjectDetailsPage project={project} />;
+
       case 99:
         return <ProjectDenied reason="out_of_area" />;
     }
   };
 
-  return (
-    <div>
-      <StatusManager />
-    </div>
-  );
+  return <div>{statusManager()}</div>;
 }

@@ -158,7 +158,7 @@ export function ConsultationScheduler({
     }
     setAvailableTimes(generatedTimes);
     setSelectedTime(undefined); // Clear previous time selection when available times update
-  }, []); // Added userTimeZone
+  }, [selectedDate, availabilityWindows, slotDurationMinutes, bookedSlots, userTimeZone]); // Added userTimeZone
 
   // --- Calendar Disabled Dates Logic ---
   const disabledDays = useMemo(() => {
@@ -241,7 +241,7 @@ export function ConsultationScheduler({
   };
 
   return (
-    <Card className="w-full max-w-xl mx-auto">
+    <Card className="w-full max-w-xl mx-auto bg-white">
       {' '}
       {/* Adjust max-width as needed */}
       <CardHeader>
@@ -289,10 +289,10 @@ export function ConsultationScheduler({
             </Badge>
           ) : selectedDate ? (
             availableTimes.length > 0 ? (
-              <ScrollArea className="h-48 pr-3">
+              <ScrollArea className="h-full pr-3">
                 {' '}
                 {/* Adjust height as needed */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="flex flex-col gap-2">
                   {availableTimes.map((slot) => (
                     <Button
                       key={slot.startTime}
@@ -323,8 +323,8 @@ export function ConsultationScheduler({
       </CardContent>
       {/* Optional Footer for confirmation/summary */}
       {selectedDate && selectedTime && (
-        <div className="pt-4 border-t justify-center">
-          <p className="text-sm font-medium text-center">
+        <div className=" py-4 border-t justify-center">
+          <p className="text-sm font-medium text-center my-auto">
             Selected: {format(selectedDate, 'EEEE, MMMM d, yyyy')} at {format(parse(selectedTime, 'HH:mm', selectedDate), 'h:mm a')}
           </p>
           {/* The actual booking happens when parent component handles onSlotSelect */}

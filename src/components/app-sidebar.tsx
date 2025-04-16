@@ -1,17 +1,17 @@
 'use client';
 import Logo from '@/assets/images/logo/KW-LOGO.webp';
-import { ClipboardListIcon, FolderIcon, HelpCircle, LayoutDashboardIcon, SettingsIcon, UsersIcon } from 'lucide-react';
-import * as React from 'react';
 import { NavOpenProjects } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@/components/ui/sidebar';
 import { APP_ROUTES } from '@/constants/routes';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { cn } from '@/lib/utils';
+import { ClipboardListIcon, FolderIcon, HelpCircle, LayoutDashboardIcon, SettingsIcon, UsersIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import * as React from 'react';
 import AdminPinPopover from './AdminPinPopover';
-import { useTypedSelector } from '@/hooks/useTypedSelector';
 
 const data = {
   user: {
@@ -91,7 +91,7 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={adminMode ? adminItems : data.navMain} />
-        <NavOpenProjects />
+        {!user?.is_admin && <NavOpenProjects />}
         {/*  <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
         {user?.is_admin && <AdminPinPopover />}
       </SidebarContent>

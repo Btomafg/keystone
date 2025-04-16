@@ -10,7 +10,7 @@ export async function GET() {
       return NextResponse.json({ success: false, message: 'User is not authenticated', type: 'error' }, { status: 401 });
     }
     const userId = isAuthenticated?.user?.id;
-    const { data, error } = await supabase.from('RoomOptions').select('id ,name ,image_url, cabinet_types').eq('active', true);
+    const { data, error } = await supabase.from('RoomOptions').select('id ,name ,image_url, active, cabinet_types').eq('active', true);
 
     console.log('PROJECTS', data);
     return NextResponse.json(data);

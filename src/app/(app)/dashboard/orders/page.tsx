@@ -1,6 +1,6 @@
 'use client';
 
-import { ConsultationScheduler } from '@/components/app/dashboard/ConsultationScheduler';
+import { ConsultationScheduler } from '@/components/app/dashboard/projects/details/ConsultationScheduler';
 import { addMinutes, setDate, setHours, setMinutes } from 'date-fns';
 import { useCallback } from 'react';
 
