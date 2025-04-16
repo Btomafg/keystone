@@ -8,12 +8,16 @@ import { ListChecks, Shapes, SquareStack } from 'lucide-react'; // Example Icons
 import CabinetTypesManager from '@/components/app/admin/settings/CabinetTypeManager';
 import CustomOptionsManager from '@/components/app/admin/settings/CustomOptionManager';
 import RoomOptionsManager from '@/components/app/admin/settings/RoomOptionsManager';
-import { useGetCabinetTypes, useGetRoomOptions } from '@/hooks/api/projects.queries';
+import { useAdminGetSettings } from '@/hooks/api/admin/admin.settings.queries';
 
+interface dataType {
+  roomOptions: any[];
+  customOptions: any[];
+  cabinetTypes: any[];
+}
 export default function AdminSettingsPage() {
-  const { data: roomOptions, isLoading: loadingRoomOptions } = useGetRoomOptions();
-  const { data: customOptions, isLoading: loadingCustomOptions } = useGetRoomOptions();
-  const { data: cabinetTypes, isLoading: loadingCabinetTypes } = useGetCabinetTypes();
+  const { data, isLoading } = useAdminGetSettings();
+
   return (
     <div className="container mx-auto py-8 px-4 md:px-6 lg:px-8">
       <h1 className="text-2xl font-bold mb-6">Application Configuration</h1>
@@ -38,7 +42,7 @@ export default function AdminSettingsPage() {
               <CardDescription>Define options applicable to rooms, like crown molding or baseboards.</CardDescription>
             </CardHeader>
             <CardContent>
-              <RoomOptionsManager data={roomOptions} isLoading={loadingRoomOptions} />
+              <RoomOptionsManager data={data} isLoading={isLoading} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -50,7 +54,7 @@ export default function AdminSettingsPage() {
               <CardDescription>Define specific add-ons or features like hardware, accessories, or special materials.</CardDescription>
             </CardHeader>
             <CardContent>
-              <CustomOptionsManager data={customOptions} isLoading={loadingCustomOptions} />
+              <CustomOptionsManager data={data} isLoading={isLoading} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -62,7 +66,7 @@ export default function AdminSettingsPage() {
               <CardDescription>Define the base cabinet types available for projects, including dimensions and defaults.</CardDescription>
             </CardHeader>
             <CardContent>
-              <CabinetTypesManager data={cabinetTypes} isLoading={loadingCabinetTypes} />
+              <CabinetTypesManager data={data} isLoading={isLoading} />
             </CardContent>
           </Card>
         </TabsContent>

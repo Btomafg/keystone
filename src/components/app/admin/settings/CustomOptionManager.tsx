@@ -26,18 +26,22 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import SawLoader from '@/components/ui/loader';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { CabinetOptionType } from '@/constants/enums/project.enums';
+import { useAdminCreateSettings, useAdminDeleteSettings, useAdminUpdateSettings } from '@/hooks/api/admin/admin.settings.queries';
 import { useToast } from '@/hooks/use-toast';
 
-import { Loader2, Pencil, PlusCircle, Shapes, Trash2 } from 'lucide-react';
+import { List, Loader2, Pencil, PlusCircle, Shapes, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 // --- Placeholder Types & Data ---
 interface CustomOption {
   id: string | number;
   name: string;
-  type: string; // Consider using an enum or union type 'Hardware' | 'Accessory' etc.
+  type: number;
   value: number | string | null; // Price or configuration value? Assuming number for now.
   image_url: string | null;
   active: boolean;
@@ -46,60 +50,33 @@ interface CustomOption {
   // roomOptionName?: string | null;
 }
 
-// DUMMY DATA - Replace with API call
-const DUMMY_CUSTOM_OPTIONS: CustomOption[] = [
-  {
-    id: 101,
-    name: 'Pull-out Trash Bin (Double)',
-    type: 'Accessory',
-    value: 150.0,
-    image_url: 'https://via.placeholder.com/40/CCCCCC/FFFFFF?text=TR',
-    active: true,
-    room_option_id: null,
-  },
-  { id: 102, name: 'Lazy Susan Corner Shelf', type: 'Hardware', value: 95.5, image_url: null, active: true },
-  {
-    id: 103,
-    name: 'Matte Black Handles (Set)',
-    type: 'Hardware',
-    value: 12.0,
-    image_url: 'https://via.placeholder.com/40/000000/FFFFFF?text=BH',
-    active: false,
-  },
-  { id: 104, name: 'Under Cabinet Lighting (LED Strip)', type: 'Accessory', value: 75.0, image_url: null, active: true },
-];
-
 // Assume RoomOptions are fetched for linking (needed for the form's Select)
 interface SimpleRoomOption {
   id: string | number;
   name: string;
 }
-const DUMMY_ROOM_OPTIONS_LIST: SimpleRoomOption[] = [
-  { id: 1, name: 'Crown Molding - Style A' },
-  { id: 2, name: 'Baseboards - 4 inch' },
-];
 
 // --- Reusable Form Component ---
 interface CustomOptionFormProps {
   initialData?: CustomOption | null;
   roomOptionsList?: SimpleRoomOption[]; // Pass fetched room options for linking
-  onSave: (data: Omit<CustomOption, 'id'> | CustomOption) => Promise<void>;
+
   onClose: () => void;
 }
 
-function CustomOptionForm({ initialData, roomOptionsList = [], onSave, onClose }: CustomOptionFormProps) {
+function CustomOptionForm({ initialData, roomOptionsList = [], onClose }: CustomOptionFormProps) {
   const [name, setName] = useState(initialData?.name || '');
   const [type, setType] = useState(initialData?.type || ''); // Consider predefined types
   const [value, setValue] = useState<string>(String(initialData?.value ?? '')); // Keep as string for input, convert on save
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
   const [active, setActive] = useState(initialData?.active ?? true);
   const [linkedRoomOptionId, setLinkedRoomOptionId] = useState<string>(String(initialData?.room_option_id ?? ''));
-  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
-
+  const { mutateAsync: updateCustomOption, isPending: isSaving } = useAdminUpdateSettings();
+  const { mutateAsync: createCustomOption, isPending: isCreating } = useAdminCreateSettings();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
+
     const numericValue = parseFloat(value); // Convert value to number
     const formData = {
       name,
@@ -107,22 +84,17 @@ function CustomOptionForm({ initialData, roomOptionsList = [], onSave, onClose }
       value: isNaN(numericValue) ? null : numericValue, // Handle potential NaN
       image_url: imageUrl || null,
       active,
-      room_option_id: linkedRoomOptionId ? linkedRoomOptionId : null, // Send null if empty string
+      id: initialData?.id || undefined,
     };
-    try {
-      if (initialData?.id) {
-        await onSave({ ...formData, id: initialData.id });
-        toast({ title: 'Success', description: 'Custom option updated.' });
-      } else {
-        await onSave(formData);
-        toast({ title: 'Success', description: 'Custom option created.' });
-      }
-      onClose();
-    } catch (error) {
-      console.error('Save failed:', error);
-      toast({ title: 'Error', description: 'Could not save custom option.', variant: 'destructive' });
-    } finally {
-      setIsSaving(false);
+    const updateData = {
+      updateType: 'CustomOptions',
+      updateData: { ...formData },
+    };
+
+    if (formData?.id) {
+      await updateCustomOption(updateData);
+    } else {
+      await createCustomOption(updateData);
     }
   };
 
@@ -131,6 +103,16 @@ function CustomOptionForm({ initialData, roomOptionsList = [], onSave, onClose }
     /* ... */
   };
 
+  const customOptionTypes = [
+    { key: CabinetOptionType.Ceiling, title: 'Ceiling Options', description: 'Options for ceiling styles', icon: <Shapes /> },
+    { key: CabinetOptionType.DoorMaterial, title: 'Door Material', description: 'Material options for doors', icon: <Shapes /> },
+    { key: CabinetOptionType.SubMaterial, title: 'Sub Material', description: 'Material options for subcomponents', icon: <Shapes /> },
+    { key: CabinetOptionType.ConstructionMethod, title: 'Construction Method', description: 'Methods of construction', icon: <Shapes /> },
+    { key: CabinetOptionType.ToeStyle, title: 'Toe Style', description: 'Styles for toe kicks', icon: <Shapes /> },
+    { key: CabinetOptionType.Crown, title: 'Crown Molding', description: 'Options for crown molding', icon: <Shapes /> },
+    { key: CabinetOptionType.LightRail, title: 'Light Rail', description: 'Options for light rail installation', icon: <Shapes /> },
+  ];
+  console.log(linkedRoomOptionId);
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-2">
@@ -138,17 +120,34 @@ function CustomOptionForm({ initialData, roomOptionsList = [], onSave, onClose }
         <Input id="co-name" value={name} onChange={(e) => setName(e.target.value)} required disabled={isSaving} />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="co-type">Type</Label>
-        <Input
-          id="co-type"
-          placeholder="e.g., Hardware, Accessory"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-          required
-          disabled={isSaving}
-        />
+        <Select id="co-type" value={linkedRoomOptionId} onValueChange={(value) => setLinkedRoomOptionId(value)} disabled={isSaving}>
+          <SelectTrigger className="w-full h-18">
+            <SelectValue
+              placeholder={
+                <div>
+                  <div className="flex flex-row items-center gap-2">
+                    <List />
+                    <span>Select Custom Option Type</span>
+                  </div>
+                  <div className="text-sm">Choose from a list of option types</div>
+                </div>
+              }
+            />
+          </SelectTrigger>
+          <SelectContent className="cursor-pointer max-w-[85vw] z-[9999]">
+            {customOptionTypes?.map((type) => (
+              <SelectItem key={type.key} value={type.key.toString()}>
+                <div className="flex flex-wrap items-center gap-2">
+                  {type.icon}
+                  <p className="flex-wrap">{type.title}</p>
+                </div>
+                <div className="text-sm">{type.description}</div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      {/* You might replace the Type Input with a Select if you have predefined types */}
+
       <div className="grid gap-2">
         <Label htmlFor="co-value">Value / Price</Label>
         <Input
@@ -172,17 +171,7 @@ function CustomOptionForm({ initialData, roomOptionsList = [], onSave, onClose }
         />
         {/* Add upload button if needed */}
       </div>
-      {/* Optional: Link to Room Option */}
-      {/* <div className="grid gap-2">
-                <Label htmlFor="co-room-option">Link to Room Option (Optional)</Label>
-                <Select value={linkedRoomOptionId} onValueChange={setLinkedRoomOptionId} disabled={isSaving}>
-                    <SelectTrigger id="co-room-option"> <SelectValue placeholder="None" /> </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="">None</SelectItem>
-                        {roomOptionsList.map(opt => ( <SelectItem key={opt.id} value={String(opt.id)}>{opt.name}</SelectItem> ))}
-                    </SelectContent>
-                </Select>
-             </div> */}
+
       <div className="flex items-center space-x-2">
         <Switch id="co-active" checked={active} onCheckedChange={setActive} disabled={isSaving} /> <Label htmlFor="co-active">Active</Label>
       </div>
@@ -201,44 +190,32 @@ function CustomOptionForm({ initialData, roomOptionsList = [], onSave, onClose }
 }
 
 // --- Main Manager Component ---
-const CustomOptionsManager = ({ data: options, isLoading }) => {
+const CustomOptionsManager = ({ data, isLoading }) => {
+  const options = data?.customOptions;
   // Replace DUMMY DATA/LISTS with state fetched from your API
-  const [roomOptionsList, setRoomOptionsList] = useState<SimpleRoomOption[]>(DUMMY_ROOM_OPTIONS_LIST); // Fetch this
+
   const [isSavingActive, setIsSavingActive] = useState<Record<string | number, boolean>>({});
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingOption, setEditingOption] = useState<CustomOption | null>(null);
   const { toast } = useToast();
+  const { mutateAsync: updateCustomOption, isPending: isSaving } = useAdminUpdateSettings();
+  const { mutateAsync: deleteCustomOption, isPending: isDeleting } = useAdminDeleteSettings();
 
-  // --- API Call Placeholders ---
-  const handleCreate = async (data: Omit<CustomOption, 'id'>) => {
-    /* ... Replace with API call ... */ console.log('API CALL: Create Custom Option', data);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const newId = Math.random();
-    //setOptions((prev) => [...prev, { ...data, id: newId }]);
-  };
-  const handleUpdate = async (data: CustomOption) => {
-    /* ... Replace with API call ... */ console.log('API CALL: Update Custom Option', data);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    //setOptions((prev) => prev.map((opt) => (opt.id === data.id ? data : opt)));
-  };
   const handleDelete = async (id: string | number) => {
-    /* ... Replace with API call ... */ console.log('API CALL: Delete Custom Option', id);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    //setOptions((prev) => prev.filter((opt) => opt.id !== id));
-    toast({ title: 'Success', description: 'Custom option deleted.' });
+    const updateData = {
+      updateType: 'CustomOptions',
+      updateData: { id: id },
+    };
+    await deleteCustomOption(updateData);
   };
   const handleToggleActive = async (option: CustomOption, newActiveState: boolean) => {
-    /* ... Replace with API call ... */ setIsSavingActive((prev) => ({ ...prev, [option.id]: true }));
-    console.log('API CALL: Update Active Status', { id: option.id, active: newActiveState });
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      //setOptions((prev) => prev.map((opt) => (opt.id === option.id ? { ...option, active: newActiveState } : opt)));
-      toast({ title: 'Status Updated', description: `${option.name} is now ${newActiveState ? 'active' : 'inactive'}.` });
-    } catch (error) {
-      toast({ title: 'Error', description: `Could not update status for ${option.name}.`, variant: 'destructive' });
-    } finally {
-      setIsSavingActive((prev) => ({ ...prev, [option.id]: false }));
-    }
+    setIsSavingActive((prev) => ({ ...prev, [option.id]: true }));
+    const updateData = {
+      updateType: 'CustomOptions',
+      updateData: { ...option, active: newActiveState },
+    };
+    await updateCustomOption(updateData);
+    setIsSavingActive((prev) => ({ ...prev, [option.id]: false }));
   };
 
   // TODO: Add useEffect to fetch options and roomOptionsList on mount
@@ -258,7 +235,7 @@ const CustomOptionsManager = ({ data: options, isLoading }) => {
             <DialogTitle>Add New Custom Option</DialogTitle>
             <DialogDescription> Define specific features like hardware or accessories. </DialogDescription>
           </DialogHeader>
-          <CustomOptionForm roomOptionsList={roomOptionsList} onSave={handleCreate} onClose={() => setShowCreateDialog(false)} />
+          <CustomOptionForm onClose={() => setShowCreateDialog(false)} />
         </DialogContent>
       </Dialog>
 
@@ -269,12 +246,7 @@ const CustomOptionsManager = ({ data: options, isLoading }) => {
             <DialogTitle>Edit Custom Option</DialogTitle>
             <DialogDescription> Update the details for this custom option. </DialogDescription>
           </DialogHeader>
-          <CustomOptionForm
-            initialData={editingOption}
-            roomOptionsList={roomOptionsList}
-            onSave={handleUpdate}
-            onClose={() => setEditingOption(null)}
-          />
+          <CustomOptionForm initialData={editingOption} onClose={() => setEditingOption(null)} />
         </DialogContent>
       </Dialog>
 
@@ -305,64 +277,69 @@ const CustomOptionsManager = ({ data: options, isLoading }) => {
                 </TableCell>
               </TableRow>
             ) : (
-              options?.map((option) => (
-                <TableRow key={option.id}>
-                  <TableCell>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={option.image_url || undefined} alt={option.name} />
-                      <AvatarFallback>
-                        <Shapes className="w-4 h-4 text-muted-foreground" />
-                      </AvatarFallback>
-                    </Avatar>
-                  </TableCell>
-                  <TableCell className="font-medium">{option.name}</TableCell>
-                  <TableCell>{option.type}</TableCell>
-                  <TableCell>{typeof option.value === 'number' ? `$${option.value.toFixed(2)}` : option.value || 'N/A'}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id={`active-${option.id}`}
-                        checked={option.active}
-                        onCheckedChange={(checked) => handleToggleActive(option, checked)}
-                        disabled={isSavingActive[option.id]}
-                      />
-                      {isSavingActive[option.id] && <Loader2 className="h-4 w-4 animate-spin" />}
-                    </div>
-                    <div className="col-span-4 flex md:col-span-1">
-                      <label className="inline-flex items-center me-5 cursor-pointer">{option.active}</label>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="mr-2" onClick={() => setEditingOption(option)}>
-                      <Pencil className="h-4 w-4" /> <span className="sr-only">Edit</span>
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete "{option.name}".
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(option.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
-                </TableRow>
-              ))
+              options
+                ?.sort((a, b) => a.type - b.type)
+                .map((option) => (
+                  <TableRow key={option.id}>
+                    <TableCell>
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={option.image_url || undefined} alt={option.name} />
+                        <AvatarFallback>
+                          <Shapes className="w-4 h-4 text-muted-foreground" />
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="font-medium">{option.name}</TableCell>
+                    <TableCell>{CabinetOptionType[option.type]}</TableCell>
+                    <TableCell>{typeof option.value === 'number' ? `$${option.value.toFixed(2)}` : option.value || 'N/A'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center">
+                        {isSavingActive[option.id] ? (
+                          <SawLoader className="h-4 w-4 mx-auto" />
+                        ) : (
+                          <Switch
+                            id={`active-${option.id}`}
+                            checked={option.active}
+                            onCheckedChange={(checked) => handleToggleActive(option, checked)}
+                            disabled={isSavingActive[option.id]}
+                          />
+                        )}
+                      </div>
+                      <div className="col-span-4 flex md:col-span-1">
+                        <label className="inline-flex items-center me-5 cursor-pointer">{option.active}</label>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" className="mr-2" onClick={() => setEditingOption(option)}>
+                        <Pencil className="h-4 w-4" /> <span className="sr-only">Edit</span>
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete "{option.name}".
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(option.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))
             )}
           </TableBody>
         </Table>
