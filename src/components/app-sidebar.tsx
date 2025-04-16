@@ -88,6 +88,7 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
         <Link href="/dashboard" className={cn(`logo text-primary-foreground `)}>
           <Image alt="" className="p-3" src={Logo} width={'150'} />
         </Link>
+        <span className="text-xs ms-4">V1.01</span>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={adminMode ? adminItems : data.navMain} />
