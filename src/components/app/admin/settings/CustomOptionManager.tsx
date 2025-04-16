@@ -66,7 +66,7 @@ interface CustomOptionFormProps {
 
 function CustomOptionForm({ initialData, roomOptionsList = [], onClose }: CustomOptionFormProps) {
   const [name, setName] = useState(initialData?.name || '');
-  const [type, setType] = useState(initialData?.type || ''); // Consider predefined types
+  const [type, setType] = useState(initialData?.type); // Consider predefined types
   const [value, setValue] = useState<string>(String(initialData?.value ?? '')); // Keep as string for input, convert on save
   const [imageUrl, setImageUrl] = useState(initialData?.image_url || '');
   const [active, setActive] = useState(initialData?.active ?? true);
@@ -78,14 +78,14 @@ function CustomOptionForm({ initialData, roomOptionsList = [], onClose }: Custom
     e.preventDefault();
 
     const numericValue = parseFloat(value); // Convert value to number
-    const formData = {
+    let formData = {
       name,
       type,
       value: isNaN(numericValue) ? null : numericValue, // Handle potential NaN
       image_url: imageUrl || null,
       active,
-      id: initialData?.id || undefined,
     };
+    initialData?.id && formData.id == initialData.id;
     const updateData = {
       updateType: 'CustomOptions',
       updateData: { ...formData },
@@ -97,8 +97,7 @@ function CustomOptionForm({ initialData, roomOptionsList = [], onClose }: Custom
       await createCustomOption(updateData);
     }
   };
-
-  // Placeholder - implement actual image upload
+  console.log(type); // Placeholder - implement actual image upload
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     /* ... */
   };
@@ -120,7 +119,7 @@ function CustomOptionForm({ initialData, roomOptionsList = [], onClose }: Custom
         <Input id="co-name" value={name} onChange={(e) => setName(e.target.value)} required disabled={isSaving} />
       </div>
       <div className="grid gap-2">
-        <Select id="co-type" value={linkedRoomOptionId} onValueChange={(value) => setLinkedRoomOptionId(value)} disabled={isSaving}>
+        <Select id="co-type" value={type} onValueChange={(value) => setType(value)} disabled={isSaving}>
           <SelectTrigger className="w-full h-18">
             <SelectValue
               placeholder={

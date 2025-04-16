@@ -1,29 +1,19 @@
 'use client';
 
-import { Clipboard, FolderIcon, MoreHorizontalIcon, ShareIcon, type LucideIcon } from 'lucide-react';
+import { Clipboard, MoreHorizontalIcon } from 'lucide-react';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar';
+import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+import { APP_ROUTES } from '@/constants/routes';
 import { useGetProjects } from '@/hooks/api/projects.queries';
 import Loader from './ui/loader';
-import Link from 'next/link';
-import { APP_ROUTES } from '@/constants/routes';
 
 export function NavOpenProjects() {
   const { data: projects, isLoading } = useGetProjects();
   const { isMobile } = useSidebar();
   const items = projects
     ? projects?.slice(0, 3)?.map((project) => ({
-        name: project.name,
-        url: `/dashboard/projects/${project.id}`,
+        name: project?.name,
+        url: `/dashboard/projects/${project?.id}`,
         icon: <Clipboard />,
       }))
     : [];

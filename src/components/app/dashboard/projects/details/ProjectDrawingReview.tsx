@@ -146,6 +146,7 @@ export const ProjectDrawingReview: React.FC<ProjectDrawingReviewProps> = ({
           {showRevisionInput && (
             <div className="space-y-2">
               <Textarea /* ... revision input ... */
+                className="bg-white"
                 placeholder="Please describe the required revisions..."
                 value={revisionComments}
                 onChange={(e) => setRevisionComments(e.target.value)}

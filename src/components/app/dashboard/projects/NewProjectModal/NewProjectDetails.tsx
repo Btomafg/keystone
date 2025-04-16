@@ -77,14 +77,14 @@ const NewProjectDetails: React.FC<NewProjectDetailsProps> = (props) => {
   useEffect(() => {
     if (projects && projectId) {
       if (project) {
-        setValue('name', project.name);
-        setValue('description', project.description);
-        setValue('first_custom', project.first_custom);
-        setValue('street', project.street);
-        setValue('city', project.city);
-        setValue('state', project.state);
-        setValue('zip', project.zip);
-        setValue('type', project.type);
+        setValue('name', project?.name);
+        setValue('description', project?.description);
+        setValue('first_custom', project?.first_custom);
+        setValue('street', project?.street);
+        setValue('city', project?.city);
+        setValue('state', project?.state);
+        setValue('zip', project?.zip);
+        setValue('type', project?.type);
       }
     }
   }, [projects, projectId, project, setValue]);

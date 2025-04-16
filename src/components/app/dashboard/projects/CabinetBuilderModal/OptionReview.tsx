@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CabinetOptionType, CabinetOptionTypeLabels } from '@/constants/enums/project.enums';
-import { Cabinet, Room } from '@/constants/models/object.types';
+import { Room } from '@/constants/models/object.types';
 
 interface OptionReviewProps {
   customOptions?: any[];

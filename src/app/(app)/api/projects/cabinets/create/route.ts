@@ -151,7 +151,7 @@ rooms: Rooms_project_fkey (
     // Roll up estimates from cabinets -> walls -> rooms -> project
     let totalProjectEstimate = 0;
 
-    const updatedRooms = project.rooms.map((room) => {
+    const updatedRooms = project?.rooms.map((room) => {
       let roomEstimate = 0;
 
       const updatedWalls = room.walls.map((wall) => {
@@ -186,7 +186,7 @@ rooms: Rooms_project_fkey (
       rooms: updatedRooms,
     };
 
-    await supabase.from('Projects').update({ estimate: totalProjectEstimate }).eq('id', project.id);
+    await supabase.from('Projects').update({ estimate: totalProjectEstimate }).eq('id', project?.id);
 
     for (const room of updatedRooms) {
       await supabase.from('Rooms').update({ estimate: room.estimate }).eq('id', room.id);

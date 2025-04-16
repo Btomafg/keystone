@@ -1,4 +1,4 @@
-import { ProjectStatus, ProjectType, RoomType } from "../enums/project.enums";
+import { ProjectStatus, ProjectType, RoomType } from "../enums/project?.enums";
 
 export type User = {
   id: string;

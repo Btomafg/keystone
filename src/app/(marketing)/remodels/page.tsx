@@ -94,7 +94,7 @@ const Remodels = () => {
                     <h5 className="font-bold">Remodel Execution:</h5>
                     <p className="mt-2.5 xl:ml-[113px] 2sm:ml-14 ml-10">
                       Our skilled craftsmen begin the remodeling process, ensuring every detail is executed to perfection. Regular updates
-                      keep you informed throughout the project.
+                      keep you informed throughout the project?.
                     </p>
                   </li>
                   <li className="pt-7.5">

@@ -16,23 +16,15 @@ import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ProjectStatusLabels, ProjectTypeLabels } from '@/constants/enums/project.enums';
 import { Project } from '@/constants/models/object.types';
-import { useGetProjects } from '@/hooks/api/projects.queries';
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { APP_ROUTES } from '@/constants/routes';
+import { useGetProjects } from '@/hooks/api/projects.queries';
+import { ArrowUpDown, ChevronDown } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export function ProjectTable() {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -89,7 +81,7 @@ export function ProjectTable() {
             variant="ghost"
             className="text-blue-600"
             onClick={(e) => {
-              router.push(`${APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path}/${project.id}`);
+              router.push(`${APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path}/${project?.id}`);
             }}
           >
             Edit Project{' '}

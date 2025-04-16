@@ -268,7 +268,7 @@ const RoomOptionsManager = ({ data, isLoading }) => {
                     </TableCell>
                     <TableCell className="font-medium">{option.name}</TableCell>
                     <TableCell className="font-medium">
-                      {option?.cabinet_types?.map((optType) => cabinetTypes.find((type) => type.id == optType).name).join(', ')}
+                      {option?.cabinet_types?.map((optType) => cabinetTypes.find((type) => type.id == optType)?.name).join(', ')}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-center">

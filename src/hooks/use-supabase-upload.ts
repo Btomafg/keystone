@@ -15,7 +15,7 @@ type UseSupabaseUploadOptions = {
    */
   bucketName: string;
   /**
-   * Folder to upload files to in the specified bucket within your Supabase project.
+   * Folder to upload files to in the specified bucket within your Supabase project?.
    *
    * Defaults to uploading files to the root of the bucket
    *

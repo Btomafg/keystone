@@ -103,7 +103,7 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
   const stepData = [
     {
       title: 'Add & Edit Cabinets',
-      description: `Select the cabinets you want to add to your project. You can adjust the size and position of each cabinet.`,
+      description: `Select the cabinets you want to add to your project?. You can adjust the size and position of each cabinet.`,
       content: <NewCabinetStep1 />,
     },
   ];

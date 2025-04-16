@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useCreateProjects, useGetProjects, useUpdateProject } from '@/hooks/api/projects.queries';
 import { useToast } from '@/hooks/use-toast';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -17,7 +17,7 @@ export default function CabinetProjectFlow() {
   const { data: projects } = useGetProjects();
 
   const project = projects?.find((p) => p.id == projectId);
-console.log('Project:', project);
+  console.log('Project:', project);
   const searchParams = useSearchParams();
   const initialStep = parseInt(searchParams.get('step') || '1', 10);
   const [step, setStep] = useState(initialStep);
@@ -26,11 +26,11 @@ console.log('Project:', project);
   const onNext = () => {
     setStep(step + 1);
     router.push(`/dashboard/projects/new/${project?.id}?step=${step + 1}`);
-  }
+  };
   const onBack = () => {
     setStep(step - 1);
     router.push(`/dashboard/projects/new/${project?.id}?step=${step - 1}`);
-  }
+  };
   const createNewProject = async (data) => {
     try {
       let newProject = {
@@ -53,7 +53,7 @@ console.log('Project:', project);
   return (
     <div className="container flex flex-col mx-auto space-y-6 p-4">
       <h1 className="text-3xl font-semibold mx-auto">New Cabinet Project</h1>
-      <p className="text-muted mx-auto">Create a new cabinet project to start planning your next project.</p>
+      <p className="text-muted mx-auto">Create a new cabinet project to start planning your next project?.</p>
       <div className="space-y-6 py-6 w-[500px] mx-auto">
         {step === 1 && <NewProjectDetails onNext={createNewProject} loading={isPending} />}
         {step === 2 && <NewProjectRooms project={project} onBack={onBack} onNext={onNext} />}

@@ -4,6 +4,7 @@ import { BackgroundCard } from '@/components/ui/cards/backgroundCard';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CabinetOptionType } from '@/constants/enums/project.enums';
 import { Room } from '@/constants/models/object.types';
 import {
   useCreateRoom,
@@ -23,9 +24,7 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import OptionReview from '../CabinetBuilderModal/OptionReview';
 import OptionStep from '../CabinetBuilderModal/OptionStep';
-import { CabinetOptionType } from '@/constants/enums/project.enums';
 
 interface NewProjectRoomsProps {
   open: boolean;
@@ -90,7 +89,7 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
 
   const updateRoomName = async (roomId: string, newName: string) => {
     console.log('updateRoomName', roomId, newName);
-    await updateRoom({ id: roomId, name: newName, project: project.id });
+    await updateRoom({ id: roomId, name: newName, project: project?.id });
   };
 
   const deleteRoomById = async (roomId: string) => {
@@ -210,7 +209,7 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
         ...newRoom,
         name: data.roomName,
         height: data.height,
-        project: project.id,
+        project: project?.id,
       };
       newRoom.layout == 9 && (roomData = { ...roomData, wallCount: data.wallCount });
       saveRoom(roomData);

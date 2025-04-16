@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { format } from 'date-fns-tz';
 import { redirect } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 
@@ -80,3 +81,13 @@ export function cardSlideAnimationRightDelay() {
 export function countCartProductQuantity(products: any) {
   return products.reduce((total: any, product: any) => total + product?.quantity, 0);
 }
+
+export const formatDate = (date: Date | string | null | undefined): string => {
+  if (!date) return '';
+  try {
+    return format(new Date(date), 'PPP');
+  } catch (error) {
+    // e.g., Oct 27, 2023
+    return 'Invalid Date';
+  }
+};

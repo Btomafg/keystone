@@ -15,7 +15,7 @@ const temaList = [
     link: '/team-single',
     name: 'Michael Johnson',
     position: 'Lead Designer',
-    desc: 'As the lead designer, Michael brought creativity and innovation to the project. His visionary approach guided the entire design process.',
+    desc: 'As the lead designer, Michael brought creativity and innovation to the project?. His visionary approach guided the entire design process.',
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ const temaList = [
     link: '/team-single',
     name: 'Michael Johnson',
     position: 'Lead Designer',
-    desc: 'As the lead designer, Michael brought creativity and innovation to the project. His visionary approach guided the entire design process.',
+    desc: 'As the lead designer, Michael brought creativity and innovation to the project?. His visionary approach guided the entire design process.',
   },
   {
     id: 3,
@@ -31,7 +31,7 @@ const temaList = [
     link: '/team-single',
     name: 'Michael Johnson',
     position: 'Lead Designer',
-    desc: 'As the lead designer, Michael brought creativity and innovation to the project. His visionary approach guided the entire design process.',
+    desc: 'As the lead designer, Michael brought creativity and innovation to the project?. His visionary approach guided the entire design process.',
   },
   {
     id: 4,
@@ -39,7 +39,7 @@ const temaList = [
     link: '/team-single',
     name: 'Michael Johnson',
     position: 'Lead Designer',
-    desc: 'As the lead designer, Michael brought creativity and innovation to the project. His visionary approach guided the entire design process.',
+    desc: 'As the lead designer, Michael brought creativity and innovation to the project?. His visionary approach guided the entire design process.',
   },
   {
     id: 5,

@@ -70,7 +70,7 @@ const ServiceSingleSidebar = () => {
             <ButtonFill className="ms-5 p-2 !text-sm">Schedule An Initial Consultation</ButtonFill>
           </a>
           <span className="font-medium text-primary-foreground">or</span>
-          <span className="font-medium text-primary-foreground">Shoot us a message and let's discuss your project.</span>
+          <span className="font-medium text-primary-foreground">Shoot us a message and let's discuss your project?.</span>
         </div>
 
         {!isSubmitted ? (
