@@ -17,10 +17,11 @@ import { Input } from '@/components/ui/input'; // Needed for Form
 import { Label } from '@/components/ui/label'; // Needed for Form
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAdminGetResources } from '@/hooks/api/admin/admin.resources.queries';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil, PlusCircle, Settings2, Trash2 } from 'lucide-react'; // Added Settings2, LinkIcon
 import Link from 'next/link'; // For linking to detailed availability page
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 // --- Placeholder Types & Data ---
 interface Resource {
@@ -183,8 +184,21 @@ function ResourceForm({ initialData, onSave, onClose }: ResourceFormProps) {
 
 // --- Main Manager Component ---
 export function SchedulingResourcesManager() {
-  // Replace DUMMY_RESOURCES with state fetched from your API
-  const [resources, setResources] = useState<Resource[]>(DUMMY_RESOURCES);
+  const { data: resourceData, isLoading: resourceLoading } = useAdminGetResources();
+
+  const resources: Resource[] = useMemo(() => {
+    return (
+      resourceData?.map((resource) => ({
+        id: resource.id,
+        name: resource.name,
+        active: resource.active,
+        default_slot_duration_minutes: resource.default_slot_duration_minutes,
+        min_booking_lead_time_hours: resource.min_booking_lead_time_hours,
+        max_booking_range_days: resource.max_booking_range_days,
+      })) || []
+    );
+  }, [resourceData]);
+
   const [isLoading, setIsLoading] = useState(false); // For API loading
   const [isSavingActive, setIsSavingActive] = useState<Record<string, boolean>>({}); // Loading state per switch
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -282,14 +296,14 @@ export function SchedulingResourcesManager() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : resources.length === 0 ? (
+            ) : resources?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
                   No resources found.
                 </TableCell>
               </TableRow>
             ) : (
-              resources.map((resource) => (
+              resources?.map((resource) => (
                 <TableRow key={resource.id}>
                   <TableCell className="font-medium">{resource.name}</TableCell>
                   <TableCell>{resource.default_slot_duration_minutes}</TableCell>

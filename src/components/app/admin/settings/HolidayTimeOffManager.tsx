@@ -28,12 +28,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select'; // For Resource Select
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useAdminGetResources } from '@/hooks/api/admin/admin.resources.queries';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside'; // Adjust import path for the hook
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { endOfDay, format, isBefore, startOfDay } from 'date-fns';
 import { Calendar as CalendarIcon, CalendarOff, Loader2, PlusCircle, Trash2, User } from 'lucide-react';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { DateRange } from 'react-day-picker'; // For DateRangePicker
 
 // --- Placeholder Types & Data ---
@@ -224,7 +225,6 @@ interface TimeOffFormProps {
   // Optional: initialData for editing
 }
 function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
-  // ... (state variables: resourceId, reason, startDate, startTime, endDate, endTime, isSaving) ...
   const [resourceId, setResourceId] = useState<string>('');
   const [reason, setReason] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -418,9 +418,34 @@ function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
 
 // --- Main Manager Component ---
 export function HolidayTimeOffManager() {
-  // Replace DUMMY DATA with state fetched from your API
-  const [resources, setResources] = useState<Resource[]>(DUMMY_RESOURCES_LIST);
-  const [blockedTimes, setBlockedTimes] = useState<BlockedTime[]>(DUMMY_BLOCKED_TIMES);
+  // Replace DUMMY DATA with state fetched from your API\
+  const { data: resourceData, isLoading: resourceLoading } = useAdminGetResources();
+  console.log('Resource Data:', resourceData);
+  const resources: Resource[] = useMemo(() => {
+    return (
+      resourceData?.map((resource) => ({
+        id: resource.id,
+        name: resource.name,
+        active: resource.active,
+        default_slot_duration_minutes: resource.default_slot_duration_minutes,
+        min_booking_lead_time_hours: resource.min_booking_lead_time_hours,
+        max_booking_range_days: resource.max_booking_range_days,
+      })) || []
+    );
+  }, [resourceData]);
+
+  const blockedTimes: BlockedTime[] = useMemo(() => {
+    if (!resourceData) return [];
+
+    return resourceData.flatMap((resource) =>
+      (resource.ResourceBlockedTimes || []).map((block) => ({
+        ...block,
+        resource_id: resource.id,
+        resource_name: resource.name, // Attach name for convenience
+      })),
+    );
+  }, [resourceData]);
+  console.log('Blocked Times:', blockedTimes);
   const [isLoading, setIsLoading] = useState(false);
   const [showHolidayDialog, setShowHolidayDialog] = useState(false);
   const [showTimeOffDialog, setShowTimeOffDialog] = useState(false);
@@ -540,14 +565,14 @@ export function HolidayTimeOffManager() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : blockedTimes.length === 0 ? (
+            ) : blockedTimes?.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
                   No holidays or time off scheduled.
                 </TableCell>
               </TableRow>
             ) : (
-              blockedTimes.map((block) => (
+              blockedTimes?.map((block) => (
                 <TableRow key={block.id}>
                   <TableCell className="font-medium flex items-center gap-2">
                     {block.resource_name === 'All Resources' ? (

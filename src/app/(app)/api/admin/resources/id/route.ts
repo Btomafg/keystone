@@ -26,7 +26,9 @@ export async function GET(request: Request) {
       .from('Resources')
       .select(
         '*, ResourceAvailibilityRules: ResourceAvailabilityRules_resource_id_fkey (*), ResourceBlockedTimes: ResourceBlockedTimes_resource_id_fkey (*)',
-      );
+      )
+      .eq('id', id)
+      .single();
 
     console.log(data, error);
     if (error) {

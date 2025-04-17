@@ -37,7 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn, formatDate, formatTime } from '@/lib/utils';
 import { format, isBefore } from 'date-fns';
 import { ArrowLeft, Calendar as CalendarIcon, Loader2, Pencil, PlusCircle, Trash2 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useMemo, useRef, useState } from 'react';
 
 // --- Type Definitions --- (Assuming placed above or imported)
@@ -401,16 +401,14 @@ function BlockedTimeForm({ resourceId, onSave, onClose }: BlockedTimeFormProps) 
 export function ResourceAvailabilityManager() {
   const pathName = usePathname();
   const resourceId = pathName.split('/')[4]; // Adjust based on your routing structure
-  console.log(`Resource ID from path: ${resourceId}`);
   const { data: resource, isLoading } = useAdminGetResourceById({ id: resourceId });
-  console.log('Resource Data:', resource);
-  const rules = resource?.resourceAvailibilityRules || [];
+  const rules = resource?.ResourceAvailibilityRules || [];
   const blockedTimes = resource?.ResourceBlockedTimes || [];
   const [showRuleDialog, setShowRuleDialog] = useState(false);
   const [editingRule, setEditingRule] = useState<AvailabilityRule | null>(null); // For editing rules
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const { toast } = useToast();
-
+  const router = useRouter();
   // Fetch data on mount or when resourceId changes
 
   // --- API Call Placeholders ---
@@ -470,7 +468,7 @@ export function ResourceAvailabilityManager() {
 
   return (
     <div className="space-y-8">
-      <Button variant="outline" size="sm" asChild>
+      <Button className="hover:cursor-pointer" variant="outline" size="sm" asChild onClick={() => router.back()}>
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Resources List
       </Button>
 

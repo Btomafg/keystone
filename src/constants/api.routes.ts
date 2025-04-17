@@ -32,7 +32,7 @@ export const API_ROUTES = {
     },
     RESOURCES: {
       GET: '/api/admin/resources/',
-      GET_BYID: '/api/admin/resources',
+      GET_BYID: '/api/admin/resources/id',
       POST: '/api/admin/resources/',
       DELETE: '/api/admin/resources/',
       UPDATE: '/api/admin/resources/',
