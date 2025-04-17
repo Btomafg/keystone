@@ -30,6 +30,13 @@ export const API_ROUTES = {
       UPDATE: '/api/admin/users/',
       MANAGE: '/api/admin/users/manage/',
     },
+    RESOURCES: {
+      GET: '/api/admin/resources/',
+      GET_BYID: '/api/admin/resources',
+      POST: '/api/admin/resources/',
+      DELETE: '/api/admin/resources/',
+      UPDATE: '/api/admin/resources/',
+    },
 
     SETTINGS: {
       GET: '/api/admin/settings/',

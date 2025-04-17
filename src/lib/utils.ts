@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { isValid, parse } from 'date-fns';
 import { format } from 'date-fns-tz';
 import { redirect } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
@@ -89,5 +90,15 @@ export const formatDate = (date: Date | string | null | undefined): string => {
   } catch (error) {
     // e.g., Oct 27, 2023
     return 'Invalid Date';
+  }
+};
+export const formatTime = (timeString: string): string => {
+  // Handles "HH:mm:ss" or "HH:mm" and formats to "h:mm a"
+  try {
+    const referenceDate = new Date(); // Need a reference date for parse
+    const parsed = timeString.includes(':') ? parse(timeString.substring(0, 5), 'HH:mm', referenceDate) : new Date('invalid');
+    return isValid(parsed) ? format(parsed, 'h:mm a') : 'Invalid Time';
+  } catch {
+    return 'Invalid Time';
   }
 };

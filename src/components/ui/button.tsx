@@ -48,8 +48,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={loading || props.disabled} // Prevents clicks while loading
         {...props}
       >
-        {loading && <SawLoader />}
-        {children}
+        <div className="flex items-center justify-center gap-2">
+          {loading && <SawLoader />}
+          <span className={`${cn(loading && 'opacity-70')} flex flex-row`}>{children}</span>
+        </div>
       </Comp>
     );
   },

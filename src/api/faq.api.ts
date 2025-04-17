@@ -18,7 +18,7 @@ export const getAllFaqs = async () => {
 export const getMyFaqFeedback = async (body) => {
   const { faq_id, faq_version } = body;
   const params = new URLSearchParams({ faq_id, faq_version });
-  const url = `${API_ROUTES.GET_MY_FAQ_FEEDBACK}${params.toString()}`;
+  const url = `${API_ROUTES.GET_MY_FAQ_FEEDBACK}?${params.toString()}`;
   console.log('url', url);
   try {
     const res = await fetch(url, {

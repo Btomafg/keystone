@@ -7,16 +7,8 @@ export async function GET() {
     const supabase = await createServerSupabaseClient();
     const isAuthenticated = await isUserAuthenticated();
     const userId = isAuthenticated.user.id;
-    const { data, error } = await supabase
-      .from('Resources')
-      .select(
-        `
-      *,
-    ResourceAvailabilityRules:ResourceAvailabilityRules_resource_id_fkey ( * ),
-     ResourceBlockedTimes: ResourceBlockedTimes_resource_id_fkey ( * )
-    `,
-      )
-      .eq('id');
+
+    const { data, error } = await supabase.from('Files').select(`*`).eq('user_id', userId);
 
     if (error) {
       return NextResponse.json(
