@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useGetAppointmentByProjectId } from '@/hooks/api/appointments.queries';
 import { useGetUser } from '@/hooks/api/users.queries';
 import { cn } from '@/lib/utils';
 import { toUSD } from '@/utils/common';
@@ -22,9 +23,10 @@ import {
   ListChecks,
   MessageCircleQuestion,
 } from 'lucide-react'; // Added Clock, FileIcon, Download
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ProjectAgreementSignature } from './ProjectAgreementSignature';
 import ProjectDesignInProgress from './ProjectDesignInProgress';
+import ProjectDisqualificationNotice from './ProjectDisqualificationNotice.tsx';
 import { ProjectDownPayment } from './ProjectDownPayment';
 import ProjectDrawingReview from './ProjectDrawingReview';
 import ProjectManufacturing from './ProjectManufacturing';
@@ -109,16 +111,25 @@ const projectStatusMapping: { [key: number]: { name: string; stepIndex: number }
 
 const getStatusInfo = (
   statusId: number,
-): { name: string; stepIndex: number; variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' } => {
-  const info = projectStatusMapping[statusId] || { name: `Status ${statusId}`, stepIndex: -1 };
+  qualification: number,
+): {
+  name: string;
+  qualification: number;
+  stepIndex: number;
+  variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info';
+} => {
+  let info = projectStatusMapping[statusId] || { name: `Status ${statusId}`, stepIndex: -1 };
   let variant: 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' = 'default';
   const finalStepIndex = projectSteps.length - 1;
 
-  // Assign variant based on name or step index (customize colors)
-  if (info.stepIndex === finalStepIndex) variant = 'success'; // Last step is success
-  else if (info.stepIndex === 0) variant = 'info'; // First step
-  else if (info.stepIndex > 0 && info.stepIndex < finalStepIndex) variant = 'warning'; // Intermediate steps are warning/in-progress
-  // Add specific overrides if needed e.g., else if (info.name === 'On Hold') variant = 'secondary';
+  if (info.stepIndex === finalStepIndex) variant = 'success';
+  else if (info.stepIndex === 0) variant = 'info';
+  else if (info.stepIndex > 0 && info.stepIndex < finalStepIndex) variant = 'warning';
+
+  if (qualification === 0) {
+    info.name = 'Closed';
+    variant = 'warning';
+  }
 
   return { ...info, variant };
 };
@@ -238,22 +249,42 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
     alert('Redirecting to schedule consultation (implement actual logic).');
   };
   const [DrawingReview, setDrawingReview] = React.useState<'pending' | 'approved' | 'revisions_requested'>('pending');
-  const { name: projectStatusText, stepIndex: currentStatusIndex, variant: statusVariant } = getStatusInfo(project?.status);
+  const {
+    name: projectStatusText,
+    stepIndex: currentStatusIndex,
+    variant: statusVariant,
+  } = getStatusInfo(project?.status, project?.qualification);
   const [status, setStatus] = React.useState(currentStatusIndex);
+
+  useEffect(() => {
+    // Update status based on project status
+    const { stepIndex } = getStatusInfo(project?.status, project?.qualification);
+    setStatus(stepIndex);
+  }, [project?.status]);
   // --- Determine if Scheduling CTA should be shown ---
   // !!! ADJUST condition based on your actual status IDs for 'Review' or 'Consultation' !!!
   const showScheduleButton = project?.status === 1 || project?.status === 2;
   const showProjectDesignInProgress = project?.status === 3;
   const showDrawingReview = project?.status === 4 || project?.status == 5;
-
+  const qualification = project?.qualification;
   const files = project?.files || [];
-
+  const { data: initialAppointment } = useGetAppointmentByProjectId({ project_id: project?.id });
+  console.log('initialAppointment', initialAppointment);
   const RenderStatusComponent = () => {
     switch (status) {
       case 1: // Review
-        return <ProjectScheduleConsultation projectId={project?.id} />;
+        return qualification == 0 ? (
+          <ProjectDisqualificationNotice
+            projectId={project?.id}
+            customerName={user?.first_name}
+            projectEstimate={project?.estimate}
+            minimumThreshold={10000} // Example threshold
+          />
+        ) : (
+          <ProjectScheduleConsultation projectId={project?.id} initialScheduledAppointment={initialAppointment} />
+        );
       case 2: // Review
-        return <ProjectScheduleConsultation projectId={project?.id} />;
+        return <ProjectScheduleConsultation projectId={project?.id} initialScheduledAppointment={initialAppointment} />;
       case 3: // Design
         return <ProjectDesignInProgress projectId={project?.id} customerName={user?.name} />;
       case 4: // Drawing Review
@@ -409,7 +440,9 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
                         </p>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent>{index < status ? 'Completed' : index === status ? 'Current Step' : 'Upcoming'}</TooltipContent>
+                    <TooltipContent className="text-white">
+                      {index < status ? 'Completed' : index === status ? 'Current Step' : 'Upcoming'}
+                    </TooltipContent>
                   </Tooltip>
                   {/* Line Separator */}
                   {index < projectSteps.length - 1 && <div className="flex-grow h-px bg-border mt-4 hidden sm:block" />}

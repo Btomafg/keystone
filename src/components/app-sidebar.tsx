@@ -32,7 +32,7 @@ const data = {
       icon: FolderIcon,
     },
     {
-      title: 'Orders',
+      title: 'Appointments',
       url: APP_ROUTES.DASHBOARD.ORDERS.path,
       icon: UsersIcon,
     },

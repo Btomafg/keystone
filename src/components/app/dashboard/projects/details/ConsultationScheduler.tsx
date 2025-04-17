@@ -6,45 +6,65 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { addDays, addHours, addMinutes, endOfMonth, format, isAfter, isBefore, parse, startOfDay, startOfMonth, subMonths } from 'date-fns'; // Date utility functions
-import { toZonedTime } from 'date-fns-tz'; // For timezone handling
+// Ensure all needed date-fns functions are imported
+import { addDays, addHours, addMinutes, endOfMonth, format, isAfter, isBefore, parse, startOfDay, startOfMonth } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz'; // Keep for timezone calculations
 import { CalendarCheck, CalendarX, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DateRange } from 'react-day-picker'; // Import DateRange for disabled prop type
 
-// --- Prop Types (Defined Above) ---
+// --- Prop Type Definitions ---
 interface TimeSlot {
-  startTime: string;
-  endTime: string;
+  start_time: string; // "HH:mm" format
+  end_time: string; // "HH:mm" format
 }
+
 interface AvailabilityWindow {
-  daysOfWeek: number[];
-  startTime: string;
-  endTime: string;
+  // Assuming these come from your API/DB matching the structure logged previously
+  id?: string | number; // Optional ID if needed as key later
+  day_of_week: number; // 0=Sun, 1=Mon,... 6=Sat
+  start_time: string; // Expect "HH:mm:ss" or "HH:mm" format
+  end_time: string; // Expect "HH:mm:ss" or "HH:mm" format
+  resource_id?: string | number; // Optional reference
 }
+
+// Represents a fetched booked appointment or blocked time
 interface UnavailableSlot {
-  start: Date;
-  end: Date;
+  start: Date; // Should be a valid Date object
+  end: Date; // Should be a valid Date object
 }
+
 interface ConsultationSchedulerProps {
+  /** ID of the resource (e.g., consultant) to book with */
   resourceId: string;
+  /** Duration of each consultation slot in minutes */
   slotDurationMinutes: number;
+  /** General recurring availability windows for the resource */
   availabilityWindows: AvailabilityWindow[];
+  /** Specific dates that are entirely unavailable (e.g., holidays) */
   unavailableDates?: Date[];
+  /** Minimum hours in advance a booking can be made */
   minBookingLeadTimeHours?: number;
+  /** How many days into the future bookings are allowed */
   maxBookingRangeDays?: number;
+  /** Optional ID of the project this booking relates to */
   projectId?: number | string;
+  /** Callback function when a valid time slot is selected. Returns the start time as a Date object. */
   onSlotSelect: (selectedSlot: Date) => void;
+  /** Optional callback when the selected date changes */
   onDateChange?: (date: Date | undefined) => void;
+  /** Optional callback when the displayed month changes */
   onMonthChange?: (month: Date) => void;
+  /** Async function to fetch unavailable slots (booked appointments + blocked times) for a given resource and date range */
   fetchUnavailableSlots: (resourceId: string, startDate: Date, endDate: Date) => Promise<UnavailableSlot[]>;
 }
 
-// --- Helper: Get Timezone (Consider making this configurable) ---
+// --- Helper: Get Timezone ---
 const getTimeZone = (): string => {
-  // Attempt to get user's timezone, fallback to a default
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York';
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'; // Example fallback
 };
 
+// --- The Component ---
 export function ConsultationScheduler({
   resourceId,
   slotDurationMinutes,
@@ -58,148 +78,162 @@ export function ConsultationScheduler({
   onMonthChange,
   fetchUnavailableSlots,
 }: ConsultationSchedulerProps) {
-  const userTimeZone = getTimeZone();
-  const today = startOfDay(toZonedTime(new Date(), userTimeZone)); // Today in user's timezone
-
+  // --- State ---
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined); // "HH:mm"
-  const [currentMonth, setCurrentMonth] = useState<Date>(startOfMonth(today));
+  const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
+  const [currentMonth, setCurrentMonth] = useState<Date>(() => startOfMonth(toZonedTime(new Date(), getTimeZone())));
   const [availableTimes, setAvailableTimes] = useState<TimeSlot[]>([]);
   const [bookedSlots, setBookedSlots] = useState<UnavailableSlot[]>([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Calculate Date Boundaries ---
-  const minBookingDate = addHours(toZonedTime(new Date(), userTimeZone), minBookingLeadTimeHours);
-  const maxBookingDate = addDays(today, maxBookingRangeDays);
+  // --- Memoized Values ---
+  const userTimeZone = useMemo(() => getTimeZone(), []);
+  const today = useMemo(() => startOfDay(toZonedTime(new Date(), userTimeZone)), [userTimeZone]);
 
-  // --- Fetch Unavailable Slots ---
+  const minBookingDateTime = useMemo(() => {
+    return addHours(toZonedTime(new Date(), userTimeZone), minBookingLeadTimeHours);
+  }, [minBookingLeadTimeHours, userTimeZone]);
+
+  const minBookingDateDayStart = useMemo(() => startOfDay(minBookingDateTime), [minBookingDateTime]);
+  const maxBookingDate = useMemo(() => addDays(today, maxBookingRangeDays), [today, maxBookingRangeDays]);
+
+  // --- Data Fetching ---
   const loadUnavailableSlots = useCallback(
     async (month: Date) => {
       setIsLoadingSlots(true);
       setError(null);
       const startDate = startOfMonth(month);
-      const endDate = endOfMonth(month); // Fetch for the entire month
-
+      const endDate = endOfMonth(month);
       try {
-        // Convert range to UTC for API consistency, assuming API expects UTC
-        // Adjust if your API expects local time or a specific timezone
-        // const startUTC = zonedToUtc(startDate, userTimeZone);
-        // const endUTC = zonedToUtc(endDate, userTimeZone);
-        // Fetch slots (assuming fetchUnavailableSlots handles timezone conversion if needed)
-        //const unavailable = await fetchUnavailableSlots(resourceId, startDate, endDate);
-        // setBookedSlots(unavailable);
-      } catch (err) {
+        const unavailable = await fetchUnavailableSlots(resourceId, startDate, endDate);
+        // Ensure fetched dates are actual Date objects
+        // This assumes your fetch function returns objects where start/end can be passed to new Date()
+        const parsedUnavailable = unavailable.map((slot) => ({
+          start: new Date(slot.start),
+          end: new Date(slot.end),
+        }));
+        // Add validation if needed: filter out slots where start/end are Invalid Date
+        const validUnavailable = parsedUnavailable.filter((slot) => !isNaN(slot.start.getTime()) && !isNaN(slot.end.getTime()));
+        console.log(`DEBUG: Fetched and parsed ${validUnavailable.length} valid unavailable slots.`);
+        setBookedSlots(validUnavailable);
+      } catch (err: any) {
         console.error('Error fetching unavailable slots:', err);
-        setError('Could not load availability. Please try again later.');
-        setBookedSlots([]); // Clear potentially stale data on error
+        setError(`Could not load availability: ${err.message || 'Unknown error'}`);
+        setBookedSlots([]);
       } finally {
         setIsLoadingSlots(false);
       }
     },
-    [resourceId, fetchUnavailableSlots, userTimeZone],
-  ); // Include userTimeZone if it affects fetching
+    [resourceId, fetchUnavailableSlots],
+  );
 
-  // Initial fetch and refetch when month changes
   useEffect(() => {
-    loadUnavailableSlots(currentMonth);
-  }, [currentMonth, loadUnavailableSlots]);
+    if (resourceId) {
+      // Only fetch if resourceId is available
+      loadUnavailableSlots(currentMonth);
+    } else {
+      // Handle case where resourceId might not be ready immediately
+      setIsLoadingSlots(false);
+      setBookedSlots([]);
+    }
+  }, [currentMonth, resourceId, loadUnavailableSlots]); // Add resourceId dependency
 
   // --- Generate and Filter Time Slots ---
   useEffect(() => {
-    if (!selectedDate) {
-      setAvailableTimes([]);
-      setSelectedTime(undefined); // Clear selected time when date is deselected
-      return;
-    }
-
-    const dayOfWeek = selectedDate.getDay(); // 0 = Sunday, 6 = Saturday
-    const applicableWindow = availabilityWindows.find((w) => w.daysOfWeek.includes(dayOfWeek));
-
-    if (!applicableWindow) {
+    if (!selectedDate || isNaN(selectedDate.getTime())) {
       setAvailableTimes([]);
       return;
     }
 
-    const generatedTimes: TimeSlot[] = [];
-    let currentTime = parse(applicableWindow.startTime, 'HH:mm', selectedDate);
-    const endTime = parse(applicableWindow.endTime, 'HH:mm', selectedDate);
+    const dayOfWeek = selectedDate.getDay();
+    const applicableWindows = availabilityWindows.filter((w) => w?.day_of_week === dayOfWeek);
 
-    while (isBefore(currentTime, endTime)) {
-      const slotEndTime = addMinutes(currentTime, slotDurationMinutes);
-      // Ensure slot doesn't exceed the end time
-      if (isAfter(slotEndTime, endTime)) break;
-
-      const slotStartTimeString = format(currentTime, 'HH:mm');
-      const slotEndTimeString = format(slotEndTime, 'HH:mm');
-
-      // 1. Check Lead Time: Ensure slot start is after min booking date/time
-      if (isBefore(currentTime, minBookingDate)) {
-        currentTime = slotEndTime; // Move to next potential slot
-        continue;
-      }
-
-      // 2. Check Booked/Blocked Slots: Compare with fetched unavailable slots
-      // Convert generated slot times to user's timezone for comparison IF bookedSlots are also in user timezone
-      // IMPORTANT: Ensure consistent timezone handling between generated slots and bookedSlots
-      const isBooked = bookedSlots.some((blocked) => {
-        // Check for overlap: (SlotStart < BlockEnd) and (SlotEnd > BlockStart)
-        const slotStartUserTz = currentTime;
-        const slotEndUserTz = slotEndTime;
-        // Assuming blocked.start/end are already Date objects in the correct timezone for comparison
-        return isBefore(slotStartUserTz, blocked.end) && isAfter(slotEndUserTz, blocked.start);
-      });
-
-      if (!isBooked) {
-        generatedTimes.push({ startTime: slotStartTimeString, endTime: slotEndTimeString });
-      }
-
-      currentTime = slotEndTime; // Move to the next slot start time
+    if (!applicableWindows || applicableWindows.length === 0) {
+      setAvailableTimes([]);
+      return;
     }
-    setAvailableTimes(generatedTimes);
-    setSelectedTime(undefined); // Clear previous time selection when available times update
-  }, [selectedDate, availabilityWindows, slotDurationMinutes, bookedSlots, userTimeZone]); // Added userTimeZone
+
+    const allGeneratedTimes: TimeSlot[] = [];
+
+    applicableWindows.forEach((window, windowIndex) => {
+      // console.log(`DEBUG: Processing Window ${windowIndex + 1}: start='${window.start_time}', end='${window.end_time}' for date ${selectedDate.toISOString()}`);
+      try {
+        // *** Use Manual Date Construction instead of parse ***
+        const [startH, startM, startS] = (window.start_time || '00:00:00').split(':').map(Number);
+        const [endH, endM, endS] = (window.end_time || '00:00:00').split(':').map(Number);
+
+        let currentTime = new Date(selectedDate);
+        currentTime.setHours(startH, startM, startS || 0, 0); // Set H, M, S, MS
+
+        const windowEndTime = new Date(selectedDate);
+        windowEndTime.setHours(endH, endM, endS || 0, 0);
+
+        // Check if construction resulted in valid dates and order
+        if (isNaN(currentTime.getTime()) || isNaN(windowEndTime.getTime()) || !isBefore(currentTime, windowEndTime)) {
+          console.warn(`Skipping window due to invalid time construction or order: ${JSON.stringify(window)}`);
+          return; // Skip this window
+        }
+
+        // Loop through time slots within this window
+        while (isBefore(currentTime, windowEndTime)) {
+          const slotEndTime = addMinutes(currentTime, slotDurationMinutes);
+          if (isAfter(slotEndTime, windowEndTime)) break; // Don't exceed window
+
+          // Check lead time
+          if (isBefore(currentTime, minBookingDateTime)) {
+            currentTime = slotEndTime;
+            continue; // Skip if too early
+          }
+
+          // Check booked slots overlap
+          const isBooked = bookedSlots.some((blocked) => isBefore(currentTime, blocked.end) && isAfter(slotEndTime, blocked.start));
+
+          if (!isBooked) {
+            allGeneratedTimes.push({
+              start_time: format(currentTime, 'HH:mm'),
+              end_time: format(slotEndTime, 'HH:mm'),
+            });
+          }
+          currentTime = slotEndTime;
+        }
+      } catch (e) {
+        console.error(`Error processing time window: ${JSON.stringify(window)}`, e);
+      }
+    });
+
+    allGeneratedTimes.sort((a, b) => a.start_time.localeCompare(b.start_time));
+    setAvailableTimes(allGeneratedTimes);
+
+    // Corrected Dependency Array
+  }, [selectedDate, availabilityWindows, slotDurationMinutes, bookedSlots, minBookingDateTime]);
 
   // --- Calendar Disabled Dates Logic ---
   const disabledDays = useMemo(() => {
-    const disabled: (Date | { from: Date; to: Date } | { daysOfWeek: number[] } | Function)[] = [];
-
-    // 1. Dates before minimum lead time or after max range
-    disabled.push({ from: new Date(1970, 0, 1), to: subMonths(minBookingDate, 1) }); // Disable past dates relative to lead time
-    disabled.push({ from: addDays(maxBookingDate, 1), to: new Date(2100, 0, 1) }); // Disable dates beyond max range
-
-    // 2. Weekends if not in availabilityWindows
-    const availableDays = new Set(availabilityWindows.flatMap((w) => w.daysOfWeek));
+    const disabled: (Date | DateRange | { daysOfWeek: number[] } | ((date: Date) => boolean))[] = [];
+    disabled.push({ before: minBookingDateDayStart });
+    disabled.push({ after: maxBookingDate });
+    const availableDaysSet = new Set(availabilityWindows.flatMap((w) => w.day_of_week));
     const unavailableWeekDays: number[] = [];
     for (let i = 0; i < 7; i++) {
-      if (!availableDays.has(i)) {
+      if (!availableDaysSet.has(i)) {
         unavailableWeekDays.push(i);
       }
     }
     if (unavailableWeekDays.length > 0) {
       disabled.push({ daysOfWeek: unavailableWeekDays });
     }
-
-    // 3. Specific unavailable dates (holidays etc.)
     disabled.push(...unavailableDates);
-
-    // 4. TODO (Advanced): Disable days that are *fully* booked based on bookedSlots
-    // This requires checking generated slots against booked slots for the *entire day*
-    // Can be complex, might be simpler to let user click and see no slots available.
-    // Example check function (run this for dates in the current month):
-    // const isDayFullyBooked = (day: Date): boolean => { ... logic ... };
-    // disabled.push(isDayFullyBooked);
-
     return disabled;
-  }, [minBookingDate, maxBookingDate, availabilityWindows, unavailableDates /*, bookedSlots */]); // Add bookedSlots if implementing full-day check
+  }, [minBookingDateDayStart, maxBookingDate, availabilityWindows, unavailableDates]);
 
   // --- Event Handlers ---
   const handleDateSelect = (date: Date | undefined) => {
+    setSelectedTime(undefined); // Reset time selection first
     if (date) {
-      // Ensure selected date is not in the past part of today (use startOfDay)
       const selectedDayStart = startOfDay(date);
-      if (isBefore(selectedDayStart, startOfDay(minBookingDate))) {
-        setSelectedDate(undefined); // Prevent selecting invalid past date part
+      if (isBefore(selectedDayStart, minBookingDateDayStart)) {
+        setSelectedDate(undefined);
         if (onDateChange) onDateChange(undefined);
       } else {
         setSelectedDate(selectedDayStart);
@@ -209,7 +243,6 @@ export function ConsultationScheduler({
       setSelectedDate(undefined);
       if (onDateChange) onDateChange(undefined);
     }
-    setSelectedTime(undefined); // Reset time when date changes
   };
 
   const handleTimeSelect = (time: string) => {
@@ -217,38 +250,30 @@ export function ConsultationScheduler({
     if (selectedDate) {
       const [hours, minutes] = time.split(':').map(Number);
       const selectedDateTime = addMinutes(addHours(selectedDate, hours), minutes);
-
-      // Convert selected time to UTC before passing to callback, if your backend expects UTC
-      // const selectedUTC = zonedToUtc(selectedDateTime, userTimeZone);
-      // onSlotSelect(selectedUTC);
-
-      // Or pass the Date object as is (represents local time)
       onSlotSelect(selectedDateTime);
     }
   };
 
   const handleMonthChangeInternal = (month: Date) => {
     const newMonthStart = startOfMonth(month);
-    // Prevent navigating to months completely outside the booking range
     if (isBefore(newMonthStart, startOfMonth(today)) || isAfter(newMonthStart, startOfMonth(maxBookingDate))) {
-      // Optionally provide feedback or just prevent navigation
       return;
     }
     setCurrentMonth(newMonthStart);
-    setSelectedDate(undefined); // Clear selection when month changes
+    setSelectedDate(undefined);
     setSelectedTime(undefined);
+    setAvailableTimes([]);
     if (onMonthChange) onMonthChange(newMonthStart);
+    // Fetching handled by useEffect watching currentMonth
   };
 
+  // --- JSX Rendering ---
   return (
-    <Card className="w-full max-w-xl mx-auto bg-white">
-      {' '}
-      {/* Adjust max-width as needed */}
+    <Card className="w-full max-w-xl mx-auto bg-white shadow-md">
       <CardHeader>
         <CardTitle className="text-lg font-medium text-center">Schedule Consultation</CardTitle>
-        {/* Optional: Add description or consultant name */}
       </CardHeader>
-      <CardContent className="flex flex-col md:flex-row gap-4 md:gap-6">
+      <CardContent className="flex flex-col md:flex-row gap-4 md:gap-6 p-4 md:p-6">
         {/* Calendar */}
         <div className="flex justify-center">
           <Calendar
@@ -258,78 +283,76 @@ export function ConsultationScheduler({
             month={currentMonth}
             onMonthChange={handleMonthChangeInternal}
             disabled={disabledDays}
-            fromDate={today} // Visually disable past days clearly
-            toDate={maxBookingDate} // Disable future dates beyond range
-            className="rounded-md border p-3"
-            // Modifiers for styling booked/unavailable days if needed
-            // modifiers={{ booked: bookedDays }}
-            // modifiersClassNames={{ booked: 'bg-red-100 text-red-800 opacity-50' }}
+            fromDate={today}
+            toDate={maxBookingDate}
+            className="rounded-md border p-3 bg-background"
             footer={
-              selectedDate ? (
-                <p className="text-sm text-center pt-2">Selected: {format(selectedDate, 'PPP')}</p>
-              ) : (
-                <p className="text-sm text-center pt-2 text-muted-foreground">Please select a date.</p>
-              )
+              <p className="text-xs text-center pt-2 px-1 text-muted-foreground">
+                {selectedDate ? `Selected: ${format(selectedDate, 'PPP')}` : 'Please select an available date.'}
+              </p>
             }
           />
         </div>
 
         {/* Time Slots */}
-        <div className="flex-1 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6">
-          <h3 className="text-base font-medium mb-3 text-center md:text-left">
+        <div className="flex-1 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6 min-h-[280px] flex flex-col">
+          <h3 className="text-base font-medium mb-3 text-center md:text-left flex-shrink-0">
             Available Slots for {selectedDate ? format(selectedDate, 'MMM d') : '...'}
           </h3>
-          {isLoadingSlots ? (
-            <div className="flex justify-center items-center h-32">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : error ? (
-            <Badge variant="destructive" className="w-full justify-center text-center py-2">
-              {error}
-            </Badge>
-          ) : selectedDate ? (
-            availableTimes.length > 0 ? (
-              <ScrollArea className="h-full pr-3">
-                {' '}
-                {/* Adjust height as needed */}
-                <div className="flex flex-col gap-2">
-                  {availableTimes.map((slot) => (
-                    <Button
-                      key={slot.startTime}
-                      variant={selectedTime === slot.startTime ? 'default' : 'outline'}
-                      onClick={() => handleTimeSelect(slot.startTime)}
-                      className="w-full justify-center text-xs sm:text-sm"
-                      // Disable button if already selected to prevent double callback? Or rely on visual state.
-                    >
-                      {/* Format time for display (e.g., 9:00 AM) */}
-                      {format(parse(slot.startTime, 'HH:mm', selectedDate), 'h:mm a')}
-                    </Button>
-                  ))}
-                </div>
-              </ScrollArea>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center h-32">
-                <CalendarX className="h-8 w-8 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">No available slots on this day.</p>
+          <div className="flex-grow flex flex-col justify-center">
+            {isLoadingSlots ? (
+              <div className="text-center p-2">
+                <Loader2 className="h-6 w-6 animate-spin inline-block text-muted-foreground" />
               </div>
-            )
-          ) : (
-            <div className="flex flex-col items-center justify-center text-center h-32">
-              <CalendarCheck className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">Select a date to see available times.</p>
-            </div>
-          )}
+            ) : error ? (
+              <Badge variant="destructive" className="p-2 text-center block whitespace-normal h-auto">
+                {error}
+              </Badge>
+            ) : selectedDate ? (
+              availableTimes.length > 0 ? (
+                <ScrollArea className="h-full max-h-[275px] pr-3">
+                  <div className="grid grid-cols-1 gap-2">
+                    {availableTimes.map((slot) => (
+                      <Button
+                        key={slot.start_time}
+                        variant={selectedTime === slot.start_time ? 'default' : 'outline'}
+                        onClick={() => handleTimeSelect(slot.start_time)}
+                        className="w-full justify-center text-xs sm:text-sm"
+                      >
+                        {/* Format time using parse just for display */}
+                        {format(parse(slot.start_time, 'HH:mm', selectedDate), 'h:mm a')}
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full px-4">
+                  <CalendarX className="h-8 w-8 mb-2" />
+                  <p className="text-sm">No available slots found for this day.</p>
+                  <p className="text-xs mt-1">(Check availability rules or existing bookings)</p>
+                </div>
+              )
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full px-4">
+                <CalendarCheck className="h-8 w-8 mb-2" />
+                <p className="text-sm">Select a date on the calendar to see available times.</p>
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
-      {/* Optional Footer for confirmation/summary */}
+      {/* Confirmation Footer */}
       {selectedDate && selectedTime && (
-        <div className=" py-4 border-t justify-center">
-          <p className="text-sm font-medium text-center my-auto">
-            Selected: {format(selectedDate, 'EEEE, MMMM d, yyyy')} at {format(parse(selectedTime, 'HH:mm', selectedDate), 'h:mm a')}
+        <div className="p-3 border-t justify-center bg-muted/50 rounded-b-md">
+          <p className="text-sm font-medium text-center my-auto text-foreground">
+            Selected: {format(selectedDate, 'EEE, MMM d, yyyy')} at {format(parse(selectedTime, 'HH:mm', selectedDate), 'h:mm a')}
           </p>
-          {/* The actual booking happens when parent component handles onSlotSelect */}
+          {/* Reminder: The actual booking action is triggered by the parent component */}
         </div>
       )}
     </Card>
   );
 }
+
+// Default export might be needed depending on file structure
+// export default ConsultationScheduler;

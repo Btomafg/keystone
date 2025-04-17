@@ -30,6 +30,7 @@ export const API_ROUTES = {
       UPDATE: '/api/admin/users/',
       MANAGE: '/api/admin/users/manage/',
     },
+
     SETTINGS: {
       GET: '/api/admin/settings/',
       POST: '/api/admin/settings/',
@@ -69,7 +70,20 @@ export const API_ROUTES = {
   GET_WALLS: '/api/projects/walls/',
   UPDATE_WALL: '/api/projects/walls/',
   CREATE_WALL: '/api/projects/walls/create/',
-
+  APPOINTMENTS: {
+    GET: '/api/appointments/',
+    UPDATE: '/api/appointments/',
+    POST: '/api/appointments/',
+    DELETE: '/api/appointments/',
+    OPTIONS: '/api/appointments/',
+    PROJECTID: '/api/appointments/projectid/',
+  },
+  RESOURCES: {
+    GET: '/api/resources/',
+    POST: '/api/resources/',
+    DELETE: '/api/resources/',
+    UPDATE: '/api/resources/',
+  },
   // cabinet routes
   GET_CABINETS: '/api/projects/cabinets/',
   GET_CABINET_OPTIONS: '/api/projects/cabinets/options/',

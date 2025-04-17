@@ -5,64 +5,63 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 // Adjust path to your dummy data definitions
+import { useCreateAppointment, useGetAppointmentByProjectId } from '@/hooks/api/appointments.queries';
+import { useGetResources } from '@/hooks/api/resources.queries';
 import { addMinutes, format } from 'date-fns';
 import { CheckCircle, Clock } from 'lucide-react'; // Added CheckCircle
+import { useRouter } from 'next/navigation';
 import React, { useCallback, useState } from 'react';
 import { ConsultationScheduler } from './ConsultationScheduler';
 
 // --- Component Props (If needed, e.g., initial scheduled date from parent) ---
 interface ProjectScheduleConsultationProps {
-  // Pass the initially scheduled appointment if it exists from parent data
-  initialScheduledAppointment?: Date | string | null;
+  initialScheduledAppointment: any;
   projectId: number | string; // Pass project ID
-  // Add other necessary props
 }
 
-// --- The Component ---
-
-const ProjectScheduleConsultation: React.FC<ProjectScheduleConsultationProps> = ({
-  initialScheduledAppointment,
-  projectId = dummyProjectId, // Use dummy if not provided
-}) => {
+const ProjectScheduleConsultation: React.FC<ProjectScheduleConsultationProps> = ({ initialScheduledAppointment, projectId }) => {
   const [scheduleOpen, setScheduleOpen] = useState(false);
-  // State to hold the confirmed appointment date/time
+  //
   const [scheduledAppointment, setScheduledAppointment] = useState<Date | null>(
-    initialScheduledAppointment ? new Date(initialScheduledAppointment) : null,
+    initialScheduledAppointment ? new Date(initialScheduledAppointment.start_time) : null,
   );
-  const [selectedAppointment, setSelectedAppointment] = useState<Date | null>(null); // State for selected appointment
-  const [isBooking, setIsBooking] = useState(false); // State for booking process
-
-  // --- Mock function for simulating API call to book ---
-  const bookConsultation = async (slot: Date): Promise<boolean> => {
-    setIsBooking(true);
-    console.log(`Simulating booking API call for project ${projectId}, resource ${dummyResourceId} at ${slot.toISOString()}`);
-    // Replace with your actual API call
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate network delay
-    const success = Math.random() > 0.1; // Simulate 90% success rate
-    setIsBooking(false);
-    if (success) {
-      console.log('Booking successful!');
-      return true;
-    } else {
-      console.error('Booking failed!');
-      alert('Failed to book appointment. Please try again.');
-      return false;
-    }
-  };
-
-  // --- Callback for ConsultationScheduler ---
+  const [selectedAppointment, setSelectedAppointment] = useState<Date | null>(null);
+  const { data, isLoading } = useGetResources();
+  const { refetch } = useGetAppointmentByProjectId({ project_id: projectId });
+  const router = useRouter();
+  // Use optional chaining and provide defaults
+  const resource = data?.[0]; // Get the first resource safely
+  const resourceAvailabilityRules = resource?.ResourceAvailabilityRules || [];
+  // Note: The API response nests rules under 'ResourceAvailabilityRules' (PascalCase)
+  // Ensure your types match the casing from the API or transform the data.
+  const resourceBlockedTimesFromAPI = resource?.ResourceBlockedTimes || []; // We won't pass this directly anymore
+  const duration = resource?.default_slot_duration_minutes ?? 30; // Use nullish coalescing for default
+  const minLeadTime = resource?.min_booking_lead_time_hours ?? 24;
+  const maxRange = resource?.max_booking_range_days ?? 60;
+  const resourceId = resource?.id; // Get the ID safely
+  const blockedSlots = resourceBlockedTimesFromAPI.map((slot) => ({
+    start: new Date(slot.start),
+    end: new Date(slot.end),
+  }));
+  const { mutateAsync: bookConsultation, isPending: isBooking } = useCreateAppointment();
   const handleSlotSelected = async (selectedSlot: Date) => {
-    console.log('Slot selected in Scheduler:', selectedSlot);
     setSelectedAppointment(selectedSlot);
   };
 
   const submitBooking = async () => {
-    console.log('Booking confirmed for:', selectedAppointment);
-    const success = await bookConsultation(selectedAppointment);
-    if (success) {
-      setScheduledAppointment(selectedAppointment); // Update state to show confirmation
-      setScheduleOpen(false); // Close the scheduler UI
+    let appointmentData = {
+      project_id: projectId,
+      resource_id: resourceId,
+      start_time: selectedAppointment,
+      type: 0,
+    };
+    if (initialScheduledAppointment) {
+      appointmentData.id = initialScheduledAppointment.id;
     }
+    const appointment = await bookConsultation(appointmentData);
+    refetch(); // Refetch the appointment data
+    setScheduledAppointment(selectedAppointment); // Update the scheduled appointment state
+    router.refresh();
     // If booking failed, the scheduler remains open for user to try again or cancel
   }; // Update state to show confirmation
 
@@ -107,12 +106,12 @@ const ProjectScheduleConsultation: React.FC<ProjectScheduleConsultationProps> = 
             <CardContent className="pt-4 border-t border-blue-200 dark:border-blue-800">
               <p className="text-sm text-muted-foreground mb-4">Please select a date and time below.</p>
               <ConsultationScheduler
-                resourceId={dummyResourceId} // Use actual resource ID
-                slotDurationMinutes={dummySlotDuration}
-                availabilityWindows={dummyAvailabilityWindows}
-                unavailableDates={dummyUnavailableDates}
-                minBookingLeadTimeHours={dummyMinLeadTime}
-                maxBookingRangeDays={dummyMaxRange}
+                resourceId={resourceId}
+                slotDurationMinutes={duration}
+                availabilityWindows={resourceAvailabilityRules}
+                unavailableDates={blockedSlots}
+                minBookingLeadTimeHours={minLeadTime}
+                maxBookingRangeDays={maxRange}
                 projectId={projectId}
                 onSlotSelect={handleSlotSelected} // This triggers the booking flow
                 fetchUnavailableSlots={stableFetchUnavailableSlots}
@@ -172,25 +171,7 @@ interface UnavailableSlot {
   end: Date;
 } // Ensure this interface is defined
 
-const dummyResourceId = 'consultant-abc';
-const dummySlotDuration = 60;
-const dummyAvailabilityWindows = [{ daysOfWeek: [1, 2, 3, 4, 5], startTime: '09:00', endTime: '17:00' }];
-const dummyUnavailableDates = [new Date(2025, 4, 26), new Date(2025, 6, 4)];
-const dummyMinLeadTime = 24;
-const dummyMaxRange = 90;
-const dummyProjectId = 'PROJ-101';
-
-const baseBookingDate = new Date(2025, 3, 16); // April 16th, 2025
-
-const fixedBookedSlotsData = [
-  { start: new Date(2025, 3, 16, 11, 0), durationMinutes: 60 },
-  { start: new Date(2025, 3, 21, 14, 0), durationMinutes: 60 },
-  { start: new Date(2025, 3, 23, 9, 0), durationMinutes: 90 },
-  { start: new Date(2025, 3, 16, 12, 0), durationMinutes: 60 },
-  { start: new Date(2025, 3, 17, 12, 0), durationMinutes: 60 },
-  { start: new Date(2025, 3, 18, 12, 0), durationMinutes: 60 },
-  { start: new Date(2025, 3, 21, 12, 0), durationMinutes: 60 },
-];
+const fixedBookedSlotsData = [{ start: new Date(2025, 3, 23, 10, 0), durationMinutes: 30 }];
 const preCalculatedBookedSlots: UnavailableSlot[] = fixedBookedSlotsData.map((slot) => ({
   start: slot.start,
   end: addMinutes(slot.start, slot.durationMinutes),
