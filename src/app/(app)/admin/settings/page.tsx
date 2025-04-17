@@ -47,6 +47,9 @@ export default function AdminSettingsPage() {
         </TabsList>
         <TabsContent className="flex flex-col gap-2" value="scheduling-resources">
           <Card>
+            <p className="text-red-500 text-xl font-bold">
+              Note: This is a work in progress. Please check back later. You can click around, but data may not persist.
+            </p>
             <CardHeader>
               <CardTitle>Manage Scheduling Resources</CardTitle>
               <CardDescription>
