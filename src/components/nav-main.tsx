@@ -1,9 +1,10 @@
 'use client';
-import { type LucideIcon } from 'lucide-react';
+import { PlusCircleIcon, type LucideIcon } from 'lucide-react';
 
 import { SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { APP_ROUTES } from '@/constants/routes';
 import { useRouter } from 'next/navigation';
-import NewProjectModal from './app/dashboard/projects/NewProjectModal/NewProjectModal';
+import { Button } from './ui/button';
 
 export function NavMain({
   items,
@@ -20,7 +21,10 @@ export function NavMain({
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            <NewProjectModal />
+            <Button size="sm" onClick={() => router.push(APP_ROUTES.DASHBOARD.PROJECTS.NEW.path)}>
+              <PlusCircleIcon className="h-4 w-4" />
+              <span className="ml-2">New Project</span>
+            </Button>
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>

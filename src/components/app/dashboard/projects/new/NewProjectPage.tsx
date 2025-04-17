@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Project } from '@/constants/models/object.types';
-import { useGetLayoutOptions, useGetProjects, useGetRoomOptions, useUpdateProject } from '@/hooks/api/projects.queries';
+import { useGetLayoutOptions, useGetProjects, useGetRoomOptions, useReviewProject } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+import ProjectReviewLoader from '../ProjectReviewLoader';
 import NewProjectHeader from './NewProjectHeader';
 import NewRoomModal from './NewRoomModal';
 import NewRoomRow from './NewRoomRow';
@@ -24,7 +25,7 @@ export default function NewProjectPage() {
   const { data: layouts } = useGetLayoutOptions();
   const { data: roomOptions } = useGetRoomOptions();
   const { data: projects } = useGetProjects();
-  const { mutateAsync: submitProject, isPending: submitting } = useUpdateProject();
+  const { mutateAsync: submitProject, isPending: submitting } = useReviewProject();
 
   const project = projects && projects?.find((project: Project) => project?.id == projectId);
 
@@ -59,44 +60,58 @@ export default function NewProjectPage() {
 
   const SubmitDisclaimer = () => {
     const [open, setOpen] = useState(false);
+    const [reviewOpen, setReviewOpen] = useState(false);
+
     const handleSubmitProject = async () => {
       try {
-        await submitProject({ id: projectId, status: 2 });
-        //setOpen(false);
+        setReviewOpen(true);
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+        await submitProject({ id: projectId });
       } catch (error) {
         console.error('Error submitting project:', error);
       }
     };
 
     return (
-      <Dialog open={open}>
-        <DialogTrigger asChild>
-          <Button onClick={() => setOpen(true)} variant="outline" className="w-1/4 ms-auto hover:bg-green-600 hover:text-white">
-            Submit Project for Review
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="w-[400px]">
-          <div className="flex flex-col gap-4">
-            <p className="text-sm text-gray-700">
-              <strong>Disclaimer:</strong> All project estimates generated through this tool are preliminary and based solely on the
-              information you’ve provided. These are not final quotes.
-            </p>
-            <p className="text-sm text-gray-700">
-              Keystone Woodworx will carefully review each qualified submission and work with you directly to finalize a quote before any
-              work or engagement begins.
-            </p>
-            <p className="text-sm text-red-600">Are you sure you want to submit this project for review?</p>
-            <div className="flex flex-row justify-between">
-              <Button className="w-1/3 " variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+      <>
+        {reviewOpen ? (
+          <ProjectReviewLoader />
+        ) : (
+          <Dialog open={open}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => setOpen(true)}
+                variant="outline"
+                className="w-1/4 ms-auto hover:bg-green-600 hover:text-white"
+                disabled={project?.estimate == 0 || project?.estimate == null}
+              >
+                Submit Project for Review
               </Button>
-              <Button className="w-1/3 hover:bg-green-600 hover:text-white" onClick={handleSubmitProject} loading={submitting}>
-                Confirm
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+            </DialogTrigger>
+            <DialogContent className="w-[400px]">
+              <div className="flex flex-col gap-4">
+                <p className="text-sm text-gray-700">
+                  <strong>Disclaimer:</strong> All project estimates generated through this tool are preliminary and based solely on the
+                  information you’ve provided. These are not final quotes.
+                </p>
+                <p className="text-sm text-gray-700">
+                  Keystone Woodworx will carefully review each qualified submission and work with you directly to finalize a quote before
+                  any work or engagement begins.
+                </p>
+                <p className="text-sm text-red-600">Are you sure you want to submit this project for review?</p>
+                <div className="flex flex-row justify-between">
+                  <Button className="w-1/3 " variant="outline" onClick={() => setOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button className="w-1/3 hover:bg-green-600 hover:text-white" onClick={handleSubmitProject} loading={submitting}>
+                    Confirm
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </>
     );
   };
 

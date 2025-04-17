@@ -32,7 +32,9 @@ export function ProjectTable() {
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const router = useRouter();
-  const { data: projects = [] } = useGetProjects();
+  const { data } = useGetProjects();
+
+  const projects = data?.sort((a, b) => a.id - b.id) || [];
 
   const columns: ColumnDef<Project>[] = [
     {

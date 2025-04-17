@@ -111,7 +111,7 @@ export default function CabinetGrid({
   const [currentEditName, setCurrentEditName] = useState<string>('');
   const editInputRef = useRef<HTMLInputElement>(null);
   const [noRoomError, setNoRoomError] = useState(false);
-  console.log(cabinets);
+
   useEffect(() => {
     // Define a default fallback type in case lookup fails
     const fallbackType: CabinetType = {
@@ -609,6 +609,7 @@ export default function CabinetGrid({
       </div>
 
       {/* Right Panel: Grid */}
+
       <div className="flex flex-col items-center flex-grow w-fit overflow-x-auto">
         <p className="text-xs text-slate-600 mb-2">Grid Scale: Each square = {formatDim(1)} (6 inches)</p>
         <div className="flex flex-row items-center gap-2">

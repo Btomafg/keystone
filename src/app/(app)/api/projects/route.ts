@@ -19,6 +19,15 @@ export async function GET() {
     status,
     type,
     estimate,
+    target_install_date,
+    qualification,
+    first_custom,
+    street,
+    city,
+    state,
+    zip,
+    longitude,
+    latitude,
     rooms: Rooms_project_fkey (
       id,
       name,
@@ -79,8 +88,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log('BODY', body);
     body.user_id = userId;
-    const { data, error } = await supabase.from('Projects').update(body).eq('id', body.id).select('id, step').single();
-    console.log('PROJECTS', data, error);
+    const { data, error } = await supabase.from('Projects').update(body).eq('id', body.id).select('id, status').single();
+
     if (data == null) {
       return NextResponse.json({ success: false, message: 'Project not updated', type: 'error' }, { status: 404 });
     }

@@ -13,8 +13,16 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log('BODY', body);
     body.user_id = userId;
+
+    // determine distance from HQ
+    const HQ = { lat: 40.56706, lng: -78.71982 }; // Example HQ coordinates
+    const projectCoordinates = { lat: body.latitude, lng: body.longitude }; // Example project coordinates
+    const distance = Math.sqrt(Math.pow(projectCoordinates.lat - HQ.lat, 2) + Math.pow(projectCoordinates.lng - HQ.lng, 2));
+    body.distance_from_hq = distance;
+    //distance in miles
+    const milesPerDegree = 69; // Approximate miles per degree of latitude
+    body.distance_from_hq = distance * milesPerDegree;
     const { data, error } = await supabase.from('Projects').insert(body).select('id').single();
-    console.log('PROJECTS', data, error);
 
     if (error) {
       return NextResponse.json({ success: false, message: error.message, type: error.code }, { status: error.status });

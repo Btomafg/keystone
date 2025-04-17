@@ -67,8 +67,6 @@ export default function NewProjectRooms({ open, setOpen }: NewProjectRoomsProps)
     setNewRoom(null);
   };
 
-  console.log(customOptions);
-  console.log(selectedOptions);
   const selectRoomType = async (type: number) => {
     const newRoom = {
       type: type,

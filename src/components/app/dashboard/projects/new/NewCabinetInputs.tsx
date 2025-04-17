@@ -1,3 +1,4 @@
+import SawLoader from '@/components/ui/loader';
 import { Project } from '@/constants/models/object.types';
 import { APP_ROUTES } from '@/constants/routes';
 import {
@@ -9,8 +10,7 @@ import {
 } from '@/hooks/api/projects.queries';
 import { useScreenWidth } from '@/hooks/uiHooks';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
-import { IoChevronBack } from 'react-icons/io5';
+import React, { useEffect } from 'react';
 import { default as CabinetGrid } from '../../../projects/Grid';
 
 interface NewCabinetInputsProps {}
@@ -46,8 +46,6 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
   }, [projectId, roomId, wallId]);
 
   //STATES
-
-  const [newCabinetStep, setNewCabinetStep] = useState(0);
 
   //VARIABLES
 
@@ -100,24 +98,26 @@ const NewCabinetInputs: React.FC<NewCabinetInputsProps> = (props) => {
     );
   };
 
-  const stepData = [
-    {
-      title: 'Add & Edit Cabinets',
-      description: `Select the cabinets you want to add to your project?. You can adjust the size and position of each cabinet.`,
-      content: <NewCabinetStep1 />,
-    },
-  ];
-
   return (
     <div style={{ maxWidth: screenWidth * 0.85 }} className="flex flex-col">
-      <div className="flex flex-row gap-3 w-full">
-        {newCabinetStep > 0 && <IoChevronBack className="text-muted cursor-pointer my-auto text-2xl" onClick={onBack} />}
-        <div className="flex flex-col w-full">
-          <h2 className="text-xl font-semibold">{stepData[newCabinetStep].title}</h2>
-          <p className="text-muted text-sm">{stepData[newCabinetStep].description}</p>
+      {createLoading ? (
+        <div className="flex flex-col gap-3 h-full mt-24 justify-center  max-w-2xl mx-auto">
+          <h1 className="text-3xl mx-auto">Creating Cabinets</h1>
+          <SawLoader className="mx-auto" />
         </div>
-      </div>
-      {stepData[newCabinetStep].content}
+      ) : (
+        <>
+          <div className="flex flex-row gap-3 w-full">
+            <div className="flex flex-col w-full">
+              <h2 className="text-xl font-semibold">Add & Edit Cabinets</h2>
+              <p className="text-muted text-sm">
+                Select the cabinets you want to add to your project?. You can adjust the size and position of each cabinet.
+              </p>
+            </div>
+          </div>
+          <NewCabinetStep1 />
+        </>
+      )}
     </div>
   );
 };

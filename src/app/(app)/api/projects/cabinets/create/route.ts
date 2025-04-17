@@ -64,11 +64,23 @@ export async function POST(request: Request) {
 
       const lxh = length * height;
       const constructionMethodPrice = (options?.find((option) => option.id === body.room_data.construction_method)?.value || 0) * lxh;
+      console.log(
+        'Construction Method Price:',
+        options?.find((option) => option.id === body.room_data.construction_method)?.value,
+        constructionMethodPrice,
+      );
       const crownPrice = (options?.find((option) => option.id === body.room_data.crown)?.value || 0) * lxh;
+      console.log('Crown Price:', options?.find((option) => option.id === body.room_data.crown)?.value, crownPrice);
       const doorMaterialPrice = (options?.find((option) => option.id === body.room_data.door_material)?.value || 0) * lxh;
+      console.log('Door Material Price:', options?.find((option) => option.id === body.room_data.door_material)?.value, doorMaterialPrice);
       const lightRailPrice = (options?.find((option) => option.id === body.room_data.light_rail)?.value || 0) * lxh;
+      console.log('Light Rail Price:', options?.find((option) => option.id === body.room_data.light_rail)?.value, lightRailPrice);
       const subMaterialPrice = (options?.find((option) => option.id === body.room_data.sub_material)?.value || 0) * lxh;
+      console.log('Sub Material Price:', options?.find((option) => option.id === body.room_data.sub_material)?.value, subMaterialPrice);
       const toeStylePrice = (options?.find((option) => option.id === body.room_data.toe_style)?.value || 0) * lxh;
+      console.log('Toe Style Price:', options?.find((option) => option.id === body.room_data.toe_style)?.value, toeStylePrice);
+      //ADD CABINET FINISH
+
       const totalPrice = constructionMethodPrice + crownPrice + doorMaterialPrice + lightRailPrice + subMaterialPrice + toeStylePrice;
       console.log('Total Price:', totalPrice);
       const cabinetData = {

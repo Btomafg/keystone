@@ -33,6 +33,12 @@ export const ProjectStatusLabels: Record<ProjectStatus, string> = {
   [ProjectStatus.Install]: 'Install',
 };
 
+export enum ProjectQualification {
+  DISQUALIFIED = 0,
+  SHIPPING = 1,
+  DELIVERY_INSTALLATION = 2,
+}
+
 export enum RoomType {
   Kitchen = 0,
   Bathroom = 1,

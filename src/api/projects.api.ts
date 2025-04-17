@@ -37,6 +37,21 @@ export const updateProject = async (body: Partial<Project>) => {
   return true;
 };
 
+export const reviewProject = async (body: Partial<Project>) => {
+  try {
+    const res = await fetch(API_ROUTES.REVIEW_PROJECT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('ERROR REVIEWING PROJECT', error);
+  }
+  return true;
+};
+
 export const getProjects = async () => {
   try {
     const res = await fetch(API_ROUTES.GET_PROJECTS, {
@@ -235,23 +250,6 @@ export const updateWall = async (body: Partial<Cabinet>) => {
     return data;
   } catch (error) {
     console.error('ERROR CREATING Cabinet', error);
-  }
-  return true;
-};
-
-export const reviewSubmittedProject = async (body: Partial<Project>) => {
-  try {
-    const res = await fetch(API_ROUTES.REVIEW_PROJECT, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    const data = await res.json();
-
-    return data;
-  } catch (error) {
-    console.error('ERROR Reviewing Project', error);
   }
   return true;
 };
