@@ -1,7 +1,14 @@
 // app/admin/settings/_components/scheduling-resources-manager.tsx
 'use client';
 
-import { AlertDialog, AlertDialogContent, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -17,7 +24,7 @@ import { Input } from '@/components/ui/input'; // Needed for Form
 import { Label } from '@/components/ui/label'; // Needed for Form
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useAdminGetResources } from '@/hooks/api/admin/admin.resources.queries';
+import { useAdminCreateResource, useAdminDeleteResource, useAdminGetResources } from '@/hooks/api/admin/admin.resources.queries';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Pencil, PlusCircle, Settings2, Trash2 } from 'lucide-react'; // Added Settings2, LinkIcon
 import Link from 'next/link'; // For linking to detailed availability page
@@ -33,34 +40,6 @@ interface Resource {
   max_booking_range_days: number;
   // Include other fields if needed for display
 }
-
-// DUMMY DATA - Replace with API call using useEffect
-const DUMMY_RESOURCES: Resource[] = [
-  {
-    id: '520bbcd9-389c-450c-a20d-2dcd55df99cf',
-    name: 'Sales Team Calendar',
-    active: true,
-    default_slot_duration_minutes: 30,
-    min_booking_lead_time_hours: 12,
-    max_booking_range_days: 45,
-  },
-  {
-    id: 'a1b2c3d4-e5f6-7890-1234-abcdef123456',
-    name: 'John Doe (Consultant)',
-    active: true,
-    default_slot_duration_minutes: 60,
-    min_booking_lead_time_hours: 24,
-    max_booking_range_days: 90,
-  },
-  {
-    id: 'b2c3d4e5-f6a7-8901-2345-bcdefa234567',
-    name: 'Design Review Room',
-    active: false,
-    default_slot_duration_minutes: 45,
-    min_booking_lead_time_hours: 4,
-    max_booking_range_days: 30,
-  },
-];
 
 // --- Reusable Form Component (ResourceForm) ---
 interface ResourceFormProps {
@@ -79,6 +58,7 @@ function ResourceForm({ initialData, onSave, onClose }: ResourceFormProps) {
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log('Submitting form...');
     e.preventDefault();
     setIsSaving(true);
     const formData = {
@@ -94,7 +74,7 @@ function ResourceForm({ initialData, onSave, onClose }: ResourceFormProps) {
       setIsSaving(false);
       return;
     }
-
+    console.log('Form Data:', formData);
     try {
       if (initialData?.id) {
         await onSave({ ...formData, id: initialData.id }); // Pass ID for update
@@ -184,7 +164,7 @@ function ResourceForm({ initialData, onSave, onClose }: ResourceFormProps) {
 
 // --- Main Manager Component ---
 export function SchedulingResourcesManager() {
-  const { data: resourceData, isLoading: resourceLoading } = useAdminGetResources();
+  const { data: resourceData, isLoading } = useAdminGetResources();
 
   const resources: Resource[] = useMemo(() => {
     return (
@@ -199,32 +179,28 @@ export function SchedulingResourcesManager() {
     );
   }, [resourceData]);
 
-  const [isLoading, setIsLoading] = useState(false); // For API loading
-  const [isSavingActive, setIsSavingActive] = useState<Record<string, boolean>>({}); // Loading state per switch
+  const [isSavingActive, setIsSavingActive] = useState<Record<string, boolean>>({});
+  const [isDeletingActive, setIsDeletingActive] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
   const { toast } = useToast();
-
+  const { mutateAsync: createResource, isPending: isSaving } = useAdminCreateResource();
+  const { mutateAsync: deleteResource, isPending: isDeleting } = useAdminDeleteResource();
   // --- API Call Placeholders ---
   // Add useEffect here to fetch resources on mount
 
   const handleCreate = async (data: Omit<Resource, 'id'>) => {
     console.log('API CALL: Create Resource', data);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const newId = crypto.randomUUID(); // Use browser API for demo UUID
-    setResources((prev) => [...prev, { ...data, id: newId }]);
+    await createResource(data);
   };
 
   const handleUpdate = async (data: Resource) => {
     console.log('API CALL: Update Resource', data);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setResources((prev) => prev.map((res) => (res.id === data.id ? data : res)));
+    await createResource(data);
   };
 
   const handleDelete = async (id: string) => {
-    console.log('API CALL: Delete Resource', id);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setResources((prev) => prev.filter((res) => res.id !== id));
+    await deleteResource({ id: id });
     toast({ title: 'Success', description: 'Resource deleted.' });
   };
 
@@ -338,7 +314,7 @@ export function SchedulingResourcesManager() {
                     >
                       <Pencil className="h-4 w-4" /> <span className="sr-only">Edit</span>
                     </Button>
-                    <AlertDialog>
+                    <AlertDialog open={isDeletingActive} onOpenChange={setIsDeletingActive}>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
@@ -349,7 +325,29 @@ export function SchedulingResourcesManager() {
                           <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent> {/* ... Delete Confirmation ... */} </AlertDialogContent>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will delete the resource and all its associated rules.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline" onClick={() => setIsDeletingActive(false)}>
+                            Cancel
+                          </Button>
+                          <Button
+                            loading={isDeleting}
+                            variant="destructive"
+                            onClick={() => {
+                              handleDelete(resource.id);
+                              setIsDeletingActive(false);
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </AlertDialogContent>
                     </AlertDialog>
                   </TableCell>
                 </TableRow>

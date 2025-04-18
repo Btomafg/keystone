@@ -39,7 +39,10 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: false, message: 'Server error', type: 'error' }, { status: 500 });
   }
 }
-
+interface Body {
+  type: 'Resources' | 'ResourceAvailabilityRules' | 'ResourceBlockedTimes';
+  data: any;
+}
 export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const body = await request.json();
@@ -71,14 +74,30 @@ export async function POST(request: Request) {
     if (new Date(adminKeyData.admin_session_expires_at) < new Date()) {
       return NextResponse.json({ success: false, message: 'Admin key has expired', type: 'error' }, { status: 401 });
     }
-    body.created_by = isAuthenticated.user.id;
-    const { data, error } = await supabase.from('Notes').insert(body).select('id').single();
 
-    if (error) {
-      return NextResponse.json({ success: false, message: error.message, type: 'error' }, { status: 400 });
+    if (body.type == 'ResourceAvailabilityRules' && body.data.selectedDays) {
+      let arr = [];
+      const dates = body.data.selectedDays;
+      delete body.data.selectedDays;
+      dates.forEach((date: any, index) => {
+        const obj = {
+          start_time: body.data.start_time,
+          end_time: body.data.end_time,
+          resource_id: body.data.resource_id,
+          day_of_week: dates[index],
+        };
+
+        arr.push(obj);
+      });
+      const { data, error } = await supabase.from(body.type).upsert(arr).eq('id', body.data.id).select('id').limit(7);
+    } else {
+      const { data, error } = await supabase.from(body.type).upsert(body.data).eq('id', body.data.id).select('id').single();
+      if (error) {
+        return NextResponse.json({ success: false, message: error.message, type: 'error' }, { status: 400 });
+      }
+      console.log('Notes', body);
+      return NextResponse.json(data);
     }
-    console.log('Notes', body);
-    return NextResponse.json(data);
   } catch (err: any) {
     console.error(err);
     return NextResponse.json({ success: false, message: 'Server error', type: 'error' }, { status: 500 });
@@ -117,8 +136,8 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, message: 'Admin key has expired', type: 'error' }, { status: 401 });
     }
 
-    const { data, error } = await supabase.from('Notes').delete().eq('id', body.id).select('id').single();
-    console.log('Notes', body);
+    const { data, error } = await supabase.from(body.type).delete().eq('id', body.data.id).select('id').single();
+
     return NextResponse.json('data');
   } catch (err: any) {
     console.error(err);

@@ -73,9 +73,9 @@ export async function POST(request: Request) {
     if (new Date(adminKeyData.admin_session_expires_at) < new Date()) {
       return NextResponse.json({ success: false, message: 'Admin key has expired', type: 'error' }, { status: 401 });
     }
-    body.created_by = isAuthenticated.user.id;
-    const { data, error } = await supabase.from('Notes').insert(body).select('id').single();
-
+    console.log(body);
+    const { data, error } = await supabase.from('Resources').insert(body).select('id').single();
+    console.log('Resources', body, data, error);
     if (error) {
       return NextResponse.json({ success: false, message: error.message, type: 'error' }, { status: 400 });
     }
@@ -119,8 +119,8 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ success: false, message: 'Admin key has expired', type: 'error' }, { status: 401 });
     }
 
-    const { data, error } = await supabase.from('Notes').delete().eq('id', body.id).select('id').single();
-    console.log('Notes', body);
+    const { data, error } = await supabase.from('Resources').delete().eq('id', body.id).select('id').single();
+    console.log('Resources', body, data, error);
     return NextResponse.json('data');
   } catch (err: any) {
     console.error(err);

@@ -3,7 +3,6 @@
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -26,9 +25,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select'; // For Resource Select
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'; // For Resource Select
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useAdminGetResources } from '@/hooks/api/admin/admin.resources.queries';
+import {
+  useAdminCreateResourceBlockedTimes,
+  useAdminDeleteResourceBlockedTimes,
+  useAdminGetResources,
+} from '@/hooks/api/admin/admin.resources.queries';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside'; // Adjust import path for the hook
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -52,41 +55,6 @@ interface BlockedTime {
   reason?: string | null;
 }
 
-// DUMMY DATA - Replace with API calls
-const DUMMY_RESOURCES_LIST: Resource[] = [
-  { id: '520bbcd9-389c-450c-a20d-2dcd55df99cf', name: 'Sales Team Calendar' },
-  { id: 'a1b2c3d4-e5f6-7890-1234-abcdef123456', name: 'John Doe (Consultant)' },
-];
-const DUMMY_BLOCKED_TIMES: BlockedTime[] = [
-  {
-    id: 'h1',
-    resource_id: '520bbcd9-389c-450c-a20d-2dcd55df99cf',
-    resource_name: 'Sales Team Calendar',
-    start_time: '2025-05-26T00:00:00Z',
-    end_time: '2025-05-27T00:00:00Z',
-    reason: 'Memorial Day',
-  },
-  {
-    id: 'h2',
-    resource_id: 'a1b2c3d4-e5f6-7890-1234-abcdef123456',
-    resource_name: 'John Doe (Consultant)',
-    start_time: '2025-05-26T00:00:00Z',
-    end_time: '2025-05-27T00:00:00Z',
-    reason: 'Memorial Day',
-  }, // Holiday applies to multiple resources
-  {
-    id: 'v1',
-    resource_id: 'a1b2c3d4-e5f6-7890-1234-abcdef123456',
-    resource_name: 'John Doe (Consultant)',
-    start_time: '2025-06-01T08:00:00Z',
-    end_time: '2025-06-05T17:00:00Z',
-    reason: 'Vacation',
-  },
-];
-
-// --- Reusable Forms ---
-
-// Form for adding/editing Holidays (affects ALL resources)
 interface HolidayFormProps {
   onSave: (data: { reason: string; startDate: Date; endDate: Date }) => Promise<void>;
   onClose: () => void;
@@ -97,13 +65,13 @@ interface HolidayFormProps {
 interface HolidayFormProps {
   onSave: (data: { reason: string; startDate: Date; endDate: Date }) => Promise<void>;
   onClose: () => void;
+  isSaving?: boolean; // Optional: for loading state
 }
 
-function HolidayForm({ onSave, onClose }: HolidayFormProps) {
+function HolidayForm({ onSave, onClose, isSaving }: HolidayFormProps) {
   const [reason, setReason] = useState('Holiday');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   // Refs for click-outside detection
@@ -122,7 +90,6 @@ function HolidayForm({ onSave, onClose }: HolidayFormProps) {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // ... submit logic remains the same ...
     e.preventDefault();
     if (!dateRange?.from || !dateRange?.to) {
       toast({
@@ -131,15 +98,13 @@ function HolidayForm({ onSave, onClose }: HolidayFormProps) {
       return;
     }
     const endDateInclusive = endOfDay(dateRange.to);
-    setIsSaving(true);
+
     try {
       await onSave({ reason, startDate: dateRange.from, endDate: endDateInclusive });
       toast({ title: 'Success', description: 'Holiday block created.' });
       onClose();
     } catch (error) {
       /* ... */
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -169,8 +134,7 @@ function HolidayForm({ onSave, onClose }: HolidayFormProps) {
             {dateRange?.from ? (
               dateRange.to ? (
                 <>
-                  {' '}
-                  {format(dateRange.from, 'LLL dd, y')} - {format(dateRange.to, 'LLL dd, y')}{' '}
+                  {format(dateRange.from, 'LLL dd, y')} - {format(dateRange.to, 'LLL dd, y')}
                 </>
               ) : (
                 format(dateRange.from, 'LLL dd, y')
@@ -222,20 +186,19 @@ interface TimeOffFormProps {
   resources: Resource[]; // List of available resources
   onSave: (data: { resourceId: string; reason: string; startTime: Date; endTime: Date }) => Promise<void>;
   onClose: () => void;
+  isSaving?: boolean; // Optional: for loading state
   // Optional: initialData for editing
 }
-function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
-  const [resourceId, setResourceId] = useState<string>('');
+function TimeOffForm({ resources, onSave, onClose, isSaving }: TimeOffFormProps) {
+  const [resourceId, setResourceId] = useState<string>(resources[0].id);
   const [reason, setReason] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [startTime, setStartTime] = useState('09:00');
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
   const [endTime, setEndTime] = useState('17:00');
-  const [isSaving, setIsSaving] = useState(false);
   const [isStartCalendarOpen, setIsStartCalendarOpen] = useState(false);
   const [isEndCalendarOpen, setIsEndCalendarOpen] = useState(false);
   const { toast } = useToast();
-
   // Refs for click outside
   const startCalendarRef = useRef<HTMLDivElement>(null);
   const startTriggerRef = useRef<HTMLButtonElement>(null);
@@ -272,7 +235,17 @@ function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    /* ... submit logic remains the same ... */
+    await onSave({
+      resourceId,
+      reason,
+      startTime: new Date(`${startDate?.toISOString().split('T')[0]}T${startTime}`),
+      endTime: new Date(`${endDate?.toISOString().split('T')[0]}T${endTime}`),
+    });
+  };
+
+  const handleSelect = (value: string) => {
+    console.log('Selected Resource:', value);
+    setResourceId(value);
   };
 
   return (
@@ -282,23 +255,33 @@ function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
         <Label htmlFor="to-resource">Resource</Label>
         <Select value={resourceId} onValueChange={setResourceId} required disabled={isSaving}>
           <SelectTrigger id="to-resource">
-            {' '}
-            <SelectValue placeholder="Select Resource..." />{' '}
+            <SelectValue placeholder="Select Resource..." />
           </SelectTrigger>
-          <SelectContent>{/* ... options ... */}</SelectContent>
+          <SelectContent>
+            {resources?.length > 0 ? (
+              resources.map((resource) => (
+                <SelectItem key={resource.id} value={resource.id}>
+                  {resource.name}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem disabled value="no-resources">
+                No resources found
+              </SelectItem>
+            )}
+          </SelectContent>
         </Select>
       </div>
       {/* Reason Input */}
       <div className="grid gap-2">
-        {' '}
-        <Label htmlFor="to-reason">Reason (Optional)</Label>{' '}
+        <Label htmlFor="to-reason">Reason (Optional)</Label>
         <Input
           id="to-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           disabled={isSaving}
           placeholder="e.g., Vacation, Meeting"
-        />{' '}
+        />
       </div>
 
       {/* Start Date & Time */}
@@ -307,7 +290,6 @@ function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
         <div className="grid gap-2">
           <Label>Start Date</Label>
           <div className="relative">
-            {' '}
             {/* Relative container for popover positioning */}
             <Button
               ref={startTriggerRef} // Attach ref
@@ -360,7 +342,6 @@ function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
         <div className="grid gap-2">
           <Label>End Date</Label>
           <div className="relative">
-            {' '}
             {/* Relative container */}
             <Button
               ref={endTriggerRef} // Attach ref
@@ -401,16 +382,14 @@ function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
       </div>
 
       <DialogFooter className="pt-4">
-        {' '}
         <DialogClose asChild>
           <Button type="button" variant="outline" disabled={isSaving}>
             Cancel
           </Button>
-        </DialogClose>{' '}
+        </DialogClose>
         <Button type="submit" disabled={isSaving || !resourceId || !startDate || !endDate}>
-          {' '}
-          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Add Time Off{' '}
-        </Button>{' '}
+          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Add Time Off
+        </Button>
       </DialogFooter>
     </form>
   );
@@ -420,7 +399,8 @@ function TimeOffForm({ resources, onSave, onClose }: TimeOffFormProps) {
 export function HolidayTimeOffManager() {
   // Replace DUMMY DATA with state fetched from your API\
   const { data: resourceData, isLoading: resourceLoading } = useAdminGetResources();
-  console.log('Resource Data:', resourceData);
+  const { mutateAsync: createBlockedTime, isPending: isSaving } = useAdminCreateResourceBlockedTimes();
+  const { mutateAsync: deleteBlockedTime, isPending: isDeleting } = useAdminDeleteResourceBlockedTimes();
   const resources: Resource[] = useMemo(() => {
     return (
       resourceData?.map((resource) => ({
@@ -445,7 +425,6 @@ export function HolidayTimeOffManager() {
       })),
     );
   }, [resourceData]);
-  console.log('Blocked Times:', blockedTimes);
   const [isLoading, setIsLoading] = useState(false);
   const [showHolidayDialog, setShowHolidayDialog] = useState(false);
   const [showTimeOffDialog, setShowTimeOffDialog] = useState(false);
@@ -455,53 +434,30 @@ export function HolidayTimeOffManager() {
 
   // --- API Call Placeholders ---
   const handleAddHoliday = async (data: { reason: string; startDate: Date; endDate: Date }) => {
-    console.log('API CALL: Add Holiday Block', data);
-    // ** IMPORTANT: Backend needs to create entries in ResourceBlockedTimes for ALL active resources **
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    // Simulate adding (in real app, refetch or update state based on response)
-    const newId = `holiday-${Math.random()}`;
-    // This is just a UI simulation, backend does the real work
-    setBlockedTimes((prev) => [
-      ...prev,
-      {
-        id: newId,
-        resource_id: 'all',
-        resource_name: 'All Resources',
-        start_time: data.startDate,
-        end_time: data.endDate,
-        reason: data.reason,
-      },
-    ]);
-    // Ideally refetch: await fetchBlockedTimes();
+    await createBlockedTime({
+      resource_id: '4dd99b62-afae-4eba-aeda-e4a0f97220d9',
+      start_time: data.startDate,
+      end_time: data.endDate,
+      reason: data.reason,
+      company_holiday: true,
+    });
+
+    toast({ title: 'Success', description: 'Holiday block created.' });
   };
 
   const handleAddTimeOff = async (data: { resourceId: string; reason: string; startTime: Date; endTime: Date }) => {
-    console.log('API CALL: Add Time Off Block', data);
-    // ** IMPORTANT: Backend creates ONE entry in ResourceBlockedTimes for the specific resourceId **
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    const newId = `timeoff-${Math.random()}`;
-    const resourceName = resources.find((r) => r.id === data.resourceId)?.name || 'Unknown Resource';
-    setBlockedTimes((prev) => [
-      ...prev,
-      {
-        id: newId,
-        resource_id: data.resourceId,
-        resource_name: resourceName,
-        start_time: data.startTime,
-        end_time: data.endTime,
-        reason: data.reason,
-      },
-    ]);
-    // Ideally refetch: await fetchBlockedTimes();
+    await createBlockedTime({
+      resource_id: data.resourceId,
+      start_time: data.startTime,
+      end_time: data.endTime,
+      reason: data.reason,
+    });
   };
 
   const handleDeleteBlock = async (id: string | number, reason?: string | null) => {
-    console.log('API CALL: Delete Blocked Time', id);
-    // ** IMPORTANT: If it was a "Holiday", backend needs to delete entries for ALL resources matching that holiday range/reason **
-    // ** If it was specific time off, backend deletes the single entry **
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setBlockedTimes((prev) => prev.filter((block) => block.id !== id));
-    toast({ title: 'Success', description: `Blocked time (${reason || 'entry'}) deleted.` });
+    await deleteBlockedTime({
+      id: id,
+    });
   };
 
   return (
@@ -512,17 +468,15 @@ export function HolidayTimeOffManager() {
         <Dialog open={showHolidayDialog} onOpenChange={setShowHolidayDialog}>
           <DialogTrigger asChild>
             <Button variant="outline">
-              {' '}
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Company Holiday{' '}
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Company Holiday
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              {' '}
-              <DialogTitle>Add Company Holiday</DialogTitle>{' '}
-              <DialogDescription> Block this date range for ALL active resources. </DialogDescription>{' '}
+              <DialogTitle>Add Company Holiday</DialogTitle>
+              <DialogDescription> Block this date range for ALL active resources. </DialogDescription>
             </DialogHeader>
-            <HolidayForm onSave={handleAddHoliday} onClose={() => setShowHolidayDialog(false)} />
+            <HolidayForm isSaving={isSaving} onSave={handleAddHoliday} onClose={() => setShowHolidayDialog(false)} />
           </DialogContent>
         </Dialog>
 
@@ -530,17 +484,15 @@ export function HolidayTimeOffManager() {
         <Dialog open={showTimeOffDialog} onOpenChange={setShowTimeOffDialog}>
           <DialogTrigger asChild>
             <Button variant="outline">
-              {' '}
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Specific Time Off{' '}
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Specific Time Off
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              {' '}
-              <DialogTitle>Add Resource Time Off</DialogTitle>{' '}
-              <DialogDescription> Block specific dates/times for one resource (e.g., vacation, meeting). </DialogDescription>{' '}
+              <DialogTitle>Add Resource Time Off</DialogTitle>
+              <DialogDescription> Block specific dates/times for one resource (e.g., vacation, meeting). </DialogDescription>
             </DialogHeader>
-            <TimeOffForm resources={resources} onSave={handleAddTimeOff} onClose={() => setShowTimeOffDialog(false)} />
+            <TimeOffForm isSaving={isSaving} resources={resources} onSave={handleAddTimeOff} onClose={() => setShowTimeOffDialog(false)} />
           </DialogContent>
         </Dialog>
       </div>
@@ -601,25 +553,24 @@ export function HolidayTimeOffManager() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          {' '}
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>{' '}
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            {' '}
-                            This will remove the blocked time: {block.reason || 'Entry'} from {format(new Date(block.start_time), 'Pp')} to{' '}
+                            This will remove the blocked time: {block.reason || 'Entry'} from {format(new Date(block.start_time), 'Pp')} to
                             {format(new Date(block.end_time), 'Pp')} for {block.resource_name || block.resource_id}. This might affect
-                            multiple resources if it's a holiday.{' '}
-                          </AlertDialogDescription>{' '}
+                            multiple resources if it's a holiday.
+                          </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          {' '}
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>{' '}
-                          <AlertDialogAction
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <Button
+                            variant="destructive"
+                            disabled={isDeleting}
+                            loading={isDeleting}
                             onClick={() => handleDeleteBlock(block.id, block.reason)}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                           >
-                            {' '}
-                            Delete{' '}
-                          </AlertDialogAction>{' '}
+                            Delete
+                          </Button>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>

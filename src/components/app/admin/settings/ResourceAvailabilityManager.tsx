@@ -31,14 +31,20 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useAdminGetResourceById } from '@/hooks/api/admin/admin.resources.queries';
+import {
+  useAdminCreateResourceAvailabilityRule,
+  useAdminCreateResourceBlockedTimes,
+  useAdminDeleteResourceAvailabilityRule,
+  useAdminDeleteResourceBlockedTimes,
+  useAdminGetResourceById,
+} from '@/hooks/api/admin/admin.resources.queries';
 import { useOnClickOutside } from '@/hooks/use-on-click-outside'; // Adjust path
 import { useToast } from '@/hooks/use-toast';
 import { cn, formatDate, formatTime } from '@/lib/utils';
 import { format, isBefore } from 'date-fns';
 import { ArrowLeft, Calendar as CalendarIcon, Loader2, Pencil, PlusCircle, Trash2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 // --- Type Definitions --- (Assuming placed above or imported)
 interface Resource {
@@ -182,6 +188,7 @@ function AvailabilityRuleForm({ initialData, resourceId, onSave, onClose }: Avai
           <Input
             id="rule-start-time"
             type="time"
+            className="hover:cursor-pointer"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
             required
@@ -194,6 +201,7 @@ function AvailabilityRuleForm({ initialData, resourceId, onSave, onClose }: Avai
           <Input
             id="rule-end-time"
             type="time"
+            className="hover:cursor-pointer"
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
             required
@@ -342,6 +350,7 @@ function BlockedTimeForm({ resourceId, onSave, onClose }: BlockedTimeFormProps) 
           <Input
             id="bt-start-time"
             type="time"
+            className="hover:cursor-pointer"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
             required
@@ -401,7 +410,7 @@ function BlockedTimeForm({ resourceId, onSave, onClose }: BlockedTimeFormProps) 
 export function ResourceAvailabilityManager() {
   const pathName = usePathname();
   const resourceId = pathName.split('/')[4]; // Adjust based on your routing structure
-  const { data: resource, isLoading } = useAdminGetResourceById({ id: resourceId });
+  const { data: resource, isLoading, refetch } = useAdminGetResourceById({ id: resourceId });
   const rules = resource?.ResourceAvailibilityRules || [];
   const blockedTimes = resource?.ResourceBlockedTimes || [];
   const [showRuleDialog, setShowRuleDialog] = useState(false);
@@ -409,35 +418,47 @@ export function ResourceAvailabilityManager() {
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  // Fetch data on mount or when resourceId changes
+  const { mutateAsync: createRule, isPending: isSaving } = useAdminCreateResourceAvailabilityRule();
+  const { mutateAsync: deleteRule, isPending: isDeleting } = useAdminDeleteResourceAvailabilityRule();
+  const { mutateAsync: createBlock, isPending: isCreatingBlock } = useAdminCreateResourceBlockedTimes();
+  const { mutateAsync: deleteBlock, isPending: isDeletingBlock } = useAdminDeleteResourceBlockedTimes();
+  useEffect(() => {
+    if (resourceId && !resource) {
+      refetch();
+    }
+  }, [resourceId]);
 
   // --- API Call Placeholders ---
   const handleSaveRule = async (data: Omit<AvailabilityRule, 'id' | 'resource_id'> | AvailabilityRule) => {
-    // If creating multiple days, backend needs to handle loop or frontend calls multiple times
-    console.log('API CALL: Save Availability Rule(s)', data);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // In real app: Call API, then refetch data
-    // Refetch data on success
+    console.log('API CALL: Save Availability Rule', { ...data, resource_id: resourceId });
+    //await createRule({ ...data, resource_id: resourceId });
+    toast({ title: 'Success', description: 'Availability rule saved.' });
+    refetch();
+    await createRule({ ...data, resource_id: resourceId });
+    refetch();
   };
 
   const handleDeleteRule = async (id: string | number) => {
-    console.log('API CALL: Delete Availability Rule', id);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // Refetch data
+    await deleteRule({ id });
+    refetch();
     toast({ title: 'Success', description: 'Availability rule deleted.' });
   };
 
   const handleSaveBlock = async (data: { resourceId: string; reason: string; startTime: Date; endTime: Date }) => {
-    console.log('API CALL: Save Blocked Time', { ...data, startTime: data.startTime.toISOString(), endTime: data.endTime.toISOString() }); // Send ISO string likely
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // Refetch data
+    const obj = {
+      resource_id: data.resourceId,
+      reason: data.reason,
+      start_time: data.startTime.toISOString(),
+      end_time: data.endTime.toISOString(),
+    };
+    await createBlock(obj);
+    refetch();
   };
 
   const handleDeleteBlock = async (id: string | number, reason?: string | null) => {
-    console.log('API CALL: Delete Blocked Time', id);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    // Refetch data
+    await deleteBlock({ id });
     toast({ title: 'Success', description: `Blocked time (${reason || 'entry'}) deleted.` });
+    refetch();
   };
 
   // Group rules by day for display
@@ -512,37 +533,31 @@ export function ResourceAvailabilityManager() {
           {daysOfWeek.map((day, index) => (
             <div key={index} className="flex flex-col sm:flex-row gap-2 sm:gap-4 border-b pb-3 last:border-b-0">
               <Label className="w-full sm:w-24 flex-shrink-0 pt-1 font-medium">{day}</Label>
-              <div className="flex-grow space-y-1.5">
+              <div className="flex-col">
                 {rulesByDay[index] && rulesByDay[index].length > 0 ? (
                   rulesByDay[index].map((rule) => (
-                    <div
-                      key={rule.id}
-                      className="flex items-center justify-between text-sm bg-muted/40 p-1.5 rounded text-muted-foreground"
-                    >
+                    <div key={rule.id} className="flex items-center justify-between text-sm bg-muted/40 p-1 rounded text-muted-foreground">
                       <span>
                         {formatTime(rule.start_time)} - {formatTime(rule.end_time)}
                       </span>
-                      <div className="space-x-1">
+                      <div className="ms-3 space-x-1">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6"
+                          className="h-6 w-6 text-blue-400"
                           onClick={() => {
                             setEditingRule(rule);
                             setShowRuleDialog(true);
                           }}
                         >
-                          <span className="sr-only">
-                            <Pencil className="h-3.5 w-3.5" />
-                            Edit
-                          </span>
+                          <Pencil className="h-3.5 w-3.5" />
+                          <span className="sr-only"> Edit</span>
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive h-6 w-6">
-                              <span className="sr-only">
-                                <Trash2 className="h-3.5 w-3.5" /> Delete
-                              </span>
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span className="sr-only">Delete</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -638,10 +653,7 @@ export function ResourceAvailabilityManager() {
                               className="text-destructive hover:text-destructive h-7 w-7"
                               title="Delete Block"
                             >
-                              <span className="sr-only">
-                                <Trash2 className="h-4 w-4" />
-                                Delete
-                              </span>
+                              <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -675,12 +687,3 @@ export function ResourceAvailabilityManager() {
     </div>
   );
 }
-
-// Dummy Data (for testing inside this component file if needed)
-// In real app, remove these and fetch data in fetchData function
-const DUMMY_RULES_DATA: AvailabilityRule[] = [
-  { id: 1, resource_id: '520bbcd9-389c-450c-a20d-2dcd55df99cf', day_of_week: 1, start_time: '09:00:00', end_time: '12:00:00' },
-  { id: 2, resource_id: '520bbcd9-389c-450c-a20d-2dcd55df99cf', day_of_week: 1, start_time: '13:00:00', end_time: '17:00:00' },
-  { id: 3, resource_id: '520bbcd9-389c-450c-a20d-2dcd55df99cf', day_of_week: 2, start_time: '09:00:00', end_time: '15:00:00' },
-  // Add more rules as needed
-];
