@@ -1,5 +1,6 @@
 'use client';
 import { ReportBugProvider } from '@/components/app/bug-provider';
+import { AuthStateSyncer } from '@/components/auth/AuthStateSyncer';
 import { store } from '@/store';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React, { ReactNode, useState } from 'react';
@@ -16,6 +17,7 @@ export function LayoutChildren({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
+        <AuthStateSyncer />
         <ReportBugProvider>{children}</ReportBugProvider>
       </QueryClientProvider>
     </Provider>

@@ -1,3 +1,5 @@
+// components/ProjectTable.tsx (or wherever it resides)
+
 'use client';
 
 import {
@@ -12,81 +14,135 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+// Removed Checkbox import
+import { Badge } from '@/components/ui/badge'; // Added Badge
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
+import SawLoader from '@/components/ui/loader';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ProjectStatusLabels, ProjectTypeLabels } from '@/constants/enums/project.enums';
-import { Project } from '@/constants/models/object.types';
-import { APP_ROUTES } from '@/constants/routes';
-import { useGetProjects } from '@/hooks/api/projects.queries';
-import { ArrowUpDown, ChevronDown } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { ProjectStatusEnum, ProjectStatusLabels, ProjectTypeLabels } from '@/constants/enums/project.enums'; // Assuming ProjectStatusEnum exists for variant mapping
+import { Project } from '@/constants/models/object.types'; // Adjust path as needed
+import { APP_ROUTES } from '@/constants/routes'; // Adjust path
+import { useGetProjects } from '@/hooks/api/projects.queries'; // Adjust path
+import { format } from 'date-fns'; // For formatting dates
+import { ArrowUpDown, ChevronDown, FolderOpen, Inbox } from 'lucide-react'; // Added Inbox
+
+// Helper function for status badge variant (similar to admin side)
+// !!! Adjust based on your actual ProjectStatusEnum/Labels and desired colors !!!
+const getProjectStatusVariant = (
+  status: number | string,
+): 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' => {
+  // Example mapping - replace with your logic
+  const statusStr = String(status); // Handle potential number keys
+  if (status === ProjectStatusEnum.Completed || statusStr.toLowerCase().includes('complete')) return 'success';
+  if (
+    status === ProjectStatusEnum.Manufacturing ||
+    statusStr.toLowerCase().includes('progress') ||
+    statusStr.toLowerCase().includes('manufacturing')
+  )
+    return 'warning';
+  if (status === ProjectStatusEnum.Consultation || statusStr.toLowerCase().includes('design')) return 'info';
+  if (status === ProjectStatusEnum.Archived || statusStr.toLowerCase().includes('hold')) return 'secondary';
+  return 'default';
+};
+
+// Helper function for date formatting
+const formatDate = (date: Date | string | null | undefined, placeholder = 'N/A'): string => {
+  if (!date) return placeholder;
+  try {
+    return format(new Date(date), 'PP');
+  } catch (error) {
+    // e.g., Oct 27, 2023
+    return 'Invalid Date';
+  }
+};
 
 export function ProjectTable() {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: 'updated_at', desc: true }, // Default sort by last updated descending
+  ]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
+  // Removed rowSelection state
   const router = useRouter();
-  const { data } = useGetProjects();
 
-  const projects = data?.sort((a, b) => a.id - b.id) || [];
+  // Assuming useGetProjects fetches the data needed, including updated_at, target_install_date
+  const { data, isLoading } = useGetProjects(); // Added isLoading
+
+  // Handle loading state gracefully
+  const projects = React.useMemo(() => data || [], [data]);
 
   const columns: ColumnDef<Project>[] = [
-    {
-      id: 'select',
-      header: ({ table }) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate')}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      ),
-      cell: ({ row }) => (
-        <Checkbox checked={row.getIsSelected()} onCheckedChange={(value) => row.toggleSelected(!!value)} aria-label="Select row" />
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
+    // Removed 'select' column
     {
       accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => <div className="capitalize">{ProjectStatusLabels[row.getValue('status')]}</div>,
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Status <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const status = row.getValue('status');
+        const label = ProjectStatusLabels[status as keyof typeof ProjectStatusLabels] || `Status ${status}`;
+
+        return <Badge className="capitalize text-xs text-white">{label}</Badge>;
+      },
+      enableFiltering: true, // Enable filtering for status if needed later
     },
     {
       accessorKey: 'name',
       header: ({ column }) => (
         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          Name <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue('name')}</div>,
+      cell: ({ row }) => <div className="font-medium">{row.getValue('name')}</div>,
     },
     {
       accessorKey: 'type',
       header: 'Type',
-      cell: ({ row }) => <div>{ProjectTypeLabels[row.getValue('type')]}</div>,
+      cell: ({ row }) => {
+        const typeVal = row.getValue('type');
+        return <div>{ProjectTypeLabels[typeVal as keyof typeof ProjectTypeLabels] || 'N/A'}</div>;
+      },
+    },
+    {
+      accessorKey: 'target_install_date', // Added Target Install Date
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Target Install <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <div>{formatDate(row.getValue('target_install_date'), 'Not Set')}</div>,
+    },
+    {
+      accessorKey: 'updated_at', // Added Last Updated
+      header: ({ column }) => (
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Last Updated <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => <div className="text-xs text-muted-foreground">{formatDate(row.getValue('updated_at'))}</div>,
     },
     {
       id: 'actions',
       enableHiding: false,
       cell: ({ row }) => {
         const project = row.original;
-
         return (
           <Button
-            variant="ghost"
-            className="text-blue-600"
-            onClick={(e) => {
+            variant="outline" // Changed variant
+            size="sm" // Standardized size
+            onClick={() => {
               router.push(`${APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path}/${project?.id}`);
             }}
           >
-            Edit Project{' '}
+            <FolderOpen className="mr-2 h-4 w-4" /> {/* Changed Icon */}
+            View Project {/* Changed Label */}
           </Button>
         );
       },
@@ -100,37 +156,46 @@ export function ProjectTable() {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
+      // Removed rowSelection state management
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    // Removed onRowSelectionChange
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    initialState: {
+      // Set initial pagination size
+      pagination: {
+        pageSize: 10,
+      },
+    },
   });
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
+    <div className="w-full space-y-4">
+      {/* Filter and Column Visibility */}
+      <div className="flex items-center gap-4">
         <Input
-          placeholder="Filter projects by name..."
+          placeholder="Filter by project name..."
           value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
           onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
-          className="max-w-sm"
+          className="max-w-sm h-9 mt-3" // Adjusted height
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown />
+            <Button variant="outline" size="sm" className="ml-auto h-9">
+              {' '}
+              {/* Adjusted height */}
+              Columns <ChevronDown className="ml-2 h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {table
               .getAllColumns()
-              .filter((column) => column.getCanHide())
+              .filter((column) => column.getCanHide() && column.id !== 'actions') // Don't allow hiding actions
               .map((column) => (
                 <DropdownMenuCheckboxItem
                   key={column.id}
@@ -138,12 +203,15 @@ export function ProjectTable() {
                   checked={column.getIsVisible()}
                   onCheckedChange={(value) => column.toggleVisibility(!!value)}
                 >
-                  {column.id}
+                  {/* Simple way to format ID to label */}
+                  {column.id.replace(/_/g, ' ')}
                 </DropdownMenuCheckboxItem>
               ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -158,27 +226,57 @@ export function ProjectTable() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? ( // Loading state for table body
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  <SawLoader className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'} // Keep data-state even without checkbox
+                  className="cursor-pointer hover:bg-muted/50" // Add hover effect
+                  onClick={() => router.push(`${APP_ROUTES.DASHBOARD.PROJECTS.PROJECTS.path}/${row.original.id}`)} // Make row clickable
+                >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell
+                      key={cell.id}
+                      // Prevent action cell from triggering row click
+                      onClick={(e) => {
+                        if (cell.column.id === 'actions') e.stopPropagation();
+                      }}
+                      style={cell.column.id === 'actions' ? { width: cell.column.getSize() } : {}}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
+              // Enhanced Empty State
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
+                <TableCell colSpan={columns.length} className="h-48 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <Inbox className="h-12 w-12 text-muted-foreground/50" />
+                    <h3 className="text-lg font-semibold">No Projects Found</h3>
+                    <p className="text-sm text-muted-foreground">You haven't created any projects yet.</p>
+                    {/* Optional: Add create button if relevant here */}
+                    {/* <Button size="sm" className="mt-4">Create New Project</Button> */}
+                  </div>
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between space-x-2 py-4">
+        {/* Removed Row Selection Count Text */}
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
+          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
         </div>
         <div className="space-x-2">
           <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>

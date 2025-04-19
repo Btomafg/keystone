@@ -96,3 +96,13 @@ export const CabinetTypeLabels: Record<CabinetType, string> = {
   [CabinetType.Vanity]: 'Vanity',
   [CabinetType.Island]: 'Island',
 };
+
+export enum FileType {
+  Drawing = 0,
+  Quote = 1,
+  Contract = 2,
+  Invoice = 3,
+  Receipt = 4,
+  Photo = 5,
+  Other = 6,
+}

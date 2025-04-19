@@ -5,6 +5,7 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { useUpdateDrawing } from '@/hooks/api/projects.queries';
 import { format } from 'date-fns';
 import { Check, Edit, FileCheck, FileCheck2, Loader2, MessageSquareWarning } from 'lucide-react';
 import Link from 'next/link';
@@ -13,7 +14,7 @@ import React, { useState } from 'react';
 type DrawingReviewStatus = 'pending' | 'revisions_requested' | 'approved';
 
 interface DrawingFile {
-  id: string | number;
+  id: number;
   name: string;
   url: string;
   uploadedAt?: string | null;
@@ -49,7 +50,7 @@ const formatDate = (date: Date | string | null | undefined): string => {
 export const ProjectDrawingReview: React.FC<ProjectDrawingReviewProps> = ({
   projectId,
   reviewStatus,
-  drawings = [], // Default to empty array if not provided
+  drawings = [],
   onApprove = async () => {
     console.warn('onApprove not provided');
   }, // Default no-op handlers
@@ -61,9 +62,9 @@ export const ProjectDrawingReview: React.FC<ProjectDrawingReviewProps> = ({
 }) => {
   const [revisionComments, setRevisionComments] = useState('');
   const [showRevisionInput, setShowRevisionInput] = useState(false);
-  const [isSubmittingApproval, setIsSubmittingApproval] = useState(false);
-  const [isSubmittingRevision, setIsSubmittingRevision] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
+  const { mutateAsync: updateDrawing, isPending: isSubmitting } = useUpdateDrawing();
 
   const primaryDrawing = drawings.length > 0 ? drawings[0] : null;
   const otherDrawings = drawings.slice(1);
@@ -72,16 +73,18 @@ export const ProjectDrawingReview: React.FC<ProjectDrawingReviewProps> = ({
   const handleApproveClick = async () => {
     // Guard against calling if not in pending state (though parent shouldn't render it then)
     if (reviewStatus !== 'pending') return;
-    setIsSubmittingApproval(true);
+
     setError(null);
+
     try {
-      await onApprove();
-      // Parent component's re-render with new reviewStatus will change the UI
+      await updateDrawing({
+        id: primaryDrawing.id,
+        project_id: projectId,
+        status: 'approved',
+      });
     } catch (err) {
-      console.error('Approval failed:', err);
+      console.error('Revision approval failed:', err);
       setError('Failed to submit approval. Please try again.');
-    } finally {
-      setIsSubmittingApproval(false);
     }
   };
 
@@ -91,21 +94,21 @@ export const ProjectDrawingReview: React.FC<ProjectDrawingReviewProps> = ({
       setError('Please provide comments for the requested revisions.');
       return;
     }
-    setIsSubmittingRevision(true);
+
     setError(null);
     try {
-      await onRequestRevisions(revisionComments);
-      // Parent component's re-render with new reviewStatus will change the UI
-      // Optionally clear local state anyway
-      setRevisionComments('');
-      setShowRevisionInput(false);
+      await updateDrawing({
+        id: primaryDrawing.id,
+        project_id: projectId,
+        status: 'revisions_requested',
+        revision_notes: revisionComments,
+      });
     } catch (err) {
       console.error('Revision request failed:', err);
       setError('Failed to submit revision request. Please try again.');
-    } finally {
-      setIsSubmittingRevision(false);
     }
   };
+
   if (reviewStatus === 'pending') {
     return (
       <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 transition-all duration-300">
@@ -151,30 +154,25 @@ export const ProjectDrawingReview: React.FC<ProjectDrawingReviewProps> = ({
                 value={revisionComments}
                 onChange={(e) => setRevisionComments(e.target.value)}
                 rows={3}
-                disabled={isSubmittingRevision}
+                disabled={isSubmitting}
               />
               <div className="flex justify-end gap-2">
-                <Button variant="ghost" size="sm" onClick={() => setShowRevisionInput(false)} disabled={isSubmittingRevision}>
+                <Button variant="ghost" size="sm" onClick={() => setShowRevisionInput(false)} disabled={isSubmitting}>
                   Cancel
                 </Button>
-                <Button size="sm" onClick={handleRequestRevisionClick} disabled={isSubmittingRevision || !revisionComments.trim()}>
-                  {isSubmittingRevision && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Submit Revisions
+                <Button size="sm" onClick={handleRequestRevisionClick} disabled={isSubmitting || !revisionComments.trim()}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Submit Revisions
                 </Button>
               </div>
             </div>
           )}
           {!showRevisionInput && (
             <div className="flex flex-col sm:flex-row justify-end gap-3">
-              <Button variant="outline" onClick={() => setShowRevisionInput(true)} disabled={isSubmittingApproval || isSubmittingRevision}>
+              <Button variant="outline" onClick={() => setShowRevisionInput(true)} disabled={isSubmitting}>
                 <Edit className="mr-2 h-4 w-4" /> Request Revisions
               </Button>
-              <Button
-                className="bg-green-600 hover:bg-green-700 text-white"
-                onClick={handleApproveClick}
-                disabled={isSubmittingApproval || isSubmittingRevision}
-              >
-                {isSubmittingApproval && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} <Check className="mr-2 h-4 w-4" /> Approve
-                Drawings
+              <Button className="bg-green-600 hover:bg-green-700 text-white" onClick={handleApproveClick} disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} <Check className="mr-2 h-4 w-4" /> Approve Drawings
               </Button>
             </div>
           )}

@@ -20,6 +20,25 @@ export const getAdminUsers = async (body) => {
   }
 };
 
+export const getAdminUsersById = async (body) => {
+  const params = new URLSearchParams(body);
+  const url = `${API_ROUTES.ADMIN.USERS.GET_BYID}?${params.toString()}`;
+
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('ERROR GETTING USERS', error);
+    return [];
+  }
+};
+
 export const updateAdminUser = async (body) => {
   const admin_key = store.getState().auth.admin_session_key;
 

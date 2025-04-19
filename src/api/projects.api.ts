@@ -1,7 +1,7 @@
 // lib/api/users.ts
 
 import { API_ROUTES } from '@/constants/api.routes';
-import { Cabinet, Project, Room } from '@/constants/models/object.types';
+import { Cabinet, Drawing, Project, Room, Wall } from '@/constants/models/object.types';
 import { API } from '@/lib/api/browser';
 import store from '@/store';
 
@@ -63,6 +63,28 @@ export const getProjects = async () => {
     return data;
   } catch (error) {
     console.error('ERROR GETTING PROJECTS', error);
+    return [];
+  }
+};
+
+export const getProjectById = async (body) => {
+  const { id } = body;
+  const params = new URLSearchParams({ id });
+  const url = `${API_ROUTES.PROJECTS.GET_BY_ID}?${params.toString()}`;
+
+  console.log('url', url);
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+    const data = await res.json();
+
+    return data?.data;
+  } catch (error) {
+    console.error('ERROR GETTING PROJECT', error);
     return [];
   }
 };
@@ -237,7 +259,7 @@ export const getLayoutOptions = async () => {
   }
 };
 
-export const updateWall = async (body: Partial<Cabinet>) => {
+export const updateWall = async (body: Partial<Wall>) => {
   try {
     const res = await fetch(API_ROUTES.UPDATE_WALL, {
       method: 'PATCH',
@@ -250,6 +272,23 @@ export const updateWall = async (body: Partial<Cabinet>) => {
     return data;
   } catch (error) {
     console.error('ERROR CREATING Cabinet', error);
+  }
+  return true;
+};
+
+export const updateDrawing = async (body: Partial<Drawing>) => {
+  try {
+    const res = await fetch(API_ROUTES.PROJECTS.UPDATE_DRAWING, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    return data;
+  } catch (error) {
+    console.error('ERROR Updating Drawing', error);
   }
   return true;
 };

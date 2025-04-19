@@ -6,6 +6,7 @@ export async function GET() {
   try {
     const supabase = await createServerSupabaseClient();
     const isAuthenticated = await isUserAuthenticated();
+    console.log('isAuthenticated', isAuthenticated);
     if (!isAuthenticated) {
       return NextResponse.json({ success: false, message: 'User is not authenticated', type: 'error' }, { status: 401 });
     }
@@ -20,6 +21,15 @@ export async function GET() {
 
     console.log('user', data);
     console.log('error', error);
+    if (!data?.email) {
+      const { data: newUser, error: newUserError } = await supabase
+        .from('Users')
+        .update({
+          email: data?.email,
+          active: true,
+        })
+        .eq('id', userId);
+    }
     if (error) {
       if (error.code === 'PGRST116') {
         const { data: newUser, error: newUserError } = await supabase.from('Users').insert({

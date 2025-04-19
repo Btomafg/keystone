@@ -47,22 +47,29 @@ export const useLogin = () => {
 };
 
 export const useLogout = () => {
-  const { toast } = useToast();
+  const router = useRouter();
   const dispatch = useDispatch();
+  const { toast } = useToast();
 
   return useMutation({
-    mutationFn: () => SupabaseAuthService.signOut(),
-    onError: (error: any) => {
-      console.error(error);
+    mutationFn: async () => {
+      router.push(APP_ROUTES.HOME.path);
+      await SupabaseAuthService.signOut();
     },
     onSuccess: () => {
-      console.log('signedout');
       dispatch(logout());
-      toast({ title: `You've Successfully Signed Out` });
+      toast({ title: `You've successfully signed out.` });
+    },
+    onError: (error: any) => {
+      console.error('Logout error:', error);
+      toast({
+        title: 'Logout failed',
+        description: error.message || 'Something went wrong during logout.',
+        variant: 'destructive',
+      });
     },
   });
 };
-
 // REGISTER
 export const useRegister = () => {
   const { toast } = useToast();

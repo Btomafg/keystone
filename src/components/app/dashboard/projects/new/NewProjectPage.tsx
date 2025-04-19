@@ -4,8 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
-import { Project } from '@/constants/models/object.types';
-import { useGetLayoutOptions, useGetProjects, useGetRoomOptions, useReviewProject } from '@/hooks/api/projects.queries';
+import { useGetLayoutOptions, useGetRoomOptions, useReviewProject } from '@/hooks/api/projects.queries';
 import { toUSD } from '@/utils/common';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
@@ -15,7 +14,11 @@ import NewRoomModal from './NewRoomModal';
 import NewRoomRow from './NewRoomRow';
 import { WallsSection } from './NewWalls';
 
-export default function NewProjectPage() {
+interface NewProjectPageProps {
+  project: any;
+  isLoading: boolean;
+}
+export default function NewProjectPage({ project, isLoading }: NewProjectPageProps) {
   const path = usePathname();
   const projectId = parseFloat(path.split('/')[3]);
   const router = useRouter();
@@ -24,10 +27,8 @@ export default function NewProjectPage() {
 
   const { data: layouts } = useGetLayoutOptions();
   const { data: roomOptions } = useGetRoomOptions();
-  const { data: projects } = useGetProjects();
-  const { mutateAsync: submitProject, isPending: submitting } = useReviewProject();
 
-  const project = projects && projects?.find((project: Project) => project?.id == projectId);
+  const { mutateAsync: submitProject, isPending: submitting } = useReviewProject();
 
   useEffect(() => {
     if (!projectId) {

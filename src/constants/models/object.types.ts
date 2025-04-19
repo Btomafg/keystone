@@ -153,8 +153,35 @@ export type CabinetType = {
   img_url: string;
 };
 
-export type Project {
+export type Files = {
   id: number;
+  name: string;
+  url: string;
+  type: number;
+};
+export type Appointment = {
+  id: number;
+  type: 0 | 1 | 2;
+  status: string;
+  start_time: string;
+  end_time: string;
+  created_at: string;
+  updated_at: string;
+};
+export type Drawing = {
+  id: number;
+  name: string;
+  file: Files;
+  revision_notes: string;
+  status: 'pending' | 'revisions_requested' | 'approved';
+  project_id: number;
+  updated_at: string;
+  updated_by: string;
+  created_at: string;
+}
+export type Project ={
+  id: number;
+  qualification: number;
   name: string;
   estimate: number;
   description: string;
@@ -167,6 +194,9 @@ export type Project {
   type: ProjectType;
   status: ProjectStatus ;
   rooms: Room[];
+  drawings: Drawing[];
+  files: Files[];
+  appointments: Appointment[];
 }
 
 type CabinetCalculatorInput = {

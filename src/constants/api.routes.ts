@@ -8,7 +8,11 @@ export const API_ROUTES = {
   RESEND_OTP: '/api/auth/resend-otp/',
   FORGOT_PASSWORD: '/api/auth/forgot-password/',
   RESET_PASSWORD: '/api/auth/reset-password/',
-
+  SIGN_IN_GOOGLE: '/api/auth/signin-google/',
+  SIGN_IN_FACEBOOK: '/api/auth/signin-facebook/',
+  AUTH: {
+    CALLBACK: '/api/auth/callback/',
+  },
   // Admin Routes
   ADMIN: {
     LEADS: {
@@ -25,6 +29,7 @@ export const API_ROUTES = {
     },
     USERS: {
       GET: '/api/admin/users/',
+      GET_BYID: '/api/admin/users/id/',
       POST: '/api/admin/users/',
       DELETE: '/api/admin/users/',
       UPDATE: '/api/admin/users/',
@@ -32,10 +37,17 @@ export const API_ROUTES = {
     },
     RESOURCES: {
       GET: '/api/admin/resources/',
-      GET_BYID: '/api/admin/resources/id',
+      GET_BYID: '/api/admin/resources/id/',
       POST: '/api/admin/resources/',
       DELETE: '/api/admin/resources/',
       UPDATE: '/api/admin/resources/',
+    },
+    PROJECTS: {
+      GET: '/api/admin/projects/',
+      GET_BYID: '/api/admin/projects/id/',
+      POST: '/api/admin/projects/',
+      DELETE: '/api/admin/projects/',
+      UPDATE: '/api/admin/projects/',
     },
 
     SETTINGS: {
@@ -77,6 +89,10 @@ export const API_ROUTES = {
   GET_WALLS: '/api/projects/walls/',
   UPDATE_WALL: '/api/projects/walls/',
   CREATE_WALL: '/api/projects/walls/create/',
+  PROJECTS: {
+    GET_BY_ID: '/api/projects/id/',
+    UPDATE_DRAWING: '/api/projects/drawings/',
+  },
   APPOINTMENTS: {
     GET: '/api/appointments/',
     UPDATE: '/api/appointments/',

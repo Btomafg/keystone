@@ -21,7 +21,7 @@ const AboutTwo = () => {
             functionality. From classic designs to contemporary aesthetics, we are committed to exceeding expectations with exceptional
             craftsmanship and meticulous attention to detail. Experience the Keystone difference—where your dream cabinetry becomes reality.
           </p>{' '}
-          <Image className="w-full md:w-1/2" src={markandcole} />
+          <Image className="w-full md:w-1/2 max-w-lg" src={markandcole} />
         </div>
         <div className={`bg-primary xl:mt-[220px] py-8 lg:mt-25 md:mt-44 mt-[100px] xl:mb-20 mb-0`}>
           <div className="container">

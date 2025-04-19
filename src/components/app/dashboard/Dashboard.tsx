@@ -1,16 +1,12 @@
 'use client';
-import { useTypedSelector } from '@/hooks/useTypedSelector';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import QuickCards from './dashboard/QuickCards';
-import WelcomeBanner from './dashboard/WelcomeBanner';
-import ReportBug from '../ReportBug';
-import { useGetUser } from '@/hooks/api/users.queries';
-import { useDispatch } from 'react-redux';
-import { setStep } from '@/store/slices/authSlice';
-import AuthModal from '@/components/marketing/AuthModal';
 import AuthStepProfile from '@/components/marketing/AuthStepProfile';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useGetUser } from '@/hooks/api/users.queries';
+import { useTypedSelector } from '@/hooks/useTypedSelector';
+import { usePathname, useRouter } from 'next/navigation';
+import { useDispatch } from 'react-redux';
+import QuickCards from './dashboard/QuickCards';
+import WelcomeBanner from './dashboard/WelcomeBanner';
 
 export default function Page() {
   const router = useRouter();
@@ -18,11 +14,6 @@ export default function Page() {
   const authStep = useTypedSelector((state) => state.auth.step);
   const { data: user } = useGetUser();
   const dispatch = useDispatch();
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/');
-    }
-  }, [isAuthenticated]);
 
   const path = usePathname();
   const section = path.split('/')[1];

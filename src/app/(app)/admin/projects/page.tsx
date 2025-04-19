@@ -1,5 +1,5 @@
+import { AdminProjectTable } from '@/components/app/admin/projects/AdminProjectTable';
 import React from 'react';
-import Dashboard from '@/components/app/dashboard/Dashboard';
 interface pageProps {}
 const page: React.FC<pageProps> = (props) => {
   //HOOKS
@@ -12,7 +12,7 @@ const page: React.FC<pageProps> = (props) => {
 
   //EFFECTS
 
-  return <Dashboard />;
+  return <AdminProjectTable />;
 };
 
 export default page;

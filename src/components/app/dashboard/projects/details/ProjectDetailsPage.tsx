@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'; // Import Tabs
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useGetAppointmentByProjectId } from '@/hooks/api/appointments.queries';
+import { RoomTypeLabels } from '@/constants/enums/project.enums';
+import { Project } from '@/constants/models/object.types';
 import { useGetUser } from '@/hooks/api/users.queries';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { toUSD } from '@/utils/common';
 import {
   Check,
@@ -33,60 +34,8 @@ import ProjectManufacturing from './ProjectManufacturing';
 import ProjectScheduleConsultation from './ProjectScheduleConsultation';
 import { ProjectShipped } from './ProjectShipped';
 
-// --- Updated Data Types (Matching API + Files) ---
-
-interface ApiCabinet {
-  /* ... as before ... */
-}
-interface ApiWall {
-  /* ... as before ... */
-}
-interface ApiRoom {
-  /* ... as before ... */
-}
-
-// ADDED: Placeholder for File Data
-interface ApiFile {
-  id: string | number;
-  name: string;
-  url: string; // URL to view/download the file
-  uploadedAt?: string | null; // ISO date string
-  type?: 'drawing' | 'image' | 'document' | 'other'; // Optional type hint for icons
-}
-
-interface ApiProject {
-  id: number;
-  name: string; // Customer Name in example
-  description: string | null;
-  status: number; // Needs mapping to the NEW steps
-  type: number;
-  estimate: number | null;
-  rooms: ApiRoom[];
-  // Assume files might come with the project or via a separate fetch
-  files?: ApiFile[]; // ADDED: Array of files associated with the project
-
-  // --- ADD other fields if available ---
-  // street?: string | null;
-  // city?: string | null;
-  // state?: string | null;
-  // zip?: string | null;
-  // due_date?: string | null;
-  // created_at?: string | null;
-}
-
-// --- Helper Functions ---
-
-const formatCurrency = (amount: number | null | undefined): string => {
-  /* ... as before ... */
-};
-const formatDate = (dateString: string | null | undefined, dateFormat: string = 'PPP'): string => {
-  /* ... as before ... */
-};
-
-// --- UPDATED MAPPINGS (!!! IMPORTANT: UPDATE THESE WITH YOUR ACTUAL STATUS IDs !!!) ---
 const projectSteps = [
   // NEW Steps
-  'new',
   'Review',
   'Consultation',
   'Design',
@@ -97,7 +46,6 @@ const projectSteps = [
   'Shipped',
 ];
 
-// !!! THIS IS A PLACEHOLDER MAPPING - UPDATE 'statusId' KEYS to match your API !!!
 const projectStatusMapping: { [key: number]: { name: string; stepIndex: number } } = {
   1: { name: 'Review', stepIndex: 1 },
   2: { name: 'Consultation', stepIndex: 2 },
@@ -130,16 +78,11 @@ const getStatusInfo = (
     info.name = 'Closed';
     variant = 'warning';
   }
-
   return { ...info, variant };
 };
 
-const mapRoomType = (typeId: number): string => {
-  /* ... as before ... */
-};
-
 // Helper to get file icon
-const getFileIcon = (fileType?: ApiFile['type']): React.ReactNode => {
+const getFileIcon = (fileType?: any): React.ReactNode => {
   switch (fileType) {
     case 'drawing':
       return <FileText className="h-5 w-5 text-blue-500" />;
@@ -155,7 +98,8 @@ const getFileIcon = (fileType?: ApiFile['type']): React.ReactNode => {
 // --- Component Props ---
 
 interface CustomerProjectDetailsProps {
-  project: ApiProject;
+  project: Project;
+  isLoading?: boolean; // Optional loading state
   // Files might be included in project or passed separately
   // files?: ApiFile[];
 }
@@ -239,8 +183,7 @@ interface ProjectShippedProps {
   /** Optional: Handler for a contact button */
   onContactUs?: () => void;
 }
-export default function CustomerProjectDetails({ project }: CustomerProjectDetailsProps) {
-  // Placeholder action handlers
+export default function CustomerProjectDetails({ project, isLoading }: CustomerProjectDetailsProps) {
   const handleContactSupport = () => console.log('Contact support clicked', project?.id);
   const { data: user } = useGetUser();
   const handleScheduleConsultation = () => {
@@ -248,7 +191,6 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
     // Add logic here: redirect to scheduling page/app, open modal, etc.
     alert('Redirecting to schedule consultation (implement actual logic).');
   };
-  const [DrawingReview, setDrawingReview] = React.useState<'pending' | 'approved' | 'revisions_requested'>('pending');
   const {
     name: projectStatusText,
     stepIndex: currentStatusIndex,
@@ -257,7 +199,6 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
   const [status, setStatus] = React.useState(currentStatusIndex);
 
   useEffect(() => {
-    // Update status based on project status
     const { stepIndex } = getStatusInfo(project?.status, project?.qualification);
     setStatus(stepIndex);
   }, [project?.status]);
@@ -268,8 +209,16 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
   const showDrawingReview = project?.status === 4 || project?.status == 5;
   const qualification = project?.qualification;
   const files = project?.files || [];
-  const { data: initialAppointment } = useGetAppointmentByProjectId({ project_id: project?.id });
-  console.log('initialAppointment', initialAppointment);
+
+  const initialAppointment = project.appointments.find((appointment) => appointment.type == 0 && appointment.status == 'confirmed') || null;
+  const drawing = project?.drawings.map((drawing) => ({
+    id: drawing.id,
+    name: drawing.name,
+    status: drawing.status,
+    url: drawing.file.url,
+    uploadedAt: drawing.created_at,
+  }));
+
   const RenderStatusComponent = () => {
     switch (status) {
       case 1: // Review
@@ -288,21 +237,7 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
       case 3: // Design
         return <ProjectDesignInProgress projectId={project?.id} customerName={user?.name} />;
       case 4: // Drawing Review
-        return (
-          <ProjectDrawingReview
-            reviewStatus={DrawingReview}
-            onApprove={() => setDrawingReview('approved')}
-            onRequestRevisions={() => setDrawingReview('revisions_requested')}
-            projectId={project?.id}
-            drawings={[
-              {
-                id: 'drawing1',
-                name: 'Drawing 1',
-                url: 'https://clubrunner.blob.core.windows.net/00000100463/en-ca/files/homepage/sample-pdf-page/SamplePDFPage.pdf',
-              },
-            ]} // Example drawing
-          />
-        );
+        return <ProjectDrawingReview reviewStatus={drawing[0]?.status} projectId={project?.id} drawings={drawing} />;
       case 5: // Sign Agreement
         return (
           <ProjectAgreementSignature
@@ -415,39 +350,41 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
           </CardHeader>
           <CardContent>
             <div className="flex justify-between items-start space-x-1 overflow-x-auto py-2">
-              {projectSteps.map((step, index) => (
-                <React.Fragment key={step}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex flex-col items-center text-center flex-shrink-0 w-[65px] sm:w-auto sm:flex-1 px-1">
-                        <div
-                          className={cn(
-                            'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 mb-1.5 transition-all duration-300',
-                            index < status ? 'bg-green-600 border-green-600 text-white' : '', // Completed
-                            index === status ? 'bg-blue-600 border-blue-600 text-white scale-110 ring-4 ring-blue-200' : '', // Active
-                            index > status ? 'bg-card border-border text-muted-foreground' : '', // Future
-                          )}
-                        >
-                          {index < status ? <Check className="h-4 w-4 sm:h-5 sm:w-5" /> : index + 1}
+              {projectSteps?.map((step, index) => {
+                return (
+                  <React.Fragment key={step}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex flex-col items-center text-center flex-shrink-0 w-[65px] sm:w-auto sm:flex-1 px-1">
+                          <div
+                            className={cn(
+                              'w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 mb-1.5 transition-all duration-300',
+                              index < status - 1 ? 'bg-green-600 border-green-600 text-white' : '', // Completed
+                              index === status - 1 ? 'bg-blue-600 border-blue-600 text-white scale-110 ring-4 ring-blue-200' : '', // Active
+                              index > status - 1 ? 'bg-card border-border text-muted-foreground' : '', // Future
+                            )}
+                          >
+                            {index < status - 1 ? <Check className="h-4 w-4 sm:h-5 sm:w-5" /> : index + 1}
+                          </div>
+                          <p
+                            className={cn(
+                              'text-[10px] sm:text-xs leading-tight', // Smaller text for more steps
+                              index === status - 1 ? 'font-semibold text-blue-700' : 'text-muted-foreground',
+                            )}
+                          >
+                            {step}
+                          </p>
                         </div>
-                        <p
-                          className={cn(
-                            'text-[10px] sm:text-xs leading-tight', // Smaller text for more steps
-                            index === status ? 'font-semibold text-blue-700' : 'text-muted-foreground',
-                          )}
-                        >
-                          {step}
-                        </p>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="text-white">
-                      {index < status ? 'Completed' : index === status ? 'Current Step' : 'Upcoming'}
-                    </TooltipContent>
-                  </Tooltip>
-                  {/* Line Separator */}
-                  {index < projectSteps.length - 1 && <div className="flex-grow h-px bg-border mt-4 hidden sm:block" />}
-                </React.Fragment>
-              ))}
+                      </TooltipTrigger>
+                      <TooltipContent className="text-white">
+                        {index < status - 1 ? 'Completed' : index === status - 1 ? 'Current Step' : 'Upcoming'}
+                      </TooltipContent>
+                    </Tooltip>
+                    {/* Line Separator */}
+                    {index < projectSteps.length - 1 && <div className="flex-grow h-px bg-border mt-4 hidden sm:block" />}
+                  </React.Fragment>
+                );
+              })}
             </div>
           </CardContent>
         </Card>
@@ -493,11 +430,11 @@ export default function CustomerProjectDetails({ project }: CustomerProjectDetai
                           <div className="text-left space-y-0.5">
                             {' '}
                             <p className="font-semibold">{room.name}</p>{' '}
-                            <p className="text-xs text-muted-foreground">{mapRoomType(room.type)}</p>{' '}
+                            <p className="text-xs text-muted-foreground">{RoomTypeLabels[room.type]}</p>{' '}
                           </div>{' '}
                           <div className="flex items-center ml-4">
                             {' '}
-                            <span className="text-sm font-medium text-foreground mr-4">{formatCurrency(room.estimate)}</span>{' '}
+                            <span className="text-sm font-medium text-foreground mr-4">{toUSD(room.estimate)}</span>{' '}
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="pt-1 pb-4 px-4 space-y-3 text-sm bg-muted/30">

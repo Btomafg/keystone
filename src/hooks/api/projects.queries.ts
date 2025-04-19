@@ -8,18 +8,21 @@ import {
   getCabinetTypes,
   getCustomOptions,
   getLayoutOptions,
+  getProjectById,
   getProjects,
   getRoomOptions,
   getRoomsByProjectId,
   reviewProject,
   updateCabinet,
+  updateDrawing,
   updateProject,
   updateRoom,
   updateWall,
 } from '@/api/projects.api';
 import { API_ROUTES } from '@/constants/api.routes';
-import { Cabinet, Project, Room, Wall } from '@/constants/models/object.types';
+import { Cabinet, Drawing, Project, Room, Wall } from '@/constants/models/object.types';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { usePathname } from 'next/navigation';
 import { useToast } from '../use-toast';
 
 export const useGetProjects = () => {
@@ -34,6 +37,21 @@ export const useGetProjects = () => {
     data: query?.data as Project[],
     isSuccess: query.isSuccess,
     isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  };
+};
+export const useGetProjectById = (body: any) => {
+  console.log;
+  const query = useQuery({
+    queryKey: [API_ROUTES.PROJECTS.GET_BY_ID, body],
+    staleTime: 1000 * 60 * 5,
+    queryFn: () => getProjectById(body),
+  });
+  return {
+    data: query?.data,
+    isSuccess: query.isSuccess,
+    isLoading: query.isFetching,
     isError: query.isError,
     refetch: query.refetch,
   };
@@ -259,6 +277,24 @@ export const useReviewProject = () => {
     onSuccess: (response) => {
       refetch();
       toast({ title: 'Project Submitted', description: 'Your project has been submitted for review!' });
+    },
+  });
+  return mutation;
+};
+
+export const useUpdateDrawing = () => {
+  const { toast } = useToast();
+  const pathName = usePathname();
+  const projectId = parseFloat(pathName.split('/')[3]);
+  const { refetch } = useGetProjectById({ id: projectId });
+  const mutation = useMutation({
+    mutationFn: (body: Partial<Drawing>) => updateDrawing(body),
+    onSuccess: (response) => {
+      console.log('RESPONSE', response);
+      if (response?.id) {
+        refetch();
+        toast({ title: 'Drawing Review Submitted ', description: 'Your review has been submitted to the team.' });
+      }
     },
   });
   return mutation;

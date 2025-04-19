@@ -7,8 +7,6 @@ import { useLogout } from '@/hooks/api/auth.queries';
 import { useTypedSelector } from '@/hooks/useTypedSelector';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import AuthModal from '../AuthModal';
-
 
 const TopNavbar = () => {
   const { mutateAsync: signOut } = useLogout();
@@ -18,7 +16,6 @@ const TopNavbar = () => {
   useEffect(() => {
     setMounted(true);
   }, []);
-
 
   if (!mounted) return null; // Prevent SSR mismatch
 
@@ -30,7 +27,11 @@ const TopNavbar = () => {
           <SocialMediaList />
         </div>
       </div>
-      {!isAuthenticated && <AuthModal />}
+      {!isAuthenticated && (
+        <Button onClick={() => router.push(APP_ROUTES.AUTH.LOGIN.path)} className="ms-5 p-2 text-white !rounded-xl" size="lg">
+          Login
+        </Button>
+      )}
       {isAuthenticated && (
         <>
           <Button onClick={() => router.push(APP_ROUTES.DASHBOARD.HOME.path)} className="ms-5 p-2 text-white !rounded-xl" size="lg">
@@ -40,7 +41,6 @@ const TopNavbar = () => {
             Sign Out
           </Button>
         </>
-
       )}
     </div>
   );

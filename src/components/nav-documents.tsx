@@ -10,13 +10,14 @@ import Loader from './ui/loader';
 export function NavOpenProjects() {
   const { data: projects, isLoading } = useGetProjects();
   const { isMobile } = useSidebar();
-  const items = projects
-    ? projects?.slice(0, 3)?.map((project) => ({
-        name: project?.name,
-        url: `/dashboard/projects/${project?.id}`,
-        icon: <Clipboard />,
-      }))
-    : [];
+  const items =
+    projects?.length > 0 &&
+    (projects?.map((project) => ({
+      name: project?.name,
+      url: `/dashboard/projects/${project?.id}`,
+      icon: <Clipboard />,
+    })) ??
+      []);
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -27,7 +28,8 @@ export function NavOpenProjects() {
             <Loader className="mx-auto my-auto" />
           </div>
         ) : (
-          items.map((item) => (
+          items &&
+          items?.map((item) => (
             <SidebarMenuItem key={item.name}>
               <SidebarMenuButton asChild>
                 <a href={item.url}>
